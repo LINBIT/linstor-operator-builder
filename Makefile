@@ -3,7 +3,7 @@ DSTOP ?= linstor-operator
 IMAGE ?= drbd.io/$(notdir $(DSTOP))
 
 SRC_FILES = $(shell find $(SRCOP)/cmd $(SRCOP)/pkg $(SRCOP)/version -type f)
-SRC_FILES += $(DSTOP)/build/bin/user_setup $(DSTOP)/go.mod $(DSTOP)/go.sum
+SRC_FILES += $(SRCOP)/build/bin/user_setup $(SRCOP)/go.mod $(SRCOP)/go.sum
 DST_FILES = $(subst $(SRCOP),$(DSTOP),$(SRC_FILES))
 
 
