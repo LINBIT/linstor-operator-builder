@@ -13,4 +13,6 @@ $(DSTOP)/%: $(SRCOP)/%
 
 all: $(DST_FILES)
 	rsync -av build $(DSTOP)
-	cd $(DSTOP) && operator-sdk build $(IMAGE)
+	cd $(DSTOP) && \
+		operator-sdk build $(IMAGE) \
+		--go-build-args "-ldflags -X=github.com/piraeusdatastore/piraeus-operator/pkg/k8s/spec.APIGroup=linstor.linbit.com"
