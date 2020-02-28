@@ -16,6 +16,8 @@ SRC_FILES_CP += $(SRCOP)/build/bin/user_setup $(SRCOP)/go.mod $(SRCOP)/go.sum
 DST_FILES_CP = $(subst $(SRCOP),$(DSTOP),$(SRC_FILES_CP))
 
 operator: $(DST_FILES_LOCAL_CP) $(DST_FILES_CP)
+	[ $$(basename $(DSTOP)) = "linstor-operator" ] || \
+		(echo "error: last component of DSTOP must be linstor-operator" ; exit 1)
 	cd $(DSTOP) && \
 		operator-sdk build $(IMAGE) \
 		--go-build-args "-tags custom"
