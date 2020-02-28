@@ -1,0 +1,36 @@
+etcd:
+  persistence:
+    enabled: true
+  auth:
+    rbac:
+      enabled: false
+  statefulset:
+    replicaCount: 3
+  envVarsConfigMap: "etcd-env-vars"
+csi:
+  image:
+    repo: "drbd.io"
+    name: "linstor-csi"
+    version: "v0.7.3"
+drbdRepoCred: drbdiocred     # <- Specify the kubernetes secret name here
+operator:
+  image:
+    repo: "drbd.io"
+    name: "linstor-operator"
+    version: "v0.1.3"
+  controllerSet:
+    spec:
+      controllerImage: "drbd.io/linstor-controller"
+      controllerVersion: "v1.4.2.1"
+  nodeSet:
+    spec:
+      drbdKernelModuleInjectionMode: Compile
+      satelliteImage: "drbd.io/linstor-satellite"
+      satelliteVersion: "v1.4.2"
+      kernelModImage: "drbd.io/drbd9"
+      kernelModVersion: "bionic"
+      lvmPoolName: "lvm-thick"
+      lvmPoolVgName: "drbdpool"        # <- Volume Group name of the thick storage pool
+      lvmThinPoolName: "lvm-thin"
+      lvmThinPoolVgName: "drbdpool"    # <- Volume Group name of the thin storage pool
+      lvmThinPoolLvName: "thinpool"    # <- Logical Volume name of the thin pool
