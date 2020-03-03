@@ -4,6 +4,8 @@ DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
 IMAGE ?= drbd.io/$(notdir $(DSTOP))
 
+DSTCHART := $(abspath $(DSTCHART))
+
 all: operator chart
 
 ########## operator #########
@@ -49,3 +51,10 @@ $(CHART_DST_FILES_LOCAL_CP): $(DSTCHART)/%: charts/linstor/%
 $(CHART_DST_FILES_REPLACE): $(DSTCHART)/%: $(SRCCHART)/%
 	mkdir -p "$$(dirname "$@")"
 	< "$^" sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' > "$@"
+
+publish: chart
+	tmpd=$$(mktemp -p $$PWD -d) && cd $$tmpd && \
+	helm package $(DSTCHART) && helm repo index $$tmpd --url https://linbit.github.io/linstor-operator-builder && \
+	git init && git add . && git commit -m 'gh-pages' && \
+	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
+	rm -rf $$tmpd
