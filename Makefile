@@ -58,3 +58,6 @@ publish: chart
 	git init && git add . && git commit -m 'gh-pages' && \
 	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
 	rm -rf $$tmpd
+
+distclean:
+	rm -rf "$(DSTOP)" "$(DSTCHART)"
