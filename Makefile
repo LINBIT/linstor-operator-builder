@@ -1,15 +1,17 @@
 SRCOP ?= piraeus-operator
 SRCCHART ?= $(SRCOP)/charts/piraeus
+SRCPVCHART ?= $(SRCOP)/charts/pv-hostpath
 DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
+DSTPVCHART ?= linstor-operator-helm-pv
 IMAGE ?= drbd.io/$(notdir $(DSTOP))
 
 DSTCHART := $(abspath $(DSTCHART))
 
-all: operator chart
+all: operator chart pvchart
 
 distclean:
-	rm -rf "$(DSTOP)" "$(DSTCHART)"
+	rm -rf "$(DSTOP)" "$(DSTCHART)" "$(DSTPVCHART)"
 
 ########## operator #########
 
@@ -55,10 +57,24 @@ $(CHART_DST_FILES_REPLACE): $(DSTCHART)/%: $(SRCCHART)/%
 	mkdir -p "$$(dirname "$@")"
 	< "$^" sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' > "$@"
 
-publish: chart
+########## chart for hostPath PersistentVolume #########
+
+PVCHART_SRC_FILES_CP = $(shell find $(SRCPVCHART) -type f)
+PVCHART_DST_FILES_CP = $(subst $(SRCPVCHART),$(DSTPVCHART),$(PVCHART_SRC_FILES_CP))
+
+pvchart: $(PVCHART_DST_FILES_CP)
+
+$(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
+	mkdir -p "$$(dirname "$@")"
+	cp -av "$^" "$@"
+
+########## publishing #########
+
+publish: chart pvchart
 	tmpd=$$(mktemp -p $$PWD -d) && cd $$tmpd && \
 	chmod 775 . && \
-	helm package $(DSTCHART) && helm repo index $$tmpd --url https://charts.linstor.io && \
+	helm package $(DSTCHART) && helm package $(DSTPVCHART) && \
+	helm repo index $$tmpd --url https://charts.linstor.io && \
 	echo 'charts.linstor.io' > CNAME && \
 	git init && git add . && git commit -m 'gh-pages' && \
 	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
