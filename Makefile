@@ -57,6 +57,7 @@ $(CHART_DST_FILES_REPLACE): $(DSTCHART)/%: $(SRCCHART)/%
 
 publish: chart
 	tmpd=$$(mktemp -p $$PWD -d) && cd $$tmpd && \
+	chmod 775 . && \
 	helm package $(DSTCHART) && helm repo index $$tmpd --url https://charts.linstor.io && \
 	echo 'charts.linstor.io' > CNAME && \
 	git init && git add . && git commit -m 'gh-pages' && \
