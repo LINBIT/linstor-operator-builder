@@ -8,6 +8,9 @@ DSTCHART := $(abspath $(DSTCHART))
 
 all: operator chart
 
+distclean:
+	rm -rf "$(DSTOP)" "$(DSTCHART)"
+
 ########## operator #########
 
 SRC_FILES_LOCAL_CP = $(shell find build pkg -type f)
@@ -59,6 +62,3 @@ publish: chart
 	git init && git add . && git commit -m 'gh-pages' && \
 	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
 	rm -rf $$tmpd
-
-distclean:
-	rm -rf "$(DSTOP)" "$(DSTCHART)"
