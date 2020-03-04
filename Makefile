@@ -54,7 +54,7 @@ $(CHART_DST_FILES_REPLACE): $(DSTCHART)/%: $(SRCCHART)/%
 
 publish: chart
 	tmpd=$$(mktemp -p $$PWD -d) && cd $$tmpd && \
-	helm package $(DSTCHART) && helm repo index $$tmpd --url https://linbit.github.io/linstor-operator-builder && \
+	helm package $(DSTCHART) && helm repo index $$tmpd --url https://charts.linstor.io && \
 	git init && git add . && git commit -m 'gh-pages' && \
 	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
 	rm -rf $$tmpd
