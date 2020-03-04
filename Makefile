@@ -71,10 +71,12 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 ########## publishing #########
 
 publish: chart pvchart
-	tmpd=$$(mktemp -p $$PWD -d) && cd $$tmpd && \
-	chmod 775 . && \
-	helm package $(DSTCHART) && helm package $(DSTPVCHART) && \
-	helm repo index $$tmpd --url https://charts.linstor.io && \
+	tmpd=$$(mktemp -p $$PWD -d) && \
+	chmod 775 $$tmpd && \
+	helm package --destination $$tmpd $(DSTCHART) && \
+	helm package --destination $$tmpd $(DSTPVCHART) && \
+	cd $$tmpd && \
+	helm repo index . --url https://charts.linstor.io && \
 	echo 'charts.linstor.io' > CNAME && \
 	git init && git add . && git commit -m 'gh-pages' && \
 	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
