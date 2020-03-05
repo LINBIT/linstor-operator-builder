@@ -5,8 +5,10 @@ DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
 DSTPVCHART ?= linstor-operator-helm-pv
 IMAGE ?= drbd.io/$(notdir $(DSTOP))
+UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 
 DSTCHART := $(abspath $(DSTCHART))
+DSTPVCHART := $(abspath $(DSTPVCHART))
 
 all: operator chart pvchart
 
@@ -72,12 +74,11 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 
 publish: chart pvchart
 	tmpd=$$(mktemp -p $$PWD -d) && \
-	chmod 775 $$tmpd && \
+	chmod 775 $$tmpd && cd $$tmpd && \
+	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
 	helm package --destination $$tmpd $(DSTCHART) && \
 	helm package --destination $$tmpd $(DSTPVCHART) && \
-	cd $$tmpd && \
 	helm repo index . --url https://charts.linstor.io && \
-	echo 'charts.linstor.io' > CNAME && \
-	git init && git add . && git commit -m 'gh-pages' && \
-	git push -f https://github.com/LINBIT/linstor-operator-builder.git master:gh-pages && \
+	git add . && git commit -am 'gh-pages' && \
+	git push $(UPSTREAMGIT) gh-pages:gh-pages && \
 	rm -rf $$tmpd
