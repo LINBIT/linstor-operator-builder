@@ -3,13 +3,13 @@ entries:
   linstor:
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2020-03-05T15:23:33.918304562+01:00"
+    created: "2020-03-06T11:47:33.333882775+01:00"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
       version: 4.4.10
     description: A Helm chart for Linstor Operator
-    digest: 5aa456abb8f71dca65aeda7335109c213a98dafda30892408b05b39349ca283e
+    digest: 90f457fe4cf4234b15afdbdd46f7ec2cabe944162a80ef1b2ddcdc35f1ab7faf
     name: linstor
     type: application
     urls:
@@ -17,7 +17,7 @@ entries:
     version: 0.1.4
   pv-hostpath:
   - apiVersion: v1
-    created: "2020-03-05T15:23:33.919723254+01:00"
+    created: "2020-03-06T11:47:33.335892925+01:00"
     description: Hostpath volumes for etcd persistence
     digest: afdc532d25a565a5470cff3b4df542f206975d4adc9dd57c8e2f80f9dcc0aa61
     name: pv-hostpath
@@ -25,11 +25,11 @@ entries:
     - https://charts.linstor.io/pv-hostpath-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v1
-    created: "2020-03-05T15:23:33.919070201+01:00"
+    created: "2020-03-06T11:47:33.334826939+01:00"
     description: Hostpath volumes for etcd persistence
     digest: 665d4788654eaaf4ffcd280d7b03ff7601a1b609ee58c60d93566e38cdb23330
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2020-03-05T15:23:33.915561348+01:00"
+generated: "2020-03-06T11:47:33.330799077+01:00"
