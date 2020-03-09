@@ -73,12 +73,15 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 ########## publishing #########
 
 publish: chart pvchart
-	tmpd=$$(mktemp -p $$PWD -d) && \
+	tmpd=$$(mktemp -p $$PWD -d) && pw=$$PWD && churl=https://charts.linstor.io && \
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
+	cp $$pw/index.template.html ./index.html && \
 	helm package --destination $$tmpd $(DSTCHART) && \
 	helm package --destination $$tmpd $(DSTPVCHART) && \
-	helm repo index . --url https://charts.linstor.io && \
+	helm repo index . --url $$churl && \
+	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> index.html; done && \
+	echo '</ul></section></body></html>' >> index.html && \
 	git add . && git commit -am 'gh-pages' && \
 	git push $(UPSTREAMGIT) gh-pages:gh-pages && \
 	rm -rf $$tmpd
