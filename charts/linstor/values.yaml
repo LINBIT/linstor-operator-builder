@@ -11,6 +11,7 @@ operator:
       controllerImage: "drbd.io/linstor-controller"
   nodeSet:
     spec:
+      drbdKernelModuleInjectionMode: ShippedModules
       satelliteImage: "drbd.io/linstor-satellite"
-      kernelModImage: "drbd.io/drbd9"
-      kernelModVersion: "bionic"
+      kernelModImage: "drbd.io/drbd9-rhel7"
+      kernelModVersion: "v9.0.22-0rc2"
