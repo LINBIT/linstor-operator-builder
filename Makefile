@@ -41,23 +41,25 @@ $(DST_FILES_CP): $(DSTOP)/%: $(SRCOP)/%
 
 ########## chart #########
 
-CHART_SRC_FILES_LOCAL_CP = charts/linstor/values.yaml
-CHART_DST_FILES_LOCAL_CP = $(subst charts/linstor,$(DSTCHART),$(CHART_SRC_FILES_LOCAL_CP))
+CHART_LOCAL = charts/linstor
+CHART_SRC_FILES_MERGE = $(CHART_LOCAL)/values.yaml
+CHART_DST_FILES_MERGE = $(subst $(CHART_LOCAL),$(DSTCHART),$(CHART_SRC_FILES_MERGE))
 
 CHART_SRC_FILES_REPLACE = $(shell find $(SRCCHART)/crds $(SRCCHART)/templates -type f)
 CHART_SRC_FILES_REPLACE += $(SRCCHART)/Chart.yaml $(SRCCHART)/.helmignore
 CHART_DST_FILES_REPLACE = $(subst $(SRCCHART),$(DSTCHART),$(CHART_SRC_FILES_REPLACE))
 
-chart: $(CHART_DST_FILES_LOCAL_CP) $(CHART_DST_FILES_REPLACE)
+chart: $(CHART_DST_FILES_MERGE) $(CHART_DST_FILES_REPLACE)
 	helm dependency update "$(DSTCHART)"
 
-$(CHART_DST_FILES_LOCAL_CP): $(DSTCHART)/%: charts/linstor/%
+$(CHART_DST_FILES_MERGE): $(DSTCHART)/%: $(SRCCHART)/% charts/linstor/%
 	mkdir -p "$$(dirname "$@")"
-	cp -av "$^" "$@"
+	yq merge --overwrite $^ | \
+		sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' > "$@"
 
 $(CHART_DST_FILES_REPLACE): $(DSTCHART)/%: $(SRCCHART)/%
 	mkdir -p "$$(dirname "$@")"
-	< "$^" sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' > "$@"
+	sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' "$^" > "$@"
 
 ########## chart for hostPath PersistentVolume #########
 
