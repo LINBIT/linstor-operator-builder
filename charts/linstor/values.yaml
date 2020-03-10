@@ -13,5 +13,6 @@ operator:
     spec:
       drbdKernelModuleInjectionMode: ShippedModules
       satelliteImage: "drbd.io/linstor-satellite"
+      satelliteVersion: "v1.4.3.1"
       kernelModImage: "drbd.io/drbd9-rhel7"
       kernelModVersion: "v9.0.22-0rc2"
