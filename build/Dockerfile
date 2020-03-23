@@ -4,6 +4,12 @@ ENV OPERATOR=/usr/local/bin/linstor-operator \
     USER_UID=1001 \
     USER_NAME=linstor-operator
 
+LABEL name="LINSTOR Operator" \
+      vendor="LINBIT" \
+      summary="LINSTOR Kubernetes Operator" \
+      description="LINSTOR Kubernetes Operator"
+COPY LICENSE /licenses/apache-2.0.txt
+
 # install operator binary
 COPY build/_output/bin/linstor-operator ${OPERATOR}
 

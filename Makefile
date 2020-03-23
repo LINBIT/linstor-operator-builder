@@ -17,7 +17,7 @@ distclean:
 
 ########## operator #########
 
-SRC_FILES_LOCAL_CP = $(shell find build pkg -type f)
+SRC_FILES_LOCAL_CP = $(shell find LICENSE build pkg -type f)
 DST_FILES_LOCAL_CP = $(addprefix $(DSTOP)/,$(SRC_FILES_LOCAL_CP))
 
 SRC_FILES_CP = $(shell find $(SRCOP)/cmd $(SRCOP)/pkg $(SRCOP)/version -type f)
