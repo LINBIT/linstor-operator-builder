@@ -13,6 +13,11 @@ The Linstor Operator Docker image can be built with:
 make SRCOP=<PATH> IMAGE=<TAG> operator
 ```
 
+### Operator Versioning
+
+The Linstor Operator version is currently exactly the same as the version of
+the Piraeus Operator from which it was generated.
+
 ## Helm Chart
 
 The Linstor Operator can be deployed using a generated Helm chart.
@@ -28,3 +33,8 @@ And published with:
 ```
 make SRCOP=<PATH> UPSTREAMGIT=<URL> publish
 ```
+
+### Helm Chart Versioning
+
+The Helm chart has its own version, independent of the Piraeus Operator Helm
+chart.
