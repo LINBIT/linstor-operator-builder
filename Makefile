@@ -4,11 +4,13 @@ SRCPVCHART ?= $(SRCOP)/charts/pv-hostpath
 DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
 DSTPVCHART ?= linstor-operator-helm-pv
-IMAGE ?= drbd.io/$(notdir $(DSTOP))
+REGISTRY ?= drbd.io
+TAG ?= latest
 UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
+IMAGE := $(REGISTRY)/$(notdir $(DSTOP))
 
 all: operator chart pvchart
 
@@ -28,8 +30,9 @@ operator: $(DST_FILES_LOCAL_CP) $(DST_FILES_CP)
 	[ $$(basename $(DSTOP)) = "linstor-operator" ] || \
 		{ >&2 echo "error: last component of DSTOP must be linstor-operator"; exit 1; }
 	cd $(DSTOP) && \
-		operator-sdk build $(IMAGE) \
+		operator-sdk build $(IMAGE):$(TAG) \
 		--go-build-args "-tags custom"
+	docker tag $(IMAGE):$(TAG) $(IMAGE):latest
 
 $(DST_FILES_LOCAL_CP): $(DSTOP)/%: %
 	mkdir -p "$$(dirname "$@")"
@@ -87,3 +90,7 @@ publish: chart pvchart
 	git add . && git commit -am 'gh-pages' && \
 	git push $(UPSTREAMGIT) gh-pages:gh-pages && \
 	rm -rf $$tmpd
+
+upload: operator
+	docker push $(IMAGE):$(TAG)
+	docker push $(IMAGE):latest
