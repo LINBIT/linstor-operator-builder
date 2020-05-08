@@ -1,17 +1,10 @@
 csi:
-  image:
-    repo: "drbd.io"
-    name: "linstor-csi"
+  image: "drbd.io/linstor-csi:v0.8.0"
 operator:
-  image:
-    repo: "drbd.io"
-    name: "linstor-operator"
+  image: "drbd.io/linstor-operator:v0.3.0"
   controllerSet:
-    spec:
-      controllerImage: "drbd.io/linstor-controller"
+    controllerImage: "drbd.io/linstor-controller:v1.7.0"
   nodeSet:
-    spec:
-      drbdKernelModuleInjectionMode: ShippedModules
-      satelliteImage: "drbd.io/linstor-satellite"
-      kernelModImage: "drbd.io/drbd9-rhel7"
-      kernelModVersion: "v9.0.22-2"
+    drbdKernelModuleInjectionMode: ShippedModules
+    satelliteImage: "drbd.io/linstor-satellite:v1.7.0"
+    kernelModImage: "drbd.io/drbd9-rhel7:v9.0.22-2"
