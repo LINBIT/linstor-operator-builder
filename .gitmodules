@@ -1,0 +1,3 @@
+[submodule "piraeus-operator"]
+	path = piraeus-operator
+	url = https://github.com/piraeusdatastore/piraeus-operator.git

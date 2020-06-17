@@ -10,7 +10,7 @@ documented [here](https://docs.linbit.com/docs/linstor-guide/#ch-kubernetes).
 The Linstor Operator Docker image can be built with:
 
 ```
-make SRCOP=<PATH> IMAGE=<TAG> operator
+make IMAGE=<TAG> operator
 ```
 
 ### Operator Versioning
@@ -25,13 +25,13 @@ The chart generation requires [`yq`](https://github.com/mikefarah/yq).
 The chart can be built with:
 
 ```
-make SRCOP=<PATH> chart pvchart
+make chart pvchart
 ```
 
 And published with:
 
 ```
-make SRCOP=<PATH> UPSTREAMGIT=<URL> publish
+make UPSTREAMGIT=<URL> publish
 ```
 
 ### Helm Chart Versioning
