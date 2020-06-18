@@ -4,18 +4,20 @@ SRCPVCHART ?= $(SRCOP)/charts/pv-hostpath
 DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
 DSTPVCHART ?= linstor-operator-helm-pv
+DSTHELMPACKAGE ?= out/helm
 REGISTRY ?= drbd.io
 TAG ?= latest
 UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
+DSTHELMPACKAGE := $(abspath $(DSTHELMPACKAGE))
 IMAGE := $(REGISTRY)/$(notdir $(DSTOP))
 
 all: operator chart pvchart
 
 distclean:
-	rm -rf "$(DSTOP)" "$(DSTCHART)" "$(DSTPVCHART)"
+	rm -rf "$(DSTOP)" "$(DSTCHART)" "$(DSTPVCHART)" "$(DSTHELMPACKAGE)"
 
 ########## operator #########
 
@@ -54,6 +56,7 @@ CHART_DST_FILES_REPLACE = $(subst $(SRCCHART),$(DSTCHART),$(CHART_SRC_FILES_REPL
 
 chart: $(CHART_DST_FILES_MERGE) $(CHART_DST_FILES_REPLACE)
 	helm dependency update "$(DSTCHART)"
+	helm package --destination "$(DSTHELMPACKAGE)" "$(DSTCHART)"
 
 $(CHART_DST_FILES_MERGE): $(DSTCHART)/%: $(SRCCHART)/% charts/linstor/%
 	mkdir -p "$$(dirname "$@")"
@@ -70,6 +73,7 @@ PVCHART_SRC_FILES_CP = $(shell find $(SRCPVCHART) -type f)
 PVCHART_DST_FILES_CP = $(subst $(SRCPVCHART),$(DSTPVCHART),$(PVCHART_SRC_FILES_CP))
 
 pvchart: $(PVCHART_DST_FILES_CP)
+	helm package --destination "$(DSTHELMPACKAGE)" "$(DSTPVCHART)"
 
 $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 	mkdir -p "$$(dirname "$@")"
@@ -82,8 +86,7 @@ publish: chart pvchart
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
 	cp $$pw/index.template.html ./index.html && \
-	helm package --destination $$tmpd $(DSTCHART) && \
-	helm package --destination $$tmpd $(DSTPVCHART) && \
+	cp "$(DSTHELMPACKAGE)"/* . && \
 	helm repo index . --url $$churl && \
 	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> index.html; done && \
 	echo '</ul></section></body></html>' >> index.html && \
