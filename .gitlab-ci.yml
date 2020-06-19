@@ -1,0 +1,27 @@
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+
+stages:
+  - build
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+build_chart:
+  stage: build
+  variables:
+    CHART_VERSION: 0.0.0-r$CI_COMMIT_SHA
+  cache:
+    paths:
+      - bin
+  script:
+    - mkdir -p bin
+    - "[ -e bin/helm ] || curl -L https://get.helm.sh/helm-v3.2.4-linux-amd64.tar.gz | tar zx --directory=bin --strip=1 linux-amd64/helm"
+    - "[ -e bin/yq ] || { curl -L https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 > bin/yq && chmod +x bin/yq ; }"
+    - export PATH="$(readlink -f bin):$PATH"
+    - make chart CHART_VERSION=$CHART_VERSION
+    - curl --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$CHART_VERSION.tgz $LINBIT_REGISTRY_HELM/
+  tags:
+    - shell

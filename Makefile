@@ -9,6 +9,7 @@ REGISTRY ?= drbd.io
 TAG ?= latest
 UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 
+CHART_VERSION_ARGS := $(if $(CHART_VERSION),--version $(CHART_VERSION))
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
 DSTHELMPACKAGE := $(abspath $(DSTHELMPACKAGE))
@@ -56,7 +57,7 @@ CHART_DST_FILES_REPLACE = $(subst $(SRCCHART),$(DSTCHART),$(CHART_SRC_FILES_REPL
 
 chart: $(CHART_DST_FILES_MERGE) $(CHART_DST_FILES_REPLACE)
 	helm dependency update "$(DSTCHART)"
-	helm package --destination "$(DSTHELMPACKAGE)" "$(DSTCHART)"
+	helm package "$(DSTCHART)" --destination "$(DSTHELMPACKAGE)" $(CHART_VERSION_ARGS)
 
 $(CHART_DST_FILES_MERGE): $(DSTCHART)/%: $(SRCCHART)/% charts/linstor/%
 	mkdir -p "$$(dirname "$@")"
