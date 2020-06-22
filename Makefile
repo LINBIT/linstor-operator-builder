@@ -51,12 +51,11 @@ CHART_LOCAL = charts/linstor
 CHART_SRC_FILES_MERGE = $(CHART_LOCAL)/Chart.yaml $(CHART_LOCAL)/values.yaml
 CHART_DST_FILES_MERGE = $(subst $(CHART_LOCAL),$(DSTCHART),$(CHART_SRC_FILES_MERGE))
 
-CHART_SRC_FILES_REPLACE = $(shell find $(SRCCHART)/crds $(SRCCHART)/templates -type f)
+CHART_SRC_FILES_REPLACE = $(shell find $(SRCCHART)/crds $(SRCCHART)/templates $(SRCCHART)/charts -type f)
 CHART_SRC_FILES_REPLACE += $(SRCCHART)/.helmignore
 CHART_DST_FILES_REPLACE = $(subst $(SRCCHART),$(DSTCHART),$(CHART_SRC_FILES_REPLACE))
 
 chart: $(CHART_DST_FILES_MERGE) $(CHART_DST_FILES_REPLACE)
-	helm dependency update "$(DSTCHART)"
 	helm package "$(DSTCHART)" --destination "$(DSTHELMPACKAGE)" $(CHART_VERSION_ARGS)
 
 $(CHART_DST_FILES_MERGE): $(DSTCHART)/%: $(SRCCHART)/% charts/linstor/%
