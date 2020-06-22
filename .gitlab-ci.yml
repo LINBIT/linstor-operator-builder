@@ -36,3 +36,18 @@ build_chart:
     - curl --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$CHART_VERSION.tgz $LINBIT_REGISTRY_HELM/
   tags:
     - shell
+
+build_operator:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
+  stage: build
+  variables:
+    OPERATOR_VERSION: $CI_COMMIT_SHA
+  script:
+    # use special OPERATOR_REGISTRY until https for LINBIT Nexus Repository is fixed
+    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
+    - make operator REGISTRY=$OPERATOR_REGISTRY TAG=$OPERATOR_VERSION
+    - make upload REGISTRY=$OPERATOR_REGISTRY TAG=$OPERATOR_VERSION
+  tags:
+    - shell

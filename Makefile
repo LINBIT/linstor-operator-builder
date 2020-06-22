@@ -22,7 +22,7 @@ distclean:
 
 ########## operator #########
 
-SRC_FILES_LOCAL_CP = $(shell find LICENSE build pkg -type f)
+SRC_FILES_LOCAL_CP = $(shell find LICENSE Dockerfile build pkg -type f)
 DST_FILES_LOCAL_CP = $(addprefix $(DSTOP)/,$(SRC_FILES_LOCAL_CP))
 
 SRC_FILES_CP = $(shell find $(SRCOP)/cmd $(SRCOP)/pkg $(SRCOP)/version -type f)
@@ -33,8 +33,7 @@ operator: $(DST_FILES_LOCAL_CP) $(DST_FILES_CP)
 	[ $$(basename $(DSTOP)) = "linstor-operator" ] || \
 		{ >&2 echo "error: last component of DSTOP must be linstor-operator"; exit 1; }
 	cd $(DSTOP) && \
-		operator-sdk build $(IMAGE):$(TAG) \
-		--go-build-args "-tags custom"
+		docker build --tag $(IMAGE):$(TAG) .
 	docker tag $(IMAGE):$(TAG) $(IMAGE):latest
 
 $(DST_FILES_LOCAL_CP): $(DSTOP)/%: %
