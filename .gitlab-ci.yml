@@ -1,9 +1,12 @@
 stages:
   - sync
   - build
+  - test
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  CHART_VERSION: 0.0.0-r$CI_COMMIT_SHA
+  OPERATOR_VERSION: $CI_COMMIT_SHA
 
 .go-cache:
   variables:
@@ -32,8 +35,6 @@ build_chart:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
   stage: build
-  variables:
-    CHART_VERSION: 0.0.0-r$CI_COMMIT_SHA
   cache:
     paths:
       - bin
@@ -52,8 +53,6 @@ build_operator:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
   stage: build
-  variables:
-    OPERATOR_VERSION: $CI_COMMIT_SHA
   script:
     # use special OPERATOR_REGISTRY until https for LINBIT Nexus Repository is fixed
     - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
@@ -61,3 +60,14 @@ build_operator:
     - make upload REGISTRY=$OPERATOR_REGISTRY TAG=$OPERATOR_VERSION
   tags:
     - shell
+
+test:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+  stage: test
+  variables:
+    CHART_REGISTRY: $LINBIT_REGISTRY_HELM
+    OPERATOR_IMAGE: $OPERATOR_REGISTRY/linstor-operator:$OPERATOR_VERSION
+  trigger:
+    project: kubernetes/linstor-kubernetes-tests
+    strategy: depend
