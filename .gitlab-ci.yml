@@ -1,15 +1,26 @@
-workflow:
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_BRANCH == 'master'
-
 stages:
+  - sync
   - build
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
+# Repo sync runs on a schedule
+# https://gitlab.linbit/help/ci/pipelines/schedules
+upstream-sync:
+  image: golang:1.14
+  stage: sync
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+  script:
+    - cd .gitlab/syncer
+    - go run sync.go
+
+
 build_chart:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
   stage: build
   variables:
     CHART_VERSION: 0.0.0-r$CI_COMMIT_SHA
