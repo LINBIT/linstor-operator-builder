@@ -5,9 +5,19 @@ stages:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
+.go-cache:
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  before_script:
+    - mkdir -p .go
+  cache:
+    paths:
+      - .go/pkg/mod/
+
 # Repo sync runs on a schedule
 # https://gitlab.linbit/help/ci/pipelines/schedules
 upstream-sync:
+  extends: .go-cache
   image: golang:1.14
   stage: sync
   rules:
