@@ -30,6 +30,9 @@ MIIDKTCCAhGgAwIBAgIBATANBgkqhkiG9w0BAQ0FADAeMQswCQYDVQQGEwJhdDEPMA0GA1UEChMGTElO
 	TargetBase         = "https://gitlab.linbit"
 	TargetBranch       = "master"
 	TargetProject      = "kubernetes/linstor-operator-builder"
+
+	// Minimum number of approvals required for a PR from external people to be synced
+	MinApprovalsForSync = 1
 )
 
 func linbitHttpClient() (*http.Client, error) {
@@ -87,14 +90,52 @@ func main() {
 	log.Info("syncing all pull requests")
 
 	for _, srcPull := range openSrcPulls {
-		err := syncPull(ctx, srcPull, destProject.ID, glClient)
+		log := log.WithField("srcPull", srcPull)
+		shouldSync, err := shouldSyncPull(ctx, ghClient, srcPull)
 		if err != nil {
-			log.WithFields(logrus.Fields{
-				"err":     err,
-				"srcPull": srcPull,
-			}).Fatal("failed to sync source pull")
+			log.WithField("err", err).Fatal("failed to check approval status of pull request")
+		}
+
+		if !shouldSync {
+			log.Info("pull request does not meet sync criteria, skipping...")
+			continue
+		}
+
+		err = syncPull(ctx, srcPull, destProject.ID, glClient)
+		if err != nil {
+			log.WithField("err", err).Fatal("failed to sync source pull")
 		}
 	}
+}
+
+func shouldSyncPull(ctx context.Context, client *github.Client, pull *github.PullRequest) (bool, error) {
+	// "COLLABORATOR", "CONTRIBUTOR", "FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR", "MEMBER", "OWNER", or "NONE"
+	var NoReviewRequired = []string{
+		"COLLABORATOR",
+		"MEMBER",
+		"OWNER",
+	}
+
+	for _, assoc := range NoReviewRequired {
+		if pull.GetAuthorAssociation() == assoc {
+			return true, nil
+		}
+	}
+
+	// Check for reviews. We only want to sync merge requests that have an up-to-date approval
+	reviews, _, err := client.PullRequests.ListReviews(ctx, SourceProjectOwner, SourceProjectRepo, *pull.Number, nil)
+	if err != nil {
+		return false, err
+	}
+
+	upToDateAndApproved := 0
+	for _, review := range reviews {
+		if review.GetState() == "APPROVED" && review.GetCommitID() == pull.GetHead().GetSHA() {
+			upToDateAndApproved += 1
+		}
+	}
+
+	return upToDateAndApproved >= MinApprovalsForSync, nil
 }
 
 func syncPull(ctx context.Context, srcPull *github.PullRequest, destProjectID int, destClient *gitlab.Client) error {
