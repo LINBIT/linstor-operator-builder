@@ -5,8 +5,11 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  CHART_REGISTRY: $LINBIT_REGISTRY_HELM
   CHART_VERSION: 0.0.0-r$CI_COMMIT_SHA
   OPERATOR_VERSION: $CI_COMMIT_SHA
+  # do not use $OPERATOR_VERSION here because that is incorrectly expanded in the downstream job
+  OPERATOR_IMAGE: $OPERATOR_REGISTRY/linstor-operator:$CI_COMMIT_SHA
 
 .go-cache:
   variables:
@@ -65,9 +68,6 @@ test:
   rules:
     - if: $CI_MERGE_REQUEST_ID
   stage: test
-  variables:
-    CHART_REGISTRY: $LINBIT_REGISTRY_HELM
-    OPERATOR_IMAGE: $OPERATOR_REGISTRY/linstor-operator:$OPERATOR_VERSION
   trigger:
     project: kubernetes/linstor-kubernetes-tests
     strategy: depend
