@@ -11,6 +11,28 @@ variables:
   # do not use $OPERATOR_VERSION here because that is incorrectly expanded in the downstream job
   OPERATOR_IMAGE: $OPERATOR_REGISTRY/linstor-operator:$CI_COMMIT_SHA
 
+.with-tools:
+  before_script:
+    - mkdir -p .tools
+    - |
+      if [ ! -e .tools/operator-sdk ] ; then
+        curl -L https://github.com/operator-framework/operator-sdk/releases/download/v0.16.0/operator-sdk-v0.16.0-x86_64-linux-gnu > .tools/operator-sdk
+        chmod +x .tools/operator-sdk
+      fi
+    - |
+      if [ ! -e .tools/helm ] ; then
+        curl -L https://get.helm.sh/helm-v3.2.4-linux-amd64.tar.gz | tar zx --directory=.tools/ --strip=1 linux-amd64/helm
+      fi
+    - |
+      if [ ! -e .tools/yq ] ; then
+        curl -L https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 > .tools/yq
+        chmod +x .tools/yq
+      fi
+    - export PATH="$(readlink -f .tools/):$PATH"
+  cache:
+    paths:
+      - .tools/
+
 .go-cache:
   variables:
     GOPATH: $CI_PROJECT_DIR/.go
@@ -34,20 +56,14 @@ upstream-sync:
 
 
 build_chart:
+  extends: .with-tools
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
   stage: build
-  cache:
-    paths:
-      - bin
   script:
-    - mkdir -p bin
-    - "[ -e bin/helm ] || curl -L https://get.helm.sh/helm-v3.2.4-linux-amd64.tar.gz | tar zx --directory=bin --strip=1 linux-amd64/helm"
-    - "[ -e bin/yq ] || { curl -L https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 > bin/yq && chmod +x bin/yq ; }"
-    - export PATH="$(readlink -f bin):$PATH"
     - make chart CHART_VERSION=$CHART_VERSION
-    - curl --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$CHART_VERSION.tgz $LINBIT_REGISTRY_HELM/
+    - curl --fail --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$CHART_VERSION.tgz $LINBIT_REGISTRY_HELM/
   tags:
     - shell
 
@@ -63,6 +79,23 @@ build_operator:
     - make upload REGISTRY=$OPERATOR_REGISTRY TAG=$OPERATOR_VERSION
   tags:
     - shell
+
+build_olm:
+  # For operator-courier
+  image: python:3
+  extends:
+    - .with-tools
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
+  stage: build
+  script:
+    - make olm CHART_VERSION=$CHART_VERSION
+    - pip install operator-courier
+    - operator-courier verify out/olm/$CHART_VERSION
+  artifacts:
+    paths:
+      - out/olm
 
 test:
   rules:
