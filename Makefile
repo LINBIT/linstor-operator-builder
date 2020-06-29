@@ -7,7 +7,8 @@ DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
 DSTPVCHART ?= linstor-operator-helm-pv
 DSTHELMPACKAGE ?= out/helm
-REGISTRY ?= drbd.io
+ARCH ?= $(shell go env GOARCH 2> /dev/null || echo amd64)
+REGISTRY ?= drbd.io/$(ARCH)
 TAG ?= latest
 UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 
