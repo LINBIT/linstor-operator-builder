@@ -30,6 +30,9 @@ const (
 	// NodeRole is the role for the node set
 	NodeRole = "linstor-node"
 
+	// Name is the name of the operator
+	Name = "linstor-operator"
+
 	// LockName is the name of the lock for leader election
 	LockName = "linstor-operator-lock"
 )
