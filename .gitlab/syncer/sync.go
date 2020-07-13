@@ -2,32 +2,23 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"github.com/google/go-github/v32/github"
-	"github.com/sirupsen/logrus"
-	"github.com/xanzy/go-gitlab"
-	"net/http"
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/google/go-github/v32/github"
+	"github.com/sirupsen/logrus"
+	"github.com/xanzy/go-gitlab"
 )
 
 var log = logrus.New()
 
 const (
-	LinbitCA = `-----BEGIN CERTIFICATE-----
-MIIDkjCCAnqgAwIBAgIBGjANBgkqhkiG9w0BAQsFADAeMQswCQYDVQQGEwJhdDEPMA0GA1UEChMGTElOQklUMB4XDTIwMDMyNDEwNDIwMFoXDTIxMDMyNDEwNDIwMFowWTELMAkGA1UEBhMCQVQxDzANBgNVBAoTBkxJTkJJVDEWMBQGA1UEAxMNZ2l0bGFiLmxpbmJpdDEhMB8GCSqGSIb3DQEJARYSdGVjaG5pa0BsaW5iaXQuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkbvKHtaM526w1/+TrYYxDvPjK0Kfd82+iXk2hFjIH8qyOGkPwGJBlWM+l5GgXI63mEqSkoGpcUCdxWHd6KM4+foN5e18/B60uuMMbFKagy5obnVWWNhtERSS3Ni3MpX1ZlpJGf7tWVUVQPE2Cw2nA5KdTuJAGwXckt4lIqs4zJz0rbJyvjF+OS0spIvryYm0c0DW/00NLQMrAs2BaFeBUTEVx1oP0LrdoeUZZfgy6KW28l3q9mt3WpTkFIATl/KLbH8exnTA8ML80AjLt/GXuNZjH6RbjnWNLqnu51/tDfUUBba7i98nK6RSIu09TcEHl0NzvEnCTvHimp3vcbATkQIDAQABo4GfMIGcMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFERTVySH0KENKQ2njrSBPXUjuVSEMAsGA1UdDwQEAwIF4DATBgNVHSUEDDAKBggrBgEFBQcDATAYBgNVHREEETAPgg1naXRsYWIubGluYml0MBEGCWCGSAGG+EIBAQQEAwIGQDAeBglghkgBhvhCAQ0EERYPeGNhIGNlcnRpZmljYXRlMA0GCSqGSIb3DQEBCwUAA4IBAQAQgMs/uqWvDOHmFXonXSX0PZbZ+ktmhWdIrXqahdLH2aCS0ndmmijUyHSRG9ivgCgOwdorIy4QIpU7HR/ND8BJDj9TL8x7xfq4WCCtdp54zU18kdoqPJ2/YqhI8cAEiW68X+B83oZw/UpWXymf6Z4oSxPZWBauSGhcvTH++mBC7g0pJQGpl58flRJNVu+E6x2b4SW+8oh6bIFRKOThj/wNAFs2iz/tgHrDvDpEjYNxOdI3OubMB1wv53lhKLW+/VI/qu8OLX5fN3Q2g1uJA3QOWqoTmnV72LI7EeMi9/iq+mEWiK27Bq68+km+rJk02vq97e+PZN6hQznY6HiIf2aK
------END CERTIFICATE-----
------BEGIN CERTIFICATE-----
-MIIDKTCCAhGgAwIBAgIBATANBgkqhkiG9w0BAQ0FADAeMQswCQYDVQQGEwJhdDEPMA0GA1UEChMGTElOQklUMB4XDTE3MDYyMzExNDQwMFoXDTM3MDYyMzExNDQwMFowHjELMAkGA1UEBhMCYXQxDzANBgNVBAoTBkxJTkJJVDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALifmUvrAWFkYMvtNJdZ3woWeqmcL+gdeVBiBdbdM8oPzaJHFWqJenXWgrUgWk9NBrjQMryjfnv+OUQ3DscxeOiEkgNfnadxOGjmb//HPCiQSgCzzqro/uhjuKTtSfVc6MmFl1ud0wUaMwcXqMFKa+x8/9AgajEgzMImy77QskbPFX7gii3cxUY7s3PmgKenbSXNmw04bHnHUrT/J9UR67wJd9XQs1rK5EcwXXDEXceq6h56S1d17bDBIHh7snnSyuq1yBYecTH8SG+bKGMr/kHKtJdwyaeBNimajj7Hx5nyliS6d2GeprPOhehIVV1PQWh8CCWi8fKtul76fCEaoy0CAwEAAaNyMHAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUC2+4fdA6I5A5ftH9pAaqrj1L4MkwCwYDVR0PBAQDAgEGMBEGCWCGSAGG+EIBAQQEAwIABzAeBglghkgBhvhCAQ0EERYPeGNhIGNlcnRpZmljYXRlMA0GCSqGSIb3DQEBDQUAA4IBAQBM36FkhyNqCnocwAf/hWEQbKv+y1WprXV6uAgrmKGCTCOw5j312IhOs11omuDXqmW5Y9EmoDxbvL4oMee57wjiQfbNexZbfdxLf/1Agy1LS7H40Zu3pOVGgYeQ9DZ2mvtti1WQFnh7yVYOT4D0IqkYwyN2Wn+jxaHpM97AfZKsr/FDDQMag7PO5yPwZnYtF/6X3ebRXl12/hFI3CSUBN5HJn/O/U5e7NDKUZKAaerPG5ZkNFr+Ur4E1vHVPMO2PsOYvFpnZ72YTpy0XLDIUOWM7I5n3gp+pntRPT2lu14ItRmuOPGGj7MpvEj2+FRebiwybKVn799qmfkxxVCwPSqI
------END CERTIFICATE-----
-`
 	SourceProjectOwner = "piraeusdatastore"
 	SourceProjectRepo  = "piraeus-operator"
 	SubprojectPath     = "piraeus-operator"
-	TargetBase         = "https://gitlab.linbit"
+	TargetBase         = "https://gitlab.at.linbit.com"
 	TargetBranch       = "master"
 	TargetProject      = "kubernetes/linstor-operator-builder"
 
@@ -35,31 +26,11 @@ MIIDKTCCAhGgAwIBAgIBATANBgkqhkiG9w0BAQ0FADAeMQswCQYDVQQGEwJhdDEPMA0GA1UEChMGTElO
 	MinApprovalsForSync = 1
 )
 
-func linbitHttpClient() (*http.Client, error) {
-	pool := x509.NewCertPool()
-	ok := pool.AppendCertsFromPEM([]byte(LinbitCA))
-	if !ok {
-		return nil, fmt.Errorf("failed to load CA certificate")
-	}
-	return &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs: pool,
-			},
-		},
-	}, nil
-}
-
 func main() {
 	log.Level = logrus.DebugLevel
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-
-	gitlabHttpClient, err := linbitHttpClient()
-	if err != nil {
-		log.WithField("err", err).Fatal("failed to load http client")
-	}
 
 	log.Info("setting up clients")
 
@@ -69,8 +40,7 @@ func main() {
 	ghClient := github.NewClient(nil)
 
 	// For gitlab we need read and write permissions permissions
-	glClient, err := gitlab.NewClient(gitlabToken, gitlab.WithBaseURL(TargetBase), gitlab.WithHTTPClient(gitlabHttpClient))
-
+	glClient, err := gitlab.NewClient(gitlabToken, gitlab.WithBaseURL(TargetBase))
 	if err != nil {
 		log.WithField("err", err).Fatal("gitlab connection failed")
 	}
@@ -110,7 +80,7 @@ func main() {
 
 func shouldSyncPull(ctx context.Context, client *github.Client, pull *github.PullRequest) (bool, error) {
 	// "COLLABORATOR", "CONTRIBUTOR", "FIRST_TIMER", "FIRST_TIME_CONTRIBUTOR", "MEMBER", "OWNER", or "NONE"
-	var NoReviewRequired = []string{
+	NoReviewRequired := []string{
 		"COLLABORATOR",
 		"MEMBER",
 		"OWNER",
@@ -236,7 +206,7 @@ func syncPull(ctx context.Context, srcPull *github.PullRequest, destProjectID in
 
 // update an existing submodule by setting it to a given commit
 // https://docs.gitlab.com/ee/api/repository_submodules.html
-func updateSubmodule(client *gitlab.Client, pid int, branch string, submodulePath string, updateSha string, options ...gitlab.RequestOptionFunc) error {
+func updateSubmodule(client *gitlab.Client, pid int, branch, submodulePath, updateSha string, options ...gitlab.RequestOptionFunc) error {
 	type SubmoduleOptions struct {
 		Branch        *string `url:"branch,omitempty" json:"branch,omitempty"`
 		CommitSHA     *string `url:"commit_sha,omitempty" json:"commit_sha,omitempty"`
