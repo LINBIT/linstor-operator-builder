@@ -91,7 +91,8 @@ build_olm:
   stage: build
   script:
     - make olm CHART_VERSION=$CHART_VERSION
-    - pip install operator-courier
+    # https://github.com/operator-framework/operator-courier/issues/188
+    - pip install "operator-courier<2.1.8"
     - operator-courier verify out/olm/$CHART_VERSION
   artifacts:
     paths:
