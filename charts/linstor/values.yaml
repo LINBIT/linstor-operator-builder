@@ -5,6 +5,6 @@ operator:
   controller:
     controllerImage: "drbd.io/linstor-controller:v1.7.1"
   satelliteSet:
-    drbdKernelModuleInjectionMode: ShippedModules
+    kernelModuleInjectionMode: ShippedModules
+    kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.0.23"
     satelliteImage: "drbd.io/linstor-satellite:v1.7.1"
-    kernelModImage: "drbd.io/drbd9-rhel7:v9.0.23"
