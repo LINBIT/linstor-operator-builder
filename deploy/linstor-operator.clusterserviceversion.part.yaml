@@ -9,19 +9,19 @@ metadata:
 spec:
   customresourcedefinitions:
     owned:
-      - description: LinstorControllerSet is the Schema for the linstorcontrollersets
+      - description: LinstorController is the Schema for the linstorcontrollersets
           API
-        kind: LinstorControllerSet
-        name: linstorcontrollersets.linstor.linbit.com
-        version: v1alpha1
-      - description: LinstorNodeSet is the Schema for the linstornodesets API
-        kind: LinstorNodeSet
-        name: linstornodesets.linstor.linbit.com
-        version: v1alpha1
+        kind: LinstorController
+        name: linstorcontrollers.linstor.linbit.com
+        version: v1
+      - description: LinstorSatelliteSet is the Schema for the linstornodesets API
+        kind: LinstorSatelliteSet
+        name: linstorsatellitesets.linstor.linbit.com
+        version: v1
       - description: LinstorCSIDriver is the Schema for the linstorcsidrivers API
         kind: LinstorCSIDriver
         name: linstorcsidrivers.linstor.linbit.com
-        version: v1alpha1
+        version: v1
   displayName: Linstor Operator
   description: LINSTOR Kubernetes Operator
   icon:
