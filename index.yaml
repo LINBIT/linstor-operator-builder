@@ -2,8 +2,27 @@ apiVersion: v1
 entries:
   linstor:
   - apiVersion: v2
+    appVersion: 1.0.0-rc1
+    created: "2020-07-28T15:28:47.419382683+02:00"
+    dependencies:
+    - condition: etcd.enabled
+      name: etcd
+      repository: ""
+      version: 0.7.4
+    - condition: csi-snapshotter.enabled
+      name: csi-snapshotter
+      repository: ""
+      version: 1.0.0
+    description: A Helm chart for Linstor Operator
+    digest: 0fdbebcf1b2ded993d4a51c14d781cd642333a17a58a14830d6b9b0ed6ecb5ea
+    name: linstor
+    type: application
+    urls:
+    - https://charts.linstor.io/linstor-1.0.0-rc1.tgz
+    version: 1.0.0-rc1
+  - apiVersion: v2
     appVersion: 0.5.0
-    created: "2020-06-30T11:55:53.910986292+02:00"
+    created: "2020-07-28T15:28:47.415694677+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -22,7 +41,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 0.4.1
-    created: "2020-06-30T11:55:53.909501942+02:00"
+    created: "2020-07-28T15:28:47.414053242+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -37,7 +56,7 @@ entries:
     version: 0.4.1
   - apiVersion: v2
     appVersion: 0.4.0
-    created: "2020-06-30T11:55:53.907605749+02:00"
+    created: "2020-07-28T15:28:47.412194424+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -52,7 +71,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: 0.3.0
-    created: "2020-06-30T11:55:53.905708498+02:00"
+    created: "2020-07-28T15:28:47.410316948+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -67,7 +86,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 0.2.2
-    created: "2020-06-30T11:55:53.903813298+02:00"
+    created: "2020-07-28T15:28:47.408416951+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -82,7 +101,7 @@ entries:
     version: 0.2.2
   - apiVersion: v2
     appVersion: 0.2.0
-    created: "2020-06-30T11:55:53.900678437+02:00"
+    created: "2020-07-28T15:28:47.405338888+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -97,7 +116,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: 0.2.0
-    created: "2020-06-30T11:55:53.898712182+02:00"
+    created: "2020-07-28T15:28:47.403344374+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -112,7 +131,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2020-06-30T11:55:53.896742992+02:00"
+    created: "2020-07-28T15:28:47.401384776+02:00"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -126,7 +145,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2020-06-30T11:55:53.894817817+02:00"
+    created: "2020-07-28T15:28:47.399427424+02:00"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -140,7 +159,7 @@ entries:
     version: 0.1.6
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2020-06-30T11:55:53.891759417+02:00"
+    created: "2020-07-28T15:28:47.396488586+02:00"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -154,7 +173,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2020-06-30T11:55:53.889661676+02:00"
+    created: "2020-07-28T15:28:47.394386074+02:00"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -168,19 +187,19 @@ entries:
     version: 0.1.4
   pv-hostpath:
   - apiVersion: v1
-    created: "2020-06-30T11:55:53.911896752+02:00"
+    created: "2020-07-28T15:28:47.419659765+02:00"
     description: Hostpath volumes for etcd persistence
-    digest: afdc532d25a565a5470cff3b4df542f206975d4adc9dd57c8e2f80f9dcc0aa61
+    digest: 43e14e34648f9d421d445ec4162ad26c9d48d8e7d48a8f5d7bbc761be3577019
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v1
-    created: "2020-06-30T11:55:53.911596866+02:00"
+    created: "2020-07-28T15:28:47.419525717+02:00"
     description: Hostpath volumes for etcd persistence
     digest: 665d4788654eaaf4ffcd280d7b03ff7601a1b609ee58c60d93566e38cdb23330
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2020-06-30T11:55:53.887471481+02:00"
+generated: "2020-07-28T15:28:47.392196622+02:00"
