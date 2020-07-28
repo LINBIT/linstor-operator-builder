@@ -33,6 +33,6 @@ spec:
   maintainers:
     - name: LINBIT
       email: sales@linbit.com
-  maturity: alpha
+  maturity: beta
   provider:
     name: LINBIT
