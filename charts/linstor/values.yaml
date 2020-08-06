@@ -1,7 +1,7 @@
 csi:
   pluginImage: "drbd.io/linstor-csi:v0.9.1"
 operator:
-  image: "drbd.io/linstor-operator:v1.0.0-rc1"
+  image: "drbd.io/linstor-operator:v1.0.0"
   controller:
     controllerImage: "drbd.io/linstor-controller:v1.7.3"
   satelliteSet:
