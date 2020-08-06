@@ -28,6 +28,11 @@ variables:
         curl -L https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 > .tools/yq
         chmod +x .tools/yq
       fi
+    - |
+      if [ ! -e .tools/jq ] ; then
+        curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > .tools/jq
+        chmod +x .tools/jq
+      fi
     - export PATH="$(readlink -f .tools/):$PATH"
   cache:
     paths:

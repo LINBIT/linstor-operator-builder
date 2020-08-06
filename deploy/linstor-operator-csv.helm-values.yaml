@@ -1,0 +1,9 @@
+etcd:
+  # Provided by etcd operator
+  enabled: false
+csi-snapshotter:
+  # already configured by OCP
+  enabled: false
+stork:
+  # Not part of our main operator
+  enabled: false

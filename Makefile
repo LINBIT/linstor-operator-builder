@@ -91,6 +91,8 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml
 	touch -a $(DSTOP)/deploy/role.yaml
 
 	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(OLM_VERSION) --update-crds
+	# Fix CSV permissions
+	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml
 	# Fill CSV with project values
 	yq -P merge --inplace --overwrite $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml deploy/linstor-operator.clusterserviceversion.part.yaml
 	# Set CSV version
@@ -100,7 +102,7 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml
 	# Remove the "replaces" section, its not guaranteed to always find the real latest version
 	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/$(DSTOP).*.clusterserviceversion.yaml 'spec.replaces'
 	# Replace the referenced images with ones for OLM
-	sed -f deploy/redhat-registry.sed -i $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml
+	sed -rf hack/redhat-registry.sed -i $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml
 
 	# Update package yaml, setting the current version to be the latest
 	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(DSTOP).package.yaml 'channels[0].currentCSV' $(DSTOP).v$(OLM_VERSION)
@@ -112,9 +114,9 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml
 	# create zip package
 	python -m zipfile --create out/olm/$(OLM_VERSION).zip out/olm/$(OLM_VERSION)/*
 
-$(DSTOP)/deploy/operator.yaml: $(DSTCHART)
+$(DSTOP)/deploy/operator.yaml: $(DSTCHART) deploy/linstor-operator-csv.helm-values.yaml
 	mkdir -p "$$(dirname "$@")"
-	helm template linstor-operator $(DSTCHART) > "$@"
+	helm template linstor $(DSTCHART) -f deploy/linstor-operator-csv.helm-values.yaml > "$@"
 
 $(DSTOP)/deploy/crds: $(DSTCHART)
 	mkdir -p "$@"

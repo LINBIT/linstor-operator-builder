@@ -2,7 +2,6 @@ metadata:
   annotations:
     categories: "Storage"
     description: LINSTOR Kubernetes Operator
-    containerImage: registry.connect.redhat.com/linbit/linstor-operator:latest
     support: LINBIT
     certified: "true"
     repository: https://github.com/piraeusdatastore/piraeus-operator
