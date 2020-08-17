@@ -1,5 +1,4 @@
 stages:
-  - sync
   - build
   - test
 
@@ -37,28 +36,6 @@ variables:
   cache:
     paths:
       - .tools/
-
-.go-cache:
-  variables:
-    GOPATH: $CI_PROJECT_DIR/.go
-  before_script:
-    - mkdir -p .go
-  cache:
-    paths:
-      - .go/pkg/mod/
-
-# Repo sync runs on a schedule
-# https://gitlab.linbit/help/ci/pipelines/schedules
-upstream-sync:
-  extends: .go-cache
-  image: golang:1.14
-  stage: sync
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule'
-  script:
-    - cd .gitlab/syncer
-    - go run sync.go
-
 
 build_chart:
   extends: .with-tools
