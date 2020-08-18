@@ -1,14 +1,34 @@
 stages:
+  - prepare
   - build
   - test
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  CHART_REGISTRY: $LINBIT_REGISTRY_HELM
-  CHART_VERSION: 0.0.0-r$CI_COMMIT_SHA
-  OPERATOR_VERSION: $CI_COMMIT_SHA
-  # do not use $OPERATOR_VERSION here because that is incorrectly expanded in the downstream job
-  OPERATOR_IMAGE: $OPERATOR_REGISTRY/linstor-operator:$CI_COMMIT_SHA
+  LINSTOR_KUBERNETES_TESTS_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.at.linbit.com/kubernetes/linstor-kubernetes-tests.git
+  PROVISIONER_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/virter-kubeadm-playbook:latest
+  TEST_SUITE_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/linstor-kubernetes-tests:latest
+  VIRTER_VERSION: v0.3.1
+  VMSHED_VERSION: v0.2.1
+
+prepare:
+  image: python:3
+  stage: prepare
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+  variables:
+    # git describe needs full history access
+    GIT_DEPTH: 0
+    # git describe does not need the submodule
+    GIT_SUBMODULE_STRATEGY: none
+  script:
+    - SEMVER=$(hack/getsemver.py)
+    - echo "SEMVER=${SEMVER}" >> .ci-build.env
+    - echo "TAG=v${SEMVER/+/-}" >> .ci-build.env
+  artifacts:
+    reports:
+      dotenv: .ci-build.env
 
 .with-tools:
   before_script:
@@ -41,24 +61,25 @@ build_chart:
   extends: .with-tools
   rules:
     - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
+    - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
-    - make chart CHART_VERSION=$CHART_VERSION
-    - curl --fail --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$CHART_VERSION.tgz $LINBIT_REGISTRY_HELM/
+    - make chart SEMVER=$SEMVER
+    - curl --fail --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$SEMVER.tgz $LINBIT_REGISTRY_HELM/
   tags:
     - shell
 
 build_operator:
   rules:
     - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
+    - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
     # use special OPERATOR_REGISTRY until https for LINBIT Nexus Repository is fixed
     - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
-    - make operator REGISTRY=$OPERATOR_REGISTRY TAG=$OPERATOR_VERSION
-    - make upload REGISTRY=$OPERATOR_REGISTRY TAG=$OPERATOR_VERSION
+    # Build once with pretty name, once with commit tag
+    - make operator REGISTRY=$OPERATOR_REGISTRY TAG=$TAG
+    - make upload REGISTRY=$OPERATOR_REGISTRY TAG=$TAG
   tags:
     - shell
 
@@ -69,13 +90,13 @@ build_olm:
     - .with-tools
   rules:
     - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_BRANCH == 'master' && $CI_PIPELINE_SOURCE != 'schedule'
+    - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
-    - make olm CHART_VERSION=$CHART_VERSION
+    - make olm SEMVER=$SEMVER
     # https://github.com/operator-framework/operator-courier/issues/188
     - pip install "operator-courier<2.1.8"
-    - operator-courier verify out/olm/$CHART_VERSION
+    - operator-courier verify out/olm/$SEMVER
   artifacts:
     paths:
       - out/olm
@@ -84,6 +105,39 @@ test:
   rules:
     - if: $CI_MERGE_REQUEST_ID
   stage: test
-  trigger:
-    project: kubernetes/linstor-kubernetes-tests
-    strategy: depend
+  tags:
+    - libvirt
+  cache:
+    paths:
+      - download
+  before_script:
+    - . .gitlab/gitlab-utils.sh
+    - |
+      tests_prepare_tools
+      tests_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
+      tests_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
+    - mkdir -p tests/linstor-kubernetes-tests
+    - git clone --depth=1 $LINSTOR_KUBERNETES_TESTS_REPO tests/linstor-kubernetes-tests
+    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker image pull $PROVISIONER_IMAGE
+    - docker image pull $TEST_SUITE_IMAGE
+    - cd tests/linstor-kubernetes-tests
+    - >-
+      make run
+      PROVISIONER_IMAGE=$PROVISIONER_IMAGE
+      TEST_SUITE_IMAGE=$TEST_SUITE_IMAGE
+      VMSHED_EXTRA_ARGS="
+      --set values.HelmRepo=$LINBIT_REGISTRY_HELM
+      --set values.HelmChartVersion=$SEMVER
+      --set values.OperatorImage=$OPERATOR_REGISTRY/linstor-operator:$TAG
+      "
+  artifacts:
+    # provide a convenient name so that the downloaded artifacts can be identified
+    name: $CI_PROJECT_NAME-$CI_JOB_ID
+    paths:
+      - tests/linstor-kubernetes-tests/tests-out/
+    when: always
+    reports:
+      junit: tests/linstor-kubernetes-tests/tests-out/test-results/*.xml

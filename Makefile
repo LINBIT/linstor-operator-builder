@@ -9,11 +9,10 @@ DSTPVCHART ?= linstor-operator-helm-pv
 DSTHELMPACKAGE ?= out/helm
 ARCH ?= $(shell go env GOARCH 2> /dev/null || echo amd64)
 REGISTRY ?= drbd.io/$(ARCH)
-TAG ?= latest
+SEMVER ?= $(shell hack/getsemver.py)
+TAG ?= v$(subst +,-,$(SEMVER))
 UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 
-CHART_VERSION_ARGS := $(if $(CHART_VERSION),--version $(CHART_VERSION))
-OLM_VERSION := $(if $(CHART_VERSION),$(CHART_VERSION),0.0.0)
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
 DSTHELMPACKAGE := $(abspath $(DSTHELMPACKAGE))
@@ -65,7 +64,7 @@ CHART_DST_FILES_RENAME_TMP = $(subst $(SRCCHART),$(DSTCHART),$(CHART_SRC_FILES_R
 CHART_DST_FILES_RENAME = $(subst $(SRCNAME),$(DSTNAME),$(CHART_DST_FILES_RENAME_TMP))
 
 chart: $(DSTCHART)
-	helm package "$(DSTCHART)" --destination "$(DSTHELMPACKAGE)" $(CHART_VERSION_ARGS)
+	helm package "$(DSTCHART)" --destination "$(DSTHELMPACKAGE)" --version $(SEMVER)
 
 $(DSTCHART): $(CHART_DST_FILES_MERGE) $(CHART_DST_FILES_REPLACE) $(CHART_DST_FILES_RENAME)
 
@@ -90,29 +89,29 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml
 	# The relevant roles are already part of operator.yaml, as created by helm. operator-sdk still requires this file to work
 	touch -a $(DSTOP)/deploy/role.yaml
 
-	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(OLM_VERSION) --update-crds
+	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(SEMVER) --update-crds
 	# Fix CSV permissions
-	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml
+	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml
 	# Fill CSV with project values
-	yq -P merge --inplace --overwrite $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml deploy/linstor-operator.clusterserviceversion.part.yaml
+	yq -P merge --inplace --overwrite $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml deploy/linstor-operator.clusterserviceversion.part.yaml
 	# Set CSV version
-	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/$(DSTOP).*.clusterserviceversion.yaml 'spec.version' $(OLM_VERSION)
+	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.version' $(SEMVER)
 	# Remove imagePullSecrets (not needed, controlled via OLM mechanism)
-	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/$(DSTOP).*.clusterserviceversion.yaml 'spec.install.spec.deployments[*].spec.template.spec.imagePullSecrets'
+	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.install.spec.deployments[*].spec.template.spec.imagePullSecrets'
 	# Remove the "replaces" section, its not guaranteed to always find the real latest version
-	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/$(DSTOP).*.clusterserviceversion.yaml 'spec.replaces'
+	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.replaces'
 	# Replace the referenced images with ones for OLM
-	sed -rf hack/redhat-registry.sed -i $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*clusterserviceversion.yaml
+	sed -rf hack/redhat-registry.sed -i $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml
 
 	# Update package yaml, setting the current version to be the latest
-	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(DSTOP).package.yaml 'channels[0].currentCSV' $(DSTOP).v$(OLM_VERSION)
+	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(DSTOP).package.yaml 'channels[0].currentCSV' $(DSTOP).v$(SEMVER)
 
 	# Copy to output directory
-	mkdir -p out/olm/$(OLM_VERSION)
-	cp -av -t out/olm/$(OLM_VERSION) $(DSTOP)/deploy/olm-catalog/$(DSTOP)/*.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(OLM_VERSION)/*.yaml
+	mkdir -p out/olm/$(SEMVER)
+	cp -av -t out/olm/$(SEMVER) $(DSTOP)/deploy/olm-catalog/$(DSTOP)/*.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*.yaml
 
 	# create zip package
-	python -m zipfile --create out/olm/$(OLM_VERSION).zip out/olm/$(OLM_VERSION)/*
+	python -m zipfile --create out/olm/$(SEMVER).zip out/olm/$(SEMVER)/*
 
 $(DSTOP)/deploy/operator.yaml: $(DSTCHART) deploy/linstor-operator-csv.helm-values.yaml
 	mkdir -p "$$(dirname "$@")"
