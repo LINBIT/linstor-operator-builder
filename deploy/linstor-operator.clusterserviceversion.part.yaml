@@ -1,5 +1,60 @@
 metadata:
   annotations:
+    alm-examples: |
+      [
+        {
+          "apiVersion": "linstor.linbit.com/v1",
+          "kind": "LinstorController",
+          "metadata": {
+            "name": "linstor"
+          },
+          "spec": {
+            "controllerImage": "",
+            "dbConnectionURL": "etcd://linstor-etcd:2379",
+            "drbdRepoCred": "",
+            "priorityClassName": ""
+          },
+          "status": {
+            "errors": []
+          }
+        },
+        {
+          "apiVersion": "linstor.linbit.com/v1",
+          "kind": "LinstorCSIDriver",
+          "metadata": {
+            "name": "linstor"
+          },
+          "spec": {
+            "controllerReplicas": 1,
+            "controllerEndpoint": "http://linstor:3370",
+            "csiControllerServiceAccountName": "csi-controller",
+            "csiNodeServiceAccountName": "csi-node",
+            "linstorPluginImage": "",
+            "imagePullSecret": ""
+          },
+          "status": {
+            "errors": []
+          }
+        },
+        {
+          "apiVersion": "linstor.linbit.com/v1",
+          "kind": "LinstorSatelliteSet",
+          "metadata": {
+            "name": "linstor"
+          },
+          "spec": {
+            "automaticStorageType": "None",
+            "controllerEndpoint": "http://linstor:3370",
+            "drbdRepoCred": "",
+            "kernelModuleInjectionMode": "ShippedModules",
+            "priorityClassName": "",
+            "satelliteImage": ""
+          },
+          "status": {
+            "errors": []
+          }
+        }
+      ]
     categories: "Storage"
     description: LINSTOR Kubernetes Operator
     support: LINBIT
@@ -13,14 +68,139 @@ spec:
         kind: LinstorController
         name: linstorcontrollers.linstor.linbit.com
         version: v1
+        resources:
+          - kind: Service
+            name: ''
+            version: v1
+          - kind: DaemonSet
+            name: ''
+            version: v1
+          - kind: ConfigMap
+            name: ''
+            version: v1
+          - kind: Pod
+            name: ''
+            version: v1
+        specDescriptors:
+          - path: controllerImage
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: dbConnectionURL
+            description: DBConnectionURL is the URL of the database endpoint for LINSTOR Controller
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:label'
+          - path: drbdRepoCred
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: priorityClassName
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: serviceAccountName
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+        statusDescriptors:
+          - path: errors
+            displayName: Errors
+            description: Errors encountered during operations
+            x-descriptors:
+              - 'urn:alm:descriptor:text'
       - description: LinstorSatelliteSet is the Schema for the linstornodesets API
         kind: LinstorSatelliteSet
         name: linstorsatellitesets.linstor.linbit.com
         version: v1
+        resources:
+          - kind: DaemonSet
+            name: ''
+            version: v1
+          - kind: ConfigMap
+            name: ''
+            version: v1
+          - kind: Pod
+            name: ''
+            version: v1
+        specDescriptors:
+          - path: automaticStorageType
+            displayName: Automatic Storage Type
+            description: If set, the operator will automatically create storage
+              pools of the specified type for all devices that can be found. The
+              name of the storage pools matches the device name. For example, all
+              devices `/dev/sdc` will be part of the `sdc` storage pool.
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:select:None'
+              - 'urn:alm:descriptor:com.tectonic.ui:select:LVM'
+              - 'urn:alm:descriptor:com.tectonic.ui:select:LVMTHIN'
+              - 'urn:alm:descriptor:com.tectonic.ui:select:ZFS'
+          - path: controllerEndpoint
+            displayName: LINSTOR Controller Endpoint
+            description: In-Cluster URL of the LINSTOR Controller
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:label'
+          - path: drbdRepoCred
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: kernelModuleInjectionMode
+            displayName: Kernel Module Injection Mode
+            description: Determine how required kernel modules should be loaded
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:select:None'
+              - 'urn:alm:descriptor:com.tectonic.ui:select:Compile'
+              - 'urn:alm:descriptor:com.tectonic.ui:select:ShippedModules'
+              - 'urn:alm:descriptor:com.tectonic.ui:select:DepsOnly'
+          - path: priorityClassName
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: satelliteImage
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+        statusDescriptors:
+          - path: errors
+            displayName: Errors
+            description: Errors encountered during operations
+            x-descriptors:
+              - 'urn:alm:descriptor:text'
       - description: LinstorCSIDriver is the Schema for the linstorcsidrivers API
         kind: LinstorCSIDriver
         name: linstorcsidrivers.linstor.linbit.com
         version: v1
+        resources:
+          - kind: Deployment
+            name: ''
+            version: v1
+          - kind: DaemonSet
+            name: ''
+            version: v1
+          - kind: Pod
+            name: ''
+            version: v1
+        specDescriptors:
+          - path: controllerReplicas
+            displayName: CSI Controller Replicas
+            description: Number of replicas for the CSI controller
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:podCount'
+          - path: controllerEndpoint
+            displayName: LINSTOR Controller Endpoint
+            description: In-Cluster URL of the LINSTOR Controller
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:label'
+          - path: csiControllerServiceAccountName
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: csiNodeServiceAccountName
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: linstorPluginImage
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+          - path: imagePullSecret
+            x-descriptors:
+              - 'urn:alm:descriptor:com.tectonic.ui:hidden'
+        statusDescriptors:
+          - path: errors
+            displayName: Errors
+            description: Errors encountered during operations
+            x-descriptors:
+              - 'urn:alm:descriptor:text'
   displayName: Linstor Operator
   description: LINSTOR Kubernetes Operator
   icon:
@@ -29,6 +209,11 @@ spec:
   keywords:
     - Storage
     - DRBD
+  links:
+    - name: LINBIT
+      url: https://www.linbit.com/
+    - name: Use Guide
+      url: https://www.linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   maintainers:
     - name: LINBIT
       email: sales@linbit.com

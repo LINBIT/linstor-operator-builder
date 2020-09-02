@@ -1,0 +1,11 @@
+FROM python:3
+
+ARG OPM_VERSION=v1.14.2
+ARG OSDK_VERSION=v1.0.1
+ARG OCOURIER_VERSION=v2.1.10
+
+RUN pip install operator-courier==${OCOURIER_VERSION}
+RUN curl -fL https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm > /usr/local/bin/opm && chmod +x /usr/local/bin/opm
+RUN curl -fL https://github.com/operator-framework/operator-sdk/releases/download/${OSDK_VERSION}/operator-sdk-${OSDK_VERSION}-x86_64-linux-gnu > /usr/local/bin/operator-sdk && chmod +x /usr/local/bin/operator-sdk
+
+ENTRYPOINT []

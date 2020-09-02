@@ -1,3 +1,7 @@
+global:
+  imagePullPolicy: ""
+  setSecurityContext: false
+drbdRepoCred: ""
 etcd:
   # Provided by etcd operator
   enabled: false

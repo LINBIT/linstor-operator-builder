@@ -1,6 +1,7 @@
 stages:
   - prepare
   - build
+  - build_olm
   - test
   - deploy
 
@@ -31,6 +32,19 @@ prepare:
     reports:
       dotenv: .ci-build.env
 
+prepare-tools:
+  tags:
+    - docker
+    - amd64
+  stage: prepare
+  rules:
+    - when: manual
+      allow_failure: true
+  script:
+    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
+    - docker build -f .gitlab/Dockerfile.operator-sdk-tools -t $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest .gitlab
+    - docker push $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest
+
 .with-tools:
   before_script:
     - mkdir -p .tools
@@ -52,6 +66,10 @@ prepare:
       if [ ! -e .tools/jq ] ; then
         curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > .tools/jq
         chmod +x .tools/jq
+      fi
+    - |
+      if [ ! -e .tools/crane ] ; then
+        curl -L https://github.com/google/go-containerregistry/releases/download/v0.1.3/go-containerregistry_Linux_x86_64.tar.gz | tar zx --directory=.tools/ crane
       fi
     - export PATH="$(readlink -f .tools/):$PATH"
   cache:
@@ -76,31 +94,42 @@ build_operator:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
-    # use special OPERATOR_REGISTRY until https for LINBIT Nexus Repository is fixed
     - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
-    # Build once with pretty name, once with commit tag
-    - make operator REGISTRY=$OPERATOR_REGISTRY TAG=$TAG
-    - make upload REGISTRY=$OPERATOR_REGISTRY TAG=$TAG
+    - make operator REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test TAG=$TAG
+    - make upload REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test TAG=$TAG
+    - if [ "$CI_COMMIT_BRANCH" == 'master' ] ; then
+    -   make upload REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test TAG=latest
+    - fi
   tags:
     - shell
 
 build_olm:
-  # For operator-courier
-  image: python:3
   extends:
     - .with-tools
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
-  stage: build
+  stage: build_olm
   script:
-    - make olm SEMVER=$SEMVER
-    # https://github.com/operator-framework/operator-courier/issues/188
-    - pip install "operator-courier<2.1.8"
-    - operator-courier verify out/olm/$SEMVER
+    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
+    - make olm SEMVER=$SEMVER OLM_REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test
+    - docker build -t $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
+    - docker push $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
+  tags:
+    - docker
   artifacts:
     paths:
       - out/olm
+
+test_olm:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+  stage: test
+  image: $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest
+  script:
+    - operator-courier verify out/olm/$SEMVER
+    - operator-sdk bundle validate --verbose --image-builder none $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
 
 test:
   rules:
@@ -132,7 +161,7 @@ test:
       VMSHED_EXTRA_ARGS="
       --set values.HelmRepo=$LINBIT_REGISTRY_HELM
       --set values.HelmChartVersion=$SEMVER
-      --set values.OperatorImage=$OPERATOR_REGISTRY/linstor-operator:$TAG
+      --set values.OperatorImage=$OPERATOR_REGISTRY/linstor-operator-test/linstor-operator:$TAG
       "
   artifacts:
     # provide a convenient name so that the downloaded artifacts can be identified
@@ -189,3 +218,23 @@ publish-chart:
     - make publish SEMVER=$SEMVER UPSTREAMGIT=git@github.com:LINBIT/linstor-operator-builder.git
   tags:
     - shell
+
+publish-csv:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+  extends:
+    - .with-tools
+  dependencies:
+    - prepare
+  tags:
+    - docker
+  script:
+    - docker login -u unused -p $SCAN_TOKEN_OPERATOR scan.connect.redhat.com
+    - make upload REGISTRY=$SCAN_REGISTRY_OPERATOR TAG=$TAG DOCKER_BUILD_ARGS="--pull --no-cache" PUSH_LATEST=no
+    - docker logout scan.connect.redhat.com
+    # TODO: we should wait on the operator image to be certified here
+    # TODO: upload the olm-bundle for scanning!

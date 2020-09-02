@@ -28,6 +28,10 @@ for SA in ${SERVICE_ACCOUNTS} ; do
   ROLE_BINDINGS="$(echo "${CSV_CONTENT}" | jq -r "select(.kind==\"RoleBinding\" and .subjects[].name==\"${SA}\") | .roleRef.name")"
   CLUSTER_ROLE_BINDINGS=$(echo "${CSV_CONTENT}" | jq -r "select(.kind==\"ClusterRoleBinding\" and .subjects[].name==\"${SA}\")  | .roleRef.name")
 
+  # Ensure service account is created even without rules
+  echo "[{\"rules\": [], \"serviceAccountName\": \"${SA}\"}]" \
+  | yq merge --inplace --append "${PERMISSIONS}" -
+
   for RB in ${ROLE_BINDINGS} ; do
     # Get referenced rules from role binding
     echo "${CSV_CONTENT}" \

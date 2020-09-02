@@ -9,10 +9,16 @@ DSTPVCHART ?= linstor-operator-helm-pv
 DSTHELMPACKAGE ?= out/helm
 ARCH ?= $(shell go env GOARCH 2> /dev/null || echo amd64)
 REGISTRY ?= drbd.io/$(ARCH)
+OLM_REGISTRY ?= registry.connect.redhat.com/linbit
 SEMVER ?= $(shell hack/getsemver.py)
 TAG ?= v$(subst +,-,$(SEMVER))
+# Either "test" or "release". For "test", use internal registry, otherwise use redhat registry for CSV generation
+BUILDENV ?= test
 UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
+DOCKER_BUILD_ARGS ?=
+PUSH_LATEST ?= yes
 
+CSV_CHANNEL := $(if $(findstring -,$(SEMVER)),alpha,stable)
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
 DSTHELMPACKAGE := $(abspath $(DSTHELMPACKAGE))
@@ -36,8 +42,7 @@ operator: $(DSTOP)
 	[ $$(basename $(DSTOP)) = "linstor-operator" ] || \
 		{ >&2 echo "error: last component of DSTOP must be linstor-operator"; exit 1; }
 	cd $(DSTOP) && \
-		docker build --tag $(IMAGE):$(TAG) .
-	docker tag $(IMAGE):$(TAG) $(IMAGE):latest
+		docker build $(DOCKER_BUILD_ARGS) --tag $(IMAGE):$(TAG) .
 
 $(DSTOP): $(DST_FILES_LOCAL_CP) $(DST_FILES_CP)
 
@@ -82,44 +87,50 @@ $(CHART_DST_FILES_RENAME): $(DSTCHART)/crds/$(DSTNAME).linbit.%: $(SRCCHART)/crd
 	sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' "$^" > "$@"
 
 ########## OLM bundle ##########
-olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml
+olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
 	# Needed for operator-sdk to choose the correct project version
 	mkdir -p $(DSTOP)/build
 	touch -a $(DSTOP)/build/Dockerfile
 	# The relevant roles are already part of operator.yaml, as created by helm. operator-sdk still requires this file to work
 	touch -a $(DSTOP)/deploy/role.yaml
 
-	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(SEMVER) --update-crds
+	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(SEMVER) --csv-channel $(CSV_CHANNEL) --update-crds
 	# Fix CSV permissions
 	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml
 	# Fill CSV with project values
 	yq -P merge --inplace --overwrite $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml deploy/linstor-operator.clusterserviceversion.part.yaml
+	# override examples + image configuration
+	hack/patch-csv-images.sh $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
 	# Set CSV version
 	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.version' $(SEMVER)
-	# Remove imagePullSecrets (not needed, controlled via OLM mechanism)
-	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.install.spec.deployments[*].spec.template.spec.imagePullSecrets'
+	# Set CSV metadata annotations
+	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'metadata.annotations.createdAt' $(shell date --utc --iso-8601=seconds)
 	# Remove the "replaces" section, its not guaranteed to always find the real latest version
 	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.replaces'
-	# Replace the referenced images with ones for OLM
-	sed -rf hack/redhat-registry.sed -i $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml
 
 	# Update package yaml, setting the current version to be the latest
 	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(DSTOP).package.yaml 'channels[0].currentCSV' $(DSTOP).v$(SEMVER)
+
+	# Generate bundle build directory
+	mkdir -p out/olm-bundle/$(SEMVER)
+	cp -av -t out/olm-bundle/ $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)
+	operator-sdk bundle create --generate-only --directory out/olm-bundle/$(SEMVER) --package linstor-operator --channels $(CSV_CHANNEL)
+	cat deploy/Dockerfile.bundle.part >> out/olm-bundle/$(SEMVER)/Dockerfile
 
 	# Copy to output directory
 	mkdir -p out/olm/$(SEMVER)
 	cp -av -t out/olm/$(SEMVER) $(DSTOP)/deploy/olm-catalog/$(DSTOP)/*.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*.yaml
 
-	# create zip package
-	python -m zipfile --create out/olm/$(SEMVER).zip out/olm/$(SEMVER)/*
-
 $(DSTOP)/deploy/operator.yaml: $(DSTCHART) deploy/linstor-operator-csv.helm-values.yaml
 	mkdir -p "$$(dirname "$@")"
-	helm template linstor $(DSTCHART) -f deploy/linstor-operator-csv.helm-values.yaml > "$@"
+	helm template linstor $(DSTCHART) -f deploy/linstor-operator-csv.helm-values.yaml --set operator.image=$(OLM_REGISTRY)/linstor-operator:$(TAG) > "$@"
 
 $(DSTOP)/deploy/crds: $(DSTCHART)
 	mkdir -p "$@"
-	cp -av -t $(DSTOP)/deploy/ $(DSTCHART)/crds
+	cp -rv -t $(DSTOP)/deploy/ $(DSTCHART)/crds
+
+$(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled: deploy/linstor-operator.image.$(BUILDENV).yaml hack/fetch-image-digests.py
+	yq read --tojson $< | hack/fetch-image-digests.py $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled $(TAG)
 
 ########## chart for hostPath PersistentVolume #########
 
@@ -150,6 +161,5 @@ publish: chart pvchart
 
 upload: operator
 	docker push $(IMAGE):$(TAG)
-	docker push $(IMAGE):latest
 
 .PHONY:	publish upload pvchart olm chart operator $(DSTOP) $(DSTCHART)
