@@ -1,3 +1,4 @@
+drbdRepoCred: drbdiocred
 csi:
   pluginImage: "drbd.io/linstor-csi:v0.9.1"
 operator:
