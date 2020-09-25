@@ -4,8 +4,8 @@ csi:
 operator:
   image: "drbd.io/linstor-operator:v1.0.0"
   controller:
-    controllerImage: "drbd.io/linstor-controller:v1.7.3"
+    controllerImage: "drbd.io/linstor-controller:v1.9.0"
   satelliteSet:
     kernelModuleInjectionMode: ShippedModules
     kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.0.24"
-    satelliteImage: "drbd.io/linstor-satellite:v1.7.3"
+    satelliteImage: "drbd.io/linstor-satellite:v1.9.0"
