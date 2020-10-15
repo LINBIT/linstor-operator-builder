@@ -225,6 +225,15 @@ entries:
     version: 0.1.4
   pv-hostpath:
   - apiVersion: v1
+    appVersion: 0.2.2
+    created: "2020-10-15T11:49:41.789951515+02:00"
+    description: Hostpath volumes for etcd persistence
+    digest: d00e945ceb6ab11bc687ff248c507ff2dc45a05eb485efffb4d1fd10db413d3a
+    name: pv-hostpath
+    urls:
+    - https://charts.linstor.io/pv-hostpath-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v1
     appVersion: 0.2.1
     created: "2020-10-14T15:03:38.050039639+02:00"
     description: Hostpath volumes for etcd persistence
@@ -242,11 +251,11 @@ entries:
     - https://charts.linstor.io/pv-hostpath-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v1
-    created: "2020-10-14T15:03:38.049553556+02:00"
+    created: "2020-10-15T11:49:41.789509272+02:00"
     description: Hostpath volumes for etcd persistence
     digest: 665d4788654eaaf4ffcd280d7b03ff7601a1b609ee58c60d93566e38cdb23330
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2020-10-14T15:03:37.981071632+02:00"
+generated: "2020-10-15T11:49:41.754838744+02:00"
