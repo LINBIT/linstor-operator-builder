@@ -12,6 +12,7 @@ variables:
   TEST_SUITE_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/linstor-kubernetes-tests:latest
   VIRTER_VERSION: v0.5.0
   VMSHED_VERSION: v0.5.0
+  YQ_VERSION: 3.4.1
 
 prepare:
   image: python:3
@@ -147,6 +148,7 @@ test:
       tests_prepare_tools
       tests_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
       tests_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
+      tests_fetch_binary yq yq-$YQ_VERSION https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64
     - mkdir -p tests/linstor-kubernetes-tests
     - git clone --depth=1 $LINSTOR_KUBERNETES_TESTS_REPO tests/linstor-kubernetes-tests
     - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
@@ -154,6 +156,7 @@ test:
   script:
     - docker image pull $PROVISIONER_IMAGE
     - docker image pull $TEST_SUITE_IMAGE
+    - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator:$TAG | base64 --wrap=0 -)
     - cd tests/linstor-kubernetes-tests
     - >-
       make run
@@ -162,7 +165,7 @@ test:
       VMSHED_EXTRA_ARGS="
       --set values.HelmRepo=$LINBIT_REGISTRY_HELM
       --set values.HelmChartVersion=$SEMVER
-      --set values.OperatorImage=$OPERATOR_REGISTRY/linstor-operator-test/linstor-operator:$TAG
+      --set values.HelmValuesBase64=$HELM_VALUES_BASE64
       "
   artifacts:
     # provide a convenient name so that the downloaded artifacts can be identified

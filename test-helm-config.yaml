@@ -1,0 +1,7 @@
+etcd:
+  persistentVolume:
+    enabled: false
+
+operator:
+  satelliteSet:
+    automaticStorageType: LVMTHIN
