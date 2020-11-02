@@ -4,4 +4,10 @@ etcd:
 
 operator:
   satelliteSet:
-    automaticStorageType: LVMTHIN
+    storagePools:
+      lvmThinPools:
+      - name: sda
+        volumeGroup: linstor_sda
+        thinVolume: sda
+        devicePaths:
+        - /dev/sda
