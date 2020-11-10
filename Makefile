@@ -87,7 +87,7 @@ $(CHART_DST_FILES_RENAME): $(DSTCHART)/crds/$(DSTNAME).linbit.%: $(SRCCHART)/crd
 	sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' "$^" > "$@"
 
 ########## OLM bundle ##########
-olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
+olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled doc/README.openshift.md
 	# Needed for operator-sdk to choose the correct project version
 	mkdir -p $(DSTOP)/build
 	touch -a $(DSTOP)/build/Dockerfile
@@ -99,6 +99,8 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-
 	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml
 	# Fill CSV with project values
 	yq -P merge --inplace --overwrite $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml deploy/linstor-operator.clusterserviceversion.part.yaml
+	# Fill description from openshift README
+	yq -P write --inplace --style single $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml 'spec.description' "$$(cat doc/README.openshift.md)"
 	# override examples + image configuration
 	hack/patch-csv-images.sh $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
 	# Set CSV version
