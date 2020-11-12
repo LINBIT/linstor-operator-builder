@@ -144,6 +144,13 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 	mkdir -p "$$(dirname "$@")"
 	cp -av "$^" "$@"
 
+########## stork standalone deployment ##########
+
+DSTSTORK := $(abspath out/stork.yaml)
+
+stork: $(DSTSTORK)
+	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
+
 ########## publishing #########
 
 publish: chart pvchart
@@ -152,10 +159,13 @@ publish: chart pvchart
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
 	cp $$pw/index.template.html ./index.html && \
 	cp "$(DSTHELMPACKAGE)"/* . && \
+	mkdir -p ./deploy && \
+	cp -t ./deploy $(DSTSTORK) && \
 	helm repo index . --url $$churl && \
 	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> index.html; done && \
 	echo '</ul></section></body></html>' >> index.html && \
-	git add . && git commit -am 'gh-pages' && \
+	git add . && \
+	git commit -am 'gh-pages' && \
 	git push $(UPSTREAMGIT) gh-pages:gh-pages && \
 	rm -rf $$tmpd
 
