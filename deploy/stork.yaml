@@ -1,0 +1,294 @@
+---
+# Source: linstor/templates/stork-deployment.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stork-account
+  namespace: MY-STORK-NAMESPACE
+---
+# Source: linstor/templates/stork-deployment.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stork-scheduler-account
+  namespace: MY-STORK-NAMESPACE
+---
+# Source: linstor/templates/stork-deployment.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linstor-stork-stork-config
+  namespace: MY-STORK-NAMESPACE
+data:
+  # The default list of predicates and priorities can change depending on your version
+  # of Kubernetes, so please update those as required. The requirement to manually specify this
+  # list will go away with Kubernetes v1.10 where it will use the defaults if nothing is
+  # specified.
+  policy.cfg: |-
+    {
+      "kind": "Policy",
+      "apiVersion": "v1",
+      "extenders": [
+        {
+          "urlPrefix": "http://linstor-stork-stork-service.MY-STORK-NAMESPACE.svc.cluster.local:8099",
+          "apiVersion": "v1beta1",
+          "filterVerb": "filter",
+          "prioritizeVerb": "prioritize",
+          "weight": 5,
+          "enableHttps": false,
+          "nodeCacheCapable": false
+        }
+      ]
+    }
+---
+# Source: linstor/templates/stork-deployment.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: stork-role
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+# Source: linstor/templates/stork-deployment.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: stork-scheduler-role
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "update"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["events.k8s.io"]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resourceNames: ["kube-scheduler"]
+    resources: ["endpoints"]
+    verbs: ["delete", "get", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["delete", "get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["bindings", "pods/binding"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["patch", "update"]
+  - apiGroups: [""]
+    resources: ["replicationcontrollers", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["*"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims", "persistentvolumes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "watch", "list", "delete", "update", "create"]
+---
+# Source: linstor/templates/stork-deployment.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: stork-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: stork-account
+    namespace: MY-STORK-NAMESPACE
+roleRef:
+  kind: ClusterRole
+  name: stork-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: linstor/templates/stork-deployment.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: stork-scheduler-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: stork-scheduler-account
+    namespace: MY-STORK-NAMESPACE
+roleRef:
+  kind: ClusterRole
+  name: stork-scheduler-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: linstor/templates/stork-deployment.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: linstor-stork-stork-service
+  namespace: MY-STORK-NAMESPACE
+spec:
+  selector:
+    name: stork
+    release: linstor-stork
+  ports:
+    - name: extender
+      protocol: TCP
+      port: 8099
+      targetPort: 8099
+    - name: webhook
+      protocol: TCP
+      port: 443
+      targetPort: 443
+---
+# Source: linstor/templates/stork-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  labels:
+    tier: control-plane
+  name: linstor-stork-stork
+  namespace: MY-STORK-NAMESPACE
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      name: stork
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        name: stork
+        release: linstor-stork
+        tier: control-plane
+    spec:
+      containers:
+        - command:
+            - /stork
+            - --driver=linstor
+            - --verbose
+            - --leader-elect=true
+            - --snapshotter=false
+            - --cluster-domain-controllers=false
+          imagePullPolicy: "IfNotPresent"
+          image: docker.io/openstorage/stork:2.5.0
+          ports:
+            - containerPort: 8099
+              name: extender
+              protocol: TCP
+            - containerPort: 443
+              name: webhook
+              protocol: TCP
+          resources:
+            {}
+          name: stork
+          env:
+            - name: LS_CONTROLLERS
+              value: MY-LINSTOR-URL
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "name"
+                    operator: In
+                    values:
+                      - stork
+              topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: stork-account
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+# Source: https://raw.githubusercontent.com/libopenstorage/stork/v2.4.1/specs/stork-scheduler.yaml
+---
+# Source: linstor/templates/stork-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: scheduler
+    tier: control-plane
+  name: linstor-stork-stork-scheduler
+  namespace: MY-STORK-NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: linstor-stork-stork-scheduler
+  template:
+    metadata:
+      labels:
+        component: scheduler
+        tier: control-plane
+        name: linstor-stork-stork-scheduler
+      name: linstor-stork-stork-scheduler
+    spec:
+      containers:
+        - command:
+            - /usr/local/bin/kube-scheduler
+            - --address=0.0.0.0
+            - --leader-elect=true
+            - --scheduler-name=stork
+            - --policy-configmap=linstor-stork-stork-config
+            - --policy-configmap-namespace=MY-STORK-NAMESPACE
+            - --leader-elect-resource-name=linstor-stork-stork-scheduler
+            - --leader-elect-resource-namespace=MY-STORK-NAMESPACE
+          image: "gcr.io/google_containers/kube-scheduler-amd64:v1.16.0"
+          imagePullPolicy: "IfNotPresent"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10251
+            initialDelaySeconds: 15
+          name: linstor-stork-stork-scheduler
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 10251
+          resources:
+            {}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "name"
+                    operator: In
+                    values:
+                      - linstor-stork-stork-scheduler
+              topologyKey: "kubernetes.io/hostname"
+      hostPID: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      serviceAccountName: stork-scheduler-account
+---
+# Source: linstor/templates/stork-deployment.yaml
+# Source: https://raw.githubusercontent.com/libopenstorage/stork/v2.4.1/specs/stork-deployment.yaml
