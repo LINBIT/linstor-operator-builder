@@ -18,9 +18,9 @@ prepare:
   image: python:3
   stage: prepare
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
-    - if: $CI_COMMIT_TAG
   variables:
     # git describe needs full history access
     GIT_DEPTH: 0
@@ -40,7 +40,11 @@ prepare-tools:
     - amd64
   stage: prepare
   rules:
-    - when: manual
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == 'master'
+      when: manual
       allow_failure: true
   script:
     - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
@@ -81,6 +85,7 @@ prepare-tools:
 build_chart:
   extends: .with-tools
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
@@ -92,6 +97,7 @@ build_chart:
 
 build_operator:
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
@@ -109,6 +115,7 @@ build_olm:
   extends:
     - .with-tools
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build_olm
@@ -125,6 +132,7 @@ build_olm:
 
 test_olm:
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: test
@@ -135,7 +143,9 @@ test_olm:
 
 test:
   rules:
+    - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
   stage: test
   tags:
     - libvirt
@@ -238,7 +248,7 @@ publish-csv:
     - docker
   script:
     - docker login -u unused -p $SCAN_TOKEN_OPERATOR scan.connect.redhat.com
-    - make upload REGISTRY=$SCAN_REGISTRY_OPERATOR TAG=$TAG DOCKER_BUILD_ARGS="--pull --no-cache" PUSH_LATEST=no
+    - make upload REGISTRY=scan.connect.redhat.com/$SCAN_REGISTRY_OPERATOR_PID TAG=$TAG DOCKER_BUILD_ARGS="--pull --no-cache" PUSH_LATEST=no
     - docker logout scan.connect.redhat.com
     # TODO: we should wait on the operator image to be certified here
     # TODO: upload the olm-bundle for scanning!

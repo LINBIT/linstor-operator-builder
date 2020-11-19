@@ -150,12 +150,12 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 
 DSTSTORK := $(abspath out/stork.yaml)
 
-stork: $(DSTSTORK)
-	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
+stork:
+	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
 
 ########## publishing #########
 
-publish: chart pvchart
+publish: chart pvchart stork
 	tmpd=$$(mktemp -p $$PWD -d) && pw=$$PWD && churl=https://charts.linstor.io && \
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \

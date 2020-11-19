@@ -221,8 +221,8 @@ spec:
   links:
     - name: LINBIT
       url: https://www.linbit.com/
-    - name: Use Guide
-      url: https://www.linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
+    - name: User Guide
+      url: https://www.linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-openshift
   maintainers:
     - name: LINBIT
       email: sales@linbit.com
