@@ -222,9 +222,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       serviceAccountName: stork-account
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        
 # Source: https://raw.githubusercontent.com/libopenstorage/stork/v2.4.1/specs/stork-scheduler.yaml
 ---
 # Source: linstor/templates/stork-deployment.yaml
@@ -285,9 +283,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       hostPID: false
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        
       serviceAccountName: stork-scheduler-account
 ---
 # Source: linstor/templates/stork-deployment.yaml
