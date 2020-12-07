@@ -12,9 +12,15 @@ variables:
   TEST_SUITE_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/linstor-kubernetes-tests:latest
   VIRTER_VERSION: v0.5.0
   VMSHED_VERSION: v0.5.0
-  YQ_VERSION: 3.4.1
+  # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
+  # Newer versions do not support "operator-sdk generate csv"
+  OPERATOR_SDK_VERSION: v0.16.0
+  HELM_VERSION: v3.4.1
+  CRANE_VERSION: v0.2.1
+  YQ_VERSION: 3.3.4
+  JQ_VERSION: "1.6"
 
-prepare:
+prepare-version:
   image: python:3
   stage: prepare
   rules:
@@ -34,6 +40,31 @@ prepare:
     reports:
       dotenv: .ci-build.env
 
+prepare-bins:
+  image: ${BUILD_HELPER_IMAGE}
+  stage: prepare
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+  script:
+    - . /usr/local/bin/gitlab-utils.sh
+    - ci_prepare_tools
+    - ci_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
+    - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
+    - ci_fetch_binary operator-sdk operator-sdk-$OPERATOR_SDK_VERSION https://github.com/operator-framework/operator-sdk/releases/download/$OPERATOR_SDK_VERSION/operator-sdk-$OPERATOR_SDK_VERSION-x86_64-linux-gnu
+    - ci_fetch_binary yq yq-$YQ_VERSION https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64
+    - ci_fetch_binary jq jq-$JQ_VERSION https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/jq-linux64
+    - ci_fetch_tar helm-$HELM_VERSION https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz -z
+    - ci_fetch_tar crane-$CRANE_VERSION https://github.com/google/go-containerregistry/releases/download/$CRANE_VERSION/go-containerregistry_Linux_x86_64.tar.gz -z
+    - echo "PATH=\$CI_PROJECT_DIR/bin/:$PATH" > .bins.env
+  artifacts:
+    paths:
+      - bin
+      - download
+    reports:
+      dotenv: .bins.env
+
 prepare-tools:
   tags:
     - docker
@@ -51,39 +82,7 @@ prepare-tools:
     - docker build -f .gitlab/Dockerfile.operator-sdk-tools -t $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest .gitlab
     - docker push $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest
 
-.with-tools:
-  before_script:
-    - mkdir -p .tools
-    - |
-      if [ ! -e .tools/operator-sdk ] ; then
-        curl -L https://github.com/operator-framework/operator-sdk/releases/download/v0.16.0/operator-sdk-v0.16.0-x86_64-linux-gnu > .tools/operator-sdk
-        chmod +x .tools/operator-sdk
-      fi
-    - |
-      if [ ! -e .tools/helm ] ; then
-        curl -L https://get.helm.sh/helm-v3.2.4-linux-amd64.tar.gz | tar zx --directory=.tools/ --strip=1 linux-amd64/helm
-      fi
-    - |
-      if [ ! -e .tools/yq ] ; then
-        curl -L https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 > .tools/yq
-        chmod +x .tools/yq
-      fi
-    - |
-      if [ ! -e .tools/jq ] ; then
-        curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > .tools/jq
-        chmod +x .tools/jq
-      fi
-    - |
-      if [ ! -e .tools/crane ] ; then
-        curl -L https://github.com/google/go-containerregistry/releases/download/v0.1.3/go-containerregistry_Linux_x86_64.tar.gz | tar zx --directory=.tools/ crane
-      fi
-    - export PATH="$(readlink -f .tools/):$PATH"
-  cache:
-    paths:
-      - .tools/
-
 build_chart:
-  extends: .with-tools
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
@@ -112,8 +111,6 @@ build_operator:
     - shell
 
 build_olm:
-  extends:
-    - .with-tools
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
@@ -140,6 +137,10 @@ test_olm:
   script:
     - operator-courier verify out/olm/$SEMVER
     - operator-sdk bundle validate --verbose --image-builder none $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
+  dependencies:
+    # Explicitly: do not depend on prepare-bins, we want out own version of operator-sdk
+    - build_olm
+    - prepare-version
 
 test:
   rules:
@@ -153,12 +154,6 @@ test:
     paths:
       - download
   before_script:
-    - . .gitlab/gitlab-utils.sh
-    - |
-      tests_prepare_tools
-      tests_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
-      tests_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
-      tests_fetch_binary yq yq-$YQ_VERSION https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64
     - mkdir -p tests/linstor-kubernetes-tests
     - git clone --depth=1 $LINSTOR_KUBERNETES_TESTS_REPO tests/linstor-kubernetes-tests
     - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
@@ -215,7 +210,6 @@ push-s390x:
 
 publish-chart:
   stage: deploy
-  extends: .with-tools
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
@@ -240,10 +234,8 @@ publish-csv:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
       allow_failure: true
-  extends:
-    - .with-tools
   dependencies:
-    - prepare
+    - prepare-version
   tags:
     - docker
   script:
