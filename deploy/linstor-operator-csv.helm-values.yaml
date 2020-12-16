@@ -11,3 +11,6 @@ csi-snapshotter:
 stork:
   # Not part of our main operator
   enabled: false
+haController:
+  # Not integrated with our go operator
+  enabled: false

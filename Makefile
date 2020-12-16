@@ -150,8 +150,15 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 
 DSTSTORK := $(abspath out/stork.yaml)
 
-stork:
+stork: $(DSTCHART)
 	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
+
+########## HA Controller standalone deployment ########
+
+DSTHACTRL := $(abspath out/ha-controller.yaml)
+
+ha-controller: $(DSTCHART)
+	helm template linstor $(DSTCHART) --namespace MY-HA-CTRL-NAMESPACE --set global.setSecurityContext=false --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/ha-controller-deployment.yaml --show-only templates/ha-controller-rbac.yaml > $(DSTHACTRL)
 
 ########## publishing #########
 
@@ -162,7 +169,7 @@ publish: chart pvchart stork
 	cp $$pw/index.template.html ./index.html && \
 	cp "$(DSTHELMPACKAGE)"/* . && \
 	mkdir -p ./deploy && \
-	cp -t ./deploy $(DSTSTORK) && \
+	cp -t ./deploy $(DSTSTORK) $(DSTHACTRL) && \
 	helm repo index . --url $$churl && \
 	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> index.html; done && \
 	echo '</ul></section></body></html>' >> index.html && \
