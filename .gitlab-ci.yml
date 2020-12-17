@@ -78,9 +78,9 @@ prepare-tools:
       when: manual
       allow_failure: true
   script:
-    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
-    - docker build -f .gitlab/Dockerfile.operator-sdk-tools -t $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest .gitlab
-    - docker push $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest
+    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - docker build -f .gitlab/Dockerfile.operator-sdk-tools -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/operator-sdk:latest .gitlab
+    - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/operator-sdk:latest
 
 build_chart:
   rules:
@@ -101,11 +101,11 @@ build_operator:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
-    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
-    - make operator REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test TAG=$TAG
-    - make upload REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test TAG=$TAG
+    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - make operator REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test TAG=$TAG
+    - make upload REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test TAG=$TAG
     - if [ "$CI_COMMIT_BRANCH" == 'master' ] ; then
-    -   make upload REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test TAG=latest
+    -   make upload REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test TAG=latest
     - fi
   tags:
     - shell
@@ -117,10 +117,10 @@ build_olm:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build_olm
   script:
-    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
-    - make olm SEMVER=$SEMVER OLM_REGISTRY=$OPERATOR_REGISTRY/linstor-operator-test
-    - docker build -t $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
-    - docker push $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
+    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - make olm SEMVER=$SEMVER OLM_REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test
+    - docker build -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
+    - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
   tags:
     - docker
   artifacts:
@@ -133,10 +133,10 @@ test_olm:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: test
-  image: $OPERATOR_REGISTRY/linstor-operator-test/operator-sdk:latest
+  image: $LINBIT_DOCKER_REGISTRY/linstor-operator-test/operator-sdk:latest
   script:
     - operator-courier verify out/olm/$SEMVER
-    - operator-sdk bundle validate --verbose --image-builder none $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
+    - operator-sdk bundle validate --verbose --image-builder none $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
   dependencies:
     # Explicitly: do not depend on prepare-bins, we want out own version of operator-sdk
     - build_olm
@@ -156,12 +156,12 @@ test:
   before_script:
     - mkdir -p tests/linstor-kubernetes-tests
     - git clone --depth=1 $LINSTOR_KUBERNETES_TESTS_REPO tests/linstor-kubernetes-tests
-    - docker login -u $OPERATOR_REGISTRY_USER -p $OPERATOR_REGISTRY_PASSWORD $OPERATOR_REGISTRY
+    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker image pull $PROVISIONER_IMAGE
     - docker image pull $TEST_SUITE_IMAGE
-    - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator:$TAG | base64 --wrap=0 -)
+    - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG | base64 --wrap=0 -)
     - cd tests/linstor-kubernetes-tests
     - virter image pull centos-7-k8s-1-18 -u ${TEST_VM_BASE_IMAGE} 2> /dev/null || echo "image exists"
     - >-
