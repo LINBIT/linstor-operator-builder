@@ -163,6 +163,7 @@ test:
     - docker image pull $TEST_SUITE_IMAGE
     - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $OPERATOR_REGISTRY/linstor-operator-test/linstor-operator:$TAG | base64 --wrap=0 -)
     - cd tests/linstor-kubernetes-tests
+    - virter image pull centos-7-k8s-1-18 -u ${TEST_VM_BASE_IMAGE} 2> /dev/null || echo "image exists"
     - >-
       make run
       PROVISIONER_IMAGE=$PROVISIONER_IMAGE
