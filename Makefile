@@ -162,7 +162,7 @@ ha-controller: $(DSTCHART)
 
 ########## publishing #########
 
-publish: chart pvchart stork
+publish: ha-controller chart pvchart stork
 	tmpd=$$(mktemp -p $$PWD -d) && pw=$$PWD && churl=https://charts.linstor.io && \
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
