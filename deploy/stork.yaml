@@ -257,7 +257,7 @@ spec:
             - --policy-configmap-namespace=MY-STORK-NAMESPACE
             - --leader-elect-resource-name=linstor-stork-stork-scheduler
             - --leader-elect-resource-namespace=MY-STORK-NAMESPACE
-          image: "gcr.io/google_containers/kube-scheduler-amd64:v1.16.0"
+          image: "k8s.gcr.io/kube-scheduler-amd64:v1.16.0"
           imagePullPolicy: "IfNotPresent"
           livenessProbe:
             httpGet:
