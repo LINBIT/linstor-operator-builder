@@ -18,7 +18,9 @@ UPSTREAMGIT ?= https://github.com/LINBIT/linstor-operator-builder.git
 DOCKER_BUILD_ARGS ?=
 PUSH_LATEST ?= yes
 
-CSV_CHANNEL := $(if $(findstring -,$(SEMVER)),alpha,stable)
+TEST_CHANNELS := alpha
+RELEASE_CHANNELS := alpha,stable
+CSV_CHANNELS := $(if $(findstring -,$(SEMVER)),$(TEST_CHANNELS),$(RELEASE_CHANNELS))
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
 DSTHELMPACKAGE := $(abspath $(DSTHELMPACKAGE))
@@ -94,34 +96,29 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-
 	# The relevant roles are already part of operator.yaml, as created by helm. operator-sdk still requires this file to work
 	touch -a $(DSTOP)/deploy/role.yaml
 
-	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(SEMVER) --csv-channel $(CSV_CHANNEL) --update-crds
-	# Fix CSV permissions
-	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml
-	# Fill CSV with project values
-	yq -P merge --inplace --overwrite $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml deploy/linstor-operator.clusterserviceversion.part.yaml
-	# Fill description from openshift README
-	yq -P write --inplace --style single $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml 'spec.description' "$$(cat doc/README.openshift.md)"
-	# override examples + image configuration
-	hack/patch-csv-images.sh $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*clusterserviceversion.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
-	# Set CSV version
-	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.version' $(SEMVER)
-	# Set CSV metadata annotations
-	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'metadata.annotations.createdAt' $(shell date --utc --iso-8601=seconds)
-	# Remove the "replaces" section, its not guaranteed to always find the real latest version
-	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/$(DSTOP).*.clusterserviceversion.yaml 'spec.replaces'
+	# Seed the CSV with static information
+	mkdir -p $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/
+	cp deploy/linstor-operator.clusterserviceversion.part.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/linstor-operator.clusterserviceversion.yaml
 
-	# Update package yaml, setting the current version to be the latest
-	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(DSTOP).package.yaml 'channels[0].currentCSV' $(DSTOP).v$(SEMVER)
+	cd $(DSTOP) ; operator-sdk generate csv --csv-version $(SEMVER) --update-crds
+	# Fix CSV permissions
+	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml
+	# Fill description from openshift README
+	yq -P write --inplace --style single $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'spec.description' "$$(cat doc/README.openshift.md)"
+	# override examples + image configuration
+	hack/patch-csv-images.sh $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
+	# Set CSV version
+	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'spec.version' $(SEMVER)
+	# Set CSV metadata annotations
+	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'metadata.annotations.createdAt' $(shell date --utc --iso-8601=seconds)
+	# Remove the "replaces" section, its not guaranteed to always find the real latest version
+	yq -P delete --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'spec.replaces'
 
 	# Generate bundle build directory
 	mkdir -p out/olm-bundle/$(SEMVER)
-	cp -av -t out/olm-bundle/ $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)
-	operator-sdk bundle create --generate-only --directory out/olm-bundle/$(SEMVER) --package linstor-operator --channels $(CSV_CHANNEL)
-	cat deploy/Dockerfile.bundle.part >> out/olm-bundle/$(SEMVER)/Dockerfile
-
-	# Copy to output directory
-	mkdir -p out/olm/$(SEMVER)
-	cp -av -t out/olm/$(SEMVER) $(DSTOP)/deploy/olm-catalog/$(DSTOP)/*.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/$(SEMVER)/*.yaml
+	cp -av -t out/olm-bundle/$(SEMVER) $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests deploy/metadata
+	yq -P write --inplace out/olm-bundle/$(SEMVER)/metadata/annotations.yaml 'annotations."operators.operatorframework.io.bundle.channels.v1"' $(CSV_CHANNELS)
+	sed s/#CHANNELS#/$(CSV_CHANNELS)/ deploy/bundle.Dockerfile > out/olm-bundle/$(SEMVER)/Dockerfile
 
 $(DSTOP)/deploy/operator.yaml: $(DSTCHART) deploy/linstor-operator-csv.helm-values.yaml
 	mkdir -p "$$(dirname "$@")"

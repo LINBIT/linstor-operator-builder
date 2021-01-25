@@ -38,3 +38,10 @@ make UPSTREAMGIT=<URL> publish
 
 The Helm chart has its own version, independent of the Piraeus Operator Helm
 chart.
+
+# Build OLM Bundle
+
+```
+make BUILDENV=release olm
+docker/podman build -t <bundle-name> --build-arg CHANNELS=alpha,stable out/olm-bundle/<version>
+```
