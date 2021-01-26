@@ -123,7 +123,7 @@ build_olm:
     - make olm SEMVER=$SEMVER OLM_REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test
     - docker build -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
     - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
-    - opm index add --mode semver --build-tool docker --from-index $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest --bundles $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG --tag $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest --bundles $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG --tag $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest
+    - opm index add --permissive --mode semver --build-tool docker --from-index $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest --bundles $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG --tag $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest --bundles $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG --tag $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest
     - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/catalog:latest
   tags:
     - docker
