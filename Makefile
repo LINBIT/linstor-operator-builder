@@ -148,6 +148,7 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 DSTSTORK := $(abspath out/stork.yaml)
 
 stork: $(DSTCHART)
+	mkdir -p $(dir $(DSTSTORK))
 	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
 
 ########## HA Controller standalone deployment ########
@@ -155,6 +156,7 @@ stork: $(DSTCHART)
 DSTHACTRL := $(abspath out/ha-controller.yaml)
 
 ha-controller: $(DSTCHART)
+	mkdir -p $(dir $(DSTHACTRL))
 	helm template linstor $(DSTCHART) --namespace MY-HA-CTRL-NAMESPACE --set global.setSecurityContext=false --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/ha-controller-deployment.yaml --show-only templates/ha-controller-rbac.yaml > $(DSTHACTRL)
 
 ########## publishing #########
