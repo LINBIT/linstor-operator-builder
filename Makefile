@@ -19,7 +19,7 @@ DOCKER_BUILD_ARGS ?=
 PUSH_LATEST ?= yes
 
 TEST_CHANNELS := alpha
-RELEASE_CHANNELS := alpha,stable
+RELEASE_CHANNELS := stable,$(TEST_CHANNELS)
 CSV_CHANNELS := $(if $(findstring -,$(SEMVER)),$(TEST_CHANNELS),$(RELEASE_CHANNELS))
 DSTCHART := $(abspath $(DSTCHART))
 DSTPVCHART := $(abspath $(DSTPVCHART))
@@ -105,7 +105,9 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-
 	hack/patch-csv-rules.sh $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml
 	# Fill description from openshift README
 	yq -P write --inplace --style single $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'spec.description' "$$(cat doc/README.openshift.md)"
-	# override examples + image configuration
+	# Override examples
+	yq -P write --inplace --style single $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'metadata.annotations.alm-examples' "$$(yq -P read deploy/linstor-operator.clusterserviceversion.part.yaml 'metadata.annotations.alm-examples')"
+	# Set image configuration
 	hack/patch-csv-images.sh $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml $(DSTOP)/deploy/linstor-operator.image.$(BUILDENV).filled
 	# Set CSV version
 	yq -P write --inplace $(DSTOP)/deploy/olm-catalog/$(DSTOP)/manifests/$(DSTOP).clusterserviceversion.yaml 'spec.version' $(SEMVER)
