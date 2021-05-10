@@ -9,5 +9,6 @@ operator:
     kernelModuleInjectionMode: ShippedModules
     kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.0.28"
     satelliteImage: "drbd.io/linstor-satellite:v1.11.1"
+    monitoringImage: "drbd.io/drbd-reactor:v0.3.0"
 haController:
   image: drbd.io/linstor-k8s-ha-controller:v0.1.3
