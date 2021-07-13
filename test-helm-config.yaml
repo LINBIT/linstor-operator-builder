@@ -6,8 +6,11 @@ operator:
   satelliteSet:
     storagePools:
       lvmThinPools:
-      - name: sda
-        volumeGroup: linstor_sda
-        thinVolume: sda
+      - name: thinpool
+        volumeGroup: linstor_thinpool
+        thinVolume: thinpool
         devicePaths:
-        - /dev/sda
+        - /dev/vdb
+
+csi-snapshotter:
+  enabled: false

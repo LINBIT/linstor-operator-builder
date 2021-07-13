@@ -10,8 +10,8 @@ variables:
   LINSTOR_KUBERNETES_TESTS_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.at.linbit.com/kubernetes/linstor-kubernetes-tests.git
   PROVISIONER_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/virter-kubeadm-playbook:latest
   TEST_SUITE_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/linstor-kubernetes-tests:latest
-  VIRTER_VERSION: v0.5.0
-  VMSHED_VERSION: v0.5.0
+  VIRTER_VERSION: v0.13.1
+  VMSHED_VERSION: v0.12.0
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -163,7 +163,7 @@ test:
     - docker image pull $TEST_SUITE_IMAGE
     - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG | base64 --wrap=0 -)
     - cd tests/linstor-kubernetes-tests
-    - virter image pull centos-7-k8s-1-18 -u ${TEST_VM_BASE_IMAGE} 2> /dev/null || echo "image exists"
+    - virter image pull centos-7-k8s-1-21 $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/base:centos-7-k8s-1-21
     - >-
       make run
       PROVISIONER_IMAGE=$PROVISIONER_IMAGE
