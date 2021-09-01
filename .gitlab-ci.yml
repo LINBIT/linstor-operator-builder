@@ -103,14 +103,20 @@ build_operator:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
-    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
-    - make operator REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test TAG=$TAG
-    - make upload REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test TAG=$TAG
+    - TARGET=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG
     - if [ "$CI_COMMIT_BRANCH" == 'master' ] ; then
-    -   make upload REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test TAG=latest
+    -   TARGET+=,$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:latest
     - fi
+    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - make linstor-operator
+    - docker buildx build --pull --push --platform linux/amd64,linux/s390x -t $TARGET linstor-operator
+    - echo "OPERATOR_IMAGE=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG" > .build.env
+  artifacts:
+    reports:
+      dotenv:
+        - .build.env
   tags:
-    - shell
+    - multiarch
 
 build_olm:
   rules:
@@ -161,7 +167,7 @@ test:
   script:
     - docker image pull $PROVISIONER_IMAGE
     - docker image pull $TEST_SUITE_IMAGE
-    - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG | base64 --wrap=0 -)
+    - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $OPERATOR_IMAGE | base64 --wrap=0 -)
     - cd tests/linstor-kubernetes-tests
     - virter image pull centos-7-k8s-1-21 $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/base:centos-7-k8s-1-21
     - >-
@@ -182,32 +188,23 @@ test:
     reports:
       junit: tests/linstor-kubernetes-tests/tests-out/test-results/*.xml
 
-.push-image:
+publish-image:
   stage: deploy
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
       when: manual
       allow_failure: true
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [ "" ]
   script:
-    - docker login -u $DEPLOY_REGISTRY_USER -p $DEPLOY_REGISTRY_PASSWORD $DEPLOY_REGISTRY
-    - make operator ARCH=$ARCH TAG=$TAG
-    - make upload ARCH=$ARCH TAG=$TAG
+    - crane auth login -u $DEPLOY_REGISTRY_USER -p $DEPLOY_REGISTRY_PASSWORD $DEPLOY_REGISTRY
+    - crane copy --platform linux/amd64 ${OPERATOR_IMAGE} ${$DEPLOY_REGISTRY}/amd64/linstor-operator:${TAG}
+    - crane copy --platform linux/s390x ${OPERATOR_IMAGE} ${$DEPLOY_REGISTRY}/s390x/linstor-operator:${TAG}
+    - crane tag ${$DEPLOY_REGISTRY}/amd64/linstor-operator:${TAG} latest
+    - crane tag ${$DEPLOY_REGISTRY}/s390x/linstor-operator:${TAG} latest
 
-push-amd64:
-  extends: .push-image
-  variables:
-    ARCH: amd64
-  tags:
-    - amd64
-    - docker
-
-push-s390x:
-  extends: .push-image
-  variables:
-    ARCH: s390x
-  tags:
-    - s390x
 
 publish-chart:
   stage: deploy
