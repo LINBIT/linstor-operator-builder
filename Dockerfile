@@ -1,5 +1,4 @@
 FROM --platform=$BUILDPLATFORM golang:1.17 as builder
-ARG TARGETARCH
 
 WORKDIR /workspace
 COPY go.mod go.mod
@@ -12,6 +11,7 @@ COPY cmd/ cmd/
 COPY pkg/ pkg/
 COPY version/ version/
 
+ARG TARGETARCH
 RUN GOARCH=$TARGETARCH CGO_ENABLED=0 go build --ldflags '-extldflags "-static"' -gcflags all=-trimpath=. --asmflags all=-trimpath=. -tags custom -o linstor-operator ./cmd/manager/main.go
 
 FROM --platform=$TARGETPLATFORM registry.access.redhat.com/ubi8/ubi-minimal:latest

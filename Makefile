@@ -82,7 +82,7 @@ $(CHART_DST_FILES_MERGE): $(DSTCHART)/%: $(SRCCHART)/% charts/linstor/%
 
 $(CHART_DST_FILES_REPLACE): $(DSTCHART)/%: $(SRCCHART)/%
 	mkdir -p "$$(dirname "$@")"
-	sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' "$^" > "$@"
+	if [ -f "$(CHART_LOCAL)/$*" ]; then cp "$(CHART_LOCAL)/$*" "$@" ; else sed 's/piraeus/linstor/g ; s/Piraeus/Linstor/g' "$^" > "$@"; fi
 
 $(CHART_DST_FILES_RENAME): $(DSTCHART)/crds/$(DSTNAME).linbit.%: $(SRCCHART)/crds/$(SRCNAME).linbit.%
 	mkdir -p "$$(dirname "$@")"

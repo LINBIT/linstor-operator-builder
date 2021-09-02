@@ -19,7 +19,7 @@ for item in work_items:
     repo, tag = item["value"].rsplit(":", 1)
     if tag == "latest":
         tag = LATEST_REPLACEMENT
-    digest = subprocess.check_output(["crane", "digest", "--platform", "linux/amd64", "{}:{}".format(repo, tag)]).strip().decode()
+    digest = subprocess.check_output(["crane", "digest", "{}:{}".format(repo, tag)]).strip().decode()
     item["value"] = "{}@{}".format(repo, digest)
     print("expanded to '{}'".format(item["value"]), file=sys.stderr)
 

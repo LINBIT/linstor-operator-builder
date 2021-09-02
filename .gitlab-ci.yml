@@ -104,9 +104,6 @@ build_operator:
   stage: build
   script:
     - TARGET=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG
-    - if [ "$CI_COMMIT_BRANCH" == 'master' ] ; then
-    -   TARGET+=,$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:latest
-    - fi
     - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
     - make linstor-operator
     - docker buildx build --pull --push --platform linux/amd64,linux/s390x -t $TARGET linstor-operator
