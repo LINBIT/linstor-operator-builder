@@ -59,13 +59,10 @@ prepare-bins:
     - ci_fetch_binary jq jq-$JQ_VERSION https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/jq-linux64
     - ci_fetch_tar helm-$HELM_VERSION https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz -z
     - ci_fetch_tar crane-$CRANE_VERSION https://github.com/google/go-containerregistry/releases/download/$CRANE_VERSION/go-containerregistry_Linux_x86_64.tar.gz -z
-    - echo "PATH=\$CI_PROJECT_DIR/bin/:$PATH" > .bins.env
   artifacts:
     paths:
       - bin
       - download
-    reports:
-      dotenv: .bins.env
 
 prepare-tools:
   tags:
@@ -91,6 +88,7 @@ build_chart:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
+    - export "PATH=$PWD/bin:$PATH"
     - make chart SEMVER=$SEMVER
     - curl --fail --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$SEMVER.tgz $LINBIT_REGISTRY_HELM/
   tags:
@@ -103,6 +101,7 @@ build_operator:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
   script:
+    - export "PATH=$PWD/bin:$PATH"
     - TARGET=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG
     - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
     - make linstor-operator
@@ -122,6 +121,7 @@ build_olm:
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build_olm
   script:
+    - export "PATH=$PWD/bin:$PATH"
     - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
     - make olm SEMVER=$SEMVER OLM_REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test
     - docker build -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
@@ -162,6 +162,7 @@ test:
     - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
+    - export "PATH=$PWD/bin:$PATH"
     - docker image pull $PROVISIONER_IMAGE
     - docker image pull $TEST_SUITE_IMAGE
     - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $OPERATOR_IMAGE | base64 --wrap=0 -)
@@ -239,6 +240,7 @@ publish-chart:
       when: manual
       allow_failure: true
   script:
+    - export "PATH=$PWD/bin:$PATH"
     - eval $(ssh-agent -s)
     - trap 'ssh-agent -k' EXIT
     - cat $GITHUB_DEPLOY_KEY | ssh-add -
@@ -262,6 +264,7 @@ publish-csv:
   tags:
     - docker
   script:
+    - export "PATH=$PWD/bin:$PATH"
     - docker login -u unused -p $SCAN_TOKEN_OPERATOR scan.connect.redhat.com
     - make upload REGISTRY=scan.connect.redhat.com/$SCAN_REGISTRY_OPERATOR_PID TAG=$TAG DOCKER_BUILD_ARGS="--pull --no-cache" PUSH_LATEST=no
     - docker logout scan.connect.redhat.com
