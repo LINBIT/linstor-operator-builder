@@ -151,7 +151,7 @@ DSTSTORK := $(abspath out/stork.yaml)
 
 stork: $(DSTCHART)
 	mkdir -p $(dir $(DSTSTORK))
-	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
+	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.enabled=true --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
 
 ########## HA Controller standalone deployment ########
 
