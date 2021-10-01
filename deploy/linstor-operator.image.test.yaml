@@ -9,14 +9,14 @@
 - name: RELATED_IMAGE_CSI_PLUGIN
   value: nexus.at.linbit.com:5000/linstor-operator-test/linstor-csi:v0.15.0
 - name: RELATED_IMAGE_CSI_ATTACHER
-  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-attacher:v4.7
+  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-attacher:v4.8
 - name: RELATED_IMAGE_CSI_LIVENESSPROBE
-  value: nexus.at.linbit.com:5000/openshift4/ose-csi-livenessprobe:v4.7
+  value: nexus.at.linbit.com:5000/openshift4/ose-csi-livenessprobe:v4.8
 - name: RELATED_IMAGE_CSI_NODE_REGISTRAR
-  value: nexus.at.linbit.com:5000/openshift4/ose-csi-node-driver-registrar:v4.7
+  value: nexus.at.linbit.com:5000/openshift4/ose-csi-node-driver-registrar:v4.8
 - name: RELATED_IMAGE_CSI_PROVISIONER
-  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-provisioner:v4.7
+  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-provisioner:v4.8
 - name: RELATED_IMAGE_CSI_SNAPSHOTTER
-  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-snapshotter:v4.7
+  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-snapshotter:v4.8
 - name: RELATED_IMAGE_CSI_RESIZER
-  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-resizer:v4.7
+  value: nexus.at.linbit.com:5000/openshift4/ose-csi-external-resizer:v4.8
