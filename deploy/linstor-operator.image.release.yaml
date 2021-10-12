@@ -1,13 +1,13 @@
 - name: RELATED_IMAGE_OPERATOR
   value: registry.connect.redhat.com/linbit/linstor-operator:latest
 - name: RELATED_IMAGE_LINSTOR_CONTROLLER
-  value: registry.connect.redhat.com/linbit/linstor-controller:v1.15.0
+  value: registry.connect.redhat.com/linbit/linstor-controller:v1.16.0-rc.2
 - name: RELATED_IMAGE_LINSTOR_SATELLITE
-  value: registry.connect.redhat.com/linbit/linstor-satellite:v1.15.0
+  value: registry.connect.redhat.com/linbit/linstor-satellite:v1.16.0-rc.2
 - name: RELATED_IMAGE_KERNEL_MODULE_INJECTION
-  value: registry.connect.redhat.com/linbit/drbd-9:v9.0.30
+  value: registry.connect.redhat.com/linbit/drbd-9:v9.1,4
 - name: RELATED_IMAGE_CSI_PLUGIN
-  value: registry.connect.redhat.com/linbit/linstor-csi:v0.15.0
+  value: registry.connect.redhat.com/linbit/linstor-csi:v0.16.0
 - name: RELATED_IMAGE_CSI_ATTACHER
   value: registry.redhat.io/openshift4/ose-csi-external-attacher:v4.8
 - name: RELATED_IMAGE_CSI_LIVENESSPROBE
