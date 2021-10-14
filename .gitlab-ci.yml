@@ -77,7 +77,7 @@ prepare-tools:
       when: manual
       allow_failure: true
   script:
-    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
     - docker build -f .gitlab/Dockerfile.operator-sdk-tools -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/operator-sdk:latest .gitlab
     - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/operator-sdk:latest
 
@@ -103,7 +103,7 @@ build_operator:
   script:
     - export "PATH=$PWD/bin:$PATH"
     - TARGET=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG
-    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
     - make linstor-operator
     - docker buildx build --pull --push --platform linux/amd64,linux/s390x -t $TARGET linstor-operator
     - echo "OPERATOR_IMAGE=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG" > .build.env
@@ -122,7 +122,7 @@ build_olm:
   stage: build_olm
   script:
     - export "PATH=$PWD/bin:$PATH"
-    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
     - make olm SEMVER=$SEMVER OLM_REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test
     - docker build -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
     - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG
@@ -159,7 +159,7 @@ test:
   before_script:
     - mkdir -p tests/linstor-kubernetes-tests
     - git clone --depth=1 $LINSTOR_KUBERNETES_TESTS_REPO tests/linstor-kubernetes-tests
-    - docker login -u $LINBIT_REGISTRY_USER -p $LINBIT_REGISTRY_PASSWORD $LINBIT_DOCKER_REGISTRY
+    - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - export "PATH=$PWD/bin:$PATH"
@@ -205,7 +205,7 @@ container_scanning:
     # Prints full report
     - trivy client --exit-code 0 "$OPERATOR_IMAGE"
     # Fail on critical (unfixed) vulnerabilities
-    - trivy --exit-code 1 --ignore-unfixed --severity CRITICAL --no-progress "$OPERATOR_IMAGE"
+    - trivy client --exit-code 1 --ignore-unfixed --severity CRITICAL "$OPERATOR_IMAGE"
   # Ideally, we would use container_scanning for the artifact here. That is currently a paid feature, so we have to use code quality
   artifacts:
     when: always
@@ -265,6 +265,7 @@ publish-csv:
     - docker
   script:
     - export "PATH=$PWD/bin:$PATH"
+    - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
     - docker login -u unused -p $SCAN_TOKEN_OPERATOR scan.connect.redhat.com
     - make upload REGISTRY=scan.connect.redhat.com/$SCAN_REGISTRY_OPERATOR_PID TAG=$TAG DOCKER_BUILD_ARGS="--pull --no-cache" PUSH_LATEST=no
     - docker logout scan.connect.redhat.com
