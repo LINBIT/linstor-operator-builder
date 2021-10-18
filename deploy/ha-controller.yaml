@@ -18,7 +18,7 @@ spec:
       serviceAccountName: ha-controller
       containers:
         - name: controller
-          image: drbd.io/linstor-k8s-ha-controller:v0.2.0
+          image: drbd.io/linstor-k8s-ha-controller:v0.2.1
           imagePullPolicy: "IfNotPresent"
           args:
             - --leader-election=true
