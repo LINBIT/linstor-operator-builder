@@ -1,9 +1,8 @@
-etcd:
-  persistentVolume:
-    enabled: false
-
 operator:
+  controller:
+    controllerImage: drbd.io/linstor-controller:v1.16.0-rc.2
   satelliteSet:
+    satelliteImage: drbd.io/linstor-satellite:v1.16.0-rc.2
     storagePools:
       lvmThinPools:
       - name: thinpool
@@ -11,6 +10,3 @@ operator:
         thinVolume: thinpool
         devicePaths:
         - /dev/vdb
-
-csi-snapshotter:
-  enabled: false

@@ -172,6 +172,7 @@ test:
       make run
       PROVISIONER_IMAGE=$PROVISIONER_IMAGE
       TEST_SUITE_IMAGE=$TEST_SUITE_IMAGE
+      NVMS=$(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
       VMSHED_EXTRA_ARGS="
       --set values.HelmRepo=$LINBIT_REGISTRY_HELM
       --set values.HelmChartVersion=$SEMVER
