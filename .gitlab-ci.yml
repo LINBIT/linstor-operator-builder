@@ -7,11 +7,9 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  LINSTOR_KUBERNETES_TESTS_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.at.linbit.com/kubernetes/linstor-kubernetes-tests.git
-  PROVISIONER_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/virter-kubeadm-playbook:latest
-  TEST_SUITE_IMAGE: $CI_REGISTRY/kubernetes/linstor-kubernetes-tests/linstor-kubernetes-tests:latest
-  VIRTER_VERSION: v0.13.1
-  VMSHED_VERSION: v0.12.0
+  VIRTER_VERSION: v0.14.3
+  VMSHED_VERSION: v0.14.1
+  K8S_TEST_VERSION: v1-0-0
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -53,6 +51,7 @@ prepare-bins:
     - ci_prepare_tools
     - ci_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
     - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
+    - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
     - ci_fetch_binary operator-sdk operator-sdk-$OPERATOR_SDK_VERSION https://github.com/operator-framework/operator-sdk/releases/download/$OPERATOR_SDK_VERSION/operator-sdk-$OPERATOR_SDK_VERSION-x86_64-linux-gnu
     - ci_fetch_binary opm opm-${OPM_VERSION} https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
     - ci_fetch_binary yq yq-$YQ_VERSION https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64
@@ -146,7 +145,7 @@ deploy_olm:
     - build_olm
     - prepare-version
 
-test:
+test-chart:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_MERGE_REQUEST_ID
@@ -154,39 +153,35 @@ test:
   stage: test
   tags:
     - libvirt
-  cache:
-    paths:
-      - download
-  before_script:
-    - mkdir -p tests/linstor-kubernetes-tests
-    - git clone --depth=1 $LINSTOR_KUBERNETES_TESTS_REPO tests/linstor-kubernetes-tests
-    - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  timeout: 30m
+  allow_failure: true
   script:
-    - export "PATH=$PWD/bin:$PATH"
-    - docker image pull $PROVISIONER_IMAGE
-    - docker image pull $TEST_SUITE_IMAGE
-    - HELM_VALUES_BASE64=$(yq write test-helm-config.yaml operator.image $OPERATOR_IMAGE | base64 --wrap=0 -)
-    - cd tests/linstor-kubernetes-tests
-    - virter image pull centos-7-k8s-1-21 $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/base:centos-7-k8s-1-21
-    - >-
-      make run
-      PROVISIONER_IMAGE=$PROVISIONER_IMAGE
-      TEST_SUITE_IMAGE=$TEST_SUITE_IMAGE
-      NVMS=$(( ${LINBIT_CI_MAX_CPUS:-20} / 4 )) `# Divide by 4, as our VMs have 4 (v)cpus`
-      VMSHED_EXTRA_ARGS="
-      --set values.HelmRepo=$LINBIT_REGISTRY_HELM
-      --set values.HelmChartVersion=$SEMVER
-      --set values.HelmValuesBase64=$HELM_VALUES_BASE64
-      "
+    - export PATH=$CI_PROJECT_DIR/bin:$PATH
+    - virter image pull centos-8 $LINBIT_DOCKER_REGISTRY/vm/centos-8:latest
+    - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=centos-8
+    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/kubespray:$K8S_TEST_VERSION
+    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/helm:$K8S_TEST_VERSION
+    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
+    - cd virter
+    - >
+      vmshed
+      --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
+      --torun chart,operator
+      --set values.DrbdIoUser=$PUBLISH_REGISTRY_USER
+      --set values.DrbdIoPassword=$PUBLISH_REGISTRY_PASSWORD
+      --set values.VirterKubeSprayImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/kubespray:$K8S_TEST_VERSION
+      --set values.HelmImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/helm:$K8S_TEST_VERSION
+      --set values.TestImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
+      --set values.HelmLinstorRepo=$LINBIT_REGISTRY_HELM
+      --set values.HelmLinstorVersion=$SEMVER
   artifacts:
-    # provide a convenient name so that the downloaded artifacts can be identified
-    name: $CI_PROJECT_NAME-$CI_JOB_ID
-    paths:
-      - tests/linstor-kubernetes-tests/tests-out/
     when: always
+    paths:
+      - virter/tests-out/
     reports:
-      junit: tests/linstor-kubernetes-tests/tests-out/test-results/*.xml
+      junit:
+        - virter/tests-out/test-results/*.xml
+        - virter/tests-out/log/**/*-report.xml
 
 container_scanning:
   stage: test
@@ -234,8 +229,6 @@ publish-image:
     -   crane copy --platform $PLATFORM $OPERATOR_IMAGE $PUBLISH_REGISTRY/$ARCH/linstor-operator:$TAG
     -   crane tag $PUBLISH_REGISTRY/$ARCH/linstor-operator:$TAG latest
     - done
-
-
 
 publish-chart:
   stage: deploy
