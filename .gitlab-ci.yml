@@ -9,7 +9,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   VIRTER_VERSION: v0.14.3
   VMSHED_VERSION: v0.14.1
-  K8S_TEST_VERSION: v1-0-0
+  K8S_TEST_VERSION: v1.0.0
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -145,15 +145,10 @@ deploy_olm:
     - build_olm
     - prepare-version
 
-test-chart:
-  rules:
-    - if: $CI_COMMIT_TAG
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_BRANCH == 'master'
+.test:
   stage: test
   tags:
     - libvirt
-  timeout: 30m
   allow_failure: true
   script:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
@@ -166,7 +161,7 @@ test-chart:
     - >
       vmshed
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
-      --torun chart,operator
+      --torun $TO_RUN
       --set values.DrbdIoUser=$PUBLISH_REGISTRY_USER
       --set values.DrbdIoPassword=$PUBLISH_REGISTRY_PASSWORD
       --set values.VirterKubeSprayImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/kubespray:$K8S_TEST_VERSION
@@ -174,6 +169,8 @@ test-chart:
       --set values.TestImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
       --set values.HelmLinstorRepo=$LINBIT_REGISTRY_HELM
       --set values.HelmLinstorVersion=$SEMVER
+      --set "values.Skip=$SKIP"
+      --set "values.Focus=$FOCUS"
   artifacts:
     when: always
     paths:
@@ -182,6 +179,36 @@ test-chart:
       junit:
         - virter/tests-out/test-results/*.xml
         - virter/tests-out/log/**/*-report.xml
+
+test-chart:
+  extends: .test
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+  stage: test
+  tags:
+    - libvirt
+  timeout: 30m
+  variables:
+    TO_RUN: chart,operator
+
+test-e2e:
+  extends: .test
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+    - if: $CI_COMMIT_BRANCH == 'master'
+      when: manual
+  stage: test
+  tags:
+    - libvirt
+  timeout: 4h
+  variables:
+    TO_RUN: k8s-e2e-storage
+    SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|multiple|subPath"
 
 container_scanning:
   stage: test
