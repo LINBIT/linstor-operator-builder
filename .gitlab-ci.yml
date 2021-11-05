@@ -158,6 +158,11 @@ deploy_olm:
     - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/helm:$K8S_TEST_VERSION
     - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
     - cd virter
+    - |
+      cat <<EOF > operator-to-test.yml
+      operator:
+        image: $OPERATOR_IMAGE
+      EOF
     - >
       vmshed
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
@@ -171,6 +176,7 @@ deploy_olm:
       --set values.HelmLinstorVersion=$SEMVER
       --set "values.Skip=$SKIP"
       --set "values.Focus=$FOCUS"
+      --set values.LinstorValues=/virter/workspace/operator-to-test.yml
   artifacts:
     when: always
     paths:
