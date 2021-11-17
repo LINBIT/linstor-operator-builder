@@ -257,6 +257,7 @@ publish-image:
   script:
     - mkdir -p $HOME/.docker
     - ln -snf $DOCKER_PUBLISH_AUTH_CONFIG_FILE $HOME/.docker/config.json
+    - export DOCKER_CONFIG=$HOME/.docker # Workaround for https://github.com/google/go-containerregistry/issues/1183
     - for PLATFORM in $(echo $PUBLISH_PLATFORMS | tr ',' '\n') ; do
     -   ARCH=${PLATFORM#*/}
     -   crane copy --platform $PLATFORM $OPERATOR_IMAGE $PUBLISH_REGISTRY/$ARCH/linstor-operator:$TAG
