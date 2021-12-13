@@ -7,9 +7,9 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.14.3
-  VMSHED_VERSION: v0.14.1
-  K8S_TEST_VERSION: v1.0.1
+  VIRTER_VERSION: v0.17.0
+  VMSHED_VERSION: v0.14.5
+  K8S_TEST_VERSION: v1.1.0
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -154,7 +154,7 @@ deploy_olm:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - virter image pull centos-8 $LINBIT_DOCKER_REGISTRY/vm/centos-8:latest
     - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=centos-8
-    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/kubespray:$K8S_TEST_VERSION
+    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/just-kubeadm:$K8S_TEST_VERSION
     - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/helm:$K8S_TEST_VERSION
     - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
     - cd virter
@@ -169,7 +169,7 @@ deploy_olm:
       --torun $TO_RUN
       --set values.DrbdIoUser=$PUBLISH_REGISTRY_USER
       --set values.DrbdIoPassword=$PUBLISH_REGISTRY_PASSWORD
-      --set values.VirterKubeSprayImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/kubespray:$K8S_TEST_VERSION
+      --set values.JustKubeadmImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/just-kubeadm:$K8S_TEST_VERSION
       --set values.HelmImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/helm:$K8S_TEST_VERSION
       --set values.TestImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
       --set values.HelmLinstorRepo=$LINBIT_REGISTRY_HELM
@@ -180,7 +180,7 @@ deploy_olm:
   artifacts:
     when: always
     paths:
-      - virter/tests-out/
+      - virter/
     reports:
       junit:
         - virter/tests-out/test-results/*.xml
