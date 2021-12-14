@@ -99,6 +99,8 @@ build_operator:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == 'master'
   stage: build
+  # https://github.com/containerd/containerd/issues/5978
+  retry: 1
   script:
     - export "PATH=$PWD/bin:$PATH"
     - if [ -n "$CI_COMMIT_TAG" ]; then NOCACHE=true ; else NOCACHE=false ; fi
