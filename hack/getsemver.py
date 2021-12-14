@@ -19,4 +19,4 @@ tag, changes, commit = parsed.groups()
 if changes == "0":
     print(tag)
 else:
-    print("{}.dev{}-g{}".format(tag, changes, commit))
+    print("{}-dev{}-g{}".format(tag, changes, commit))

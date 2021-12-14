@@ -53,11 +53,15 @@ prepare-bins:
     - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
     - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
     - ci_fetch_binary operator-sdk operator-sdk-$OPERATOR_SDK_VERSION https://github.com/operator-framework/operator-sdk/releases/download/$OPERATOR_SDK_VERSION/operator-sdk-$OPERATOR_SDK_VERSION-x86_64-linux-gnu
-    - ci_fetch_binary opm opm-${OPM_VERSION} https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm
+    - ci_fetch_binary opm opm-$OPM_VERSION https://github.com/operator-framework/operator-registry/releases/download/$OPM_VERSION/linux-amd64-opm
     - ci_fetch_binary yq yq-$YQ_VERSION https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64
     - ci_fetch_binary jq jq-$JQ_VERSION https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/jq-linux64
     - ci_fetch_tar helm-$HELM_VERSION https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz -z
     - ci_fetch_tar crane-$CRANE_VERSION https://github.com/google/go-containerregistry/releases/download/$CRANE_VERSION/go-containerregistry_Linux_x86_64.tar.gz -z
+  cache:
+    key: $VIRTER_VERSION-$VMSHED_VERSION-$K8S_TEST_VERSION-$OPERATOR_SDK_VERSION-$OPM_VERSION-$YQ_VERSION-$JQ_VERSION-$HELM_VERSION-$CRANE_VERSION
+    paths:
+      - download
   artifacts:
     paths:
       - bin
