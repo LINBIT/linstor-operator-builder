@@ -2,7 +2,7 @@ drbdRepoCred: drbdiocred
 csi:
   pluginImage: "drbd.io/linstor-csi:v0.17.0"
 operator:
-  image: "drbd.io/linstor-operator:v1.7.0-rc.5"
+  image: "drbd.io/linstor-operator:v1.7.0"
   controller:
     controllerImage: "drbd.io/linstor-controller:v1.17.0"
   satelliteSet:
