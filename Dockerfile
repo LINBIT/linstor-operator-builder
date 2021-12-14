@@ -14,7 +14,7 @@ COPY version/ version/
 ARG TARGETARCH
 RUN GOARCH=$TARGETARCH CGO_ENABLED=0 go build --ldflags '-extldflags "-static"' -gcflags all=-trimpath=. --asmflags all=-trimpath=. -tags custom -o linstor-operator ./cmd/manager/main.go
 
-FROM --platform=$TARGETPLATFORM registry.access.redhat.com/ubi8/ubi-minimal:latest
+FROM --platform=$TARGETPLATFORM registry.access.redhat.com/ubi8/ubi-micro:latest
 
 LABEL name="LINSTOR Operator" \
       vendor="LINBIT" \
