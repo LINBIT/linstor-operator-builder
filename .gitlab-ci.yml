@@ -7,7 +7,7 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.17.0
+  VIRTER_VERSION: v0.18.0
   VMSHED_VERSION: v0.14.6
   K8S_TEST_VERSION: v1.2.0
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
@@ -160,9 +160,6 @@ deploy_olm:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - virter image pull centos-8 $LINBIT_DOCKER_REGISTRY/vm/centos-8:latest
     - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=centos-8
-    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/just-kubeadm:$K8S_TEST_VERSION
-    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/helm:$K8S_TEST_VERSION
-    - docker pull $LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/tests:$K8S_TEST_VERSION
     - cd virter
     - |
       cat <<EOF > operator-to-test.yml
