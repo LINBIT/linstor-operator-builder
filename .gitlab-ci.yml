@@ -160,12 +160,9 @@ deploy_olm:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - virter image pull centos-8 $LINBIT_DOCKER_REGISTRY/vm/centos-8:latest
     - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=centos-8
+    - cp test-helm-config.yaml virter/operator-to-test.yml
     - cd virter
-    - |
-      cat <<EOF > operator-to-test.yml
-      operator:
-        image: $OPERATOR_IMAGE
-      EOF
+    - yq write --inplace operator-to-test.yml 'operator.image' "$OPERATOR_IMAGE"
     - >
       vmshed
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))

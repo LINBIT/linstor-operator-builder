@@ -1,9 +1,7 @@
+csi:
+  logLevel: trace
 operator:
+  controller:
+    logLevel: trace
   satelliteSet:
-    storagePools:
-      lvmThinPools:
-      - name: thinpool
-        volumeGroup: linstor_thinpool
-        thinVolume: thinpool
-        devicePaths:
-        - /dev/vdb
+    logLevel: trace
