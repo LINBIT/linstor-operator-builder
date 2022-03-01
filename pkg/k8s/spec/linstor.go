@@ -30,6 +30,9 @@ const (
 	// NodeRole is the role for the node set
 	NodeRole = "linstor-node"
 
+	// CSIDriverRole is the role for the CSI Workloads
+	CSIDriverRole = "linstor-csi"
+
 	// CSIControllerRole is the role for the CSI Controller Workloads
 	CSIControllerRole = "csi-controller"
 
