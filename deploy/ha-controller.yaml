@@ -16,6 +16,16 @@ spec:
         app.kubernetes.io/name: linstor-ha-controller
     spec:
       serviceAccountName: ha-controller
+      initContainers:
+        - name: wait-for-api
+          image: drbd.io/linstor-k8s-ha-controller:v0.3.0
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - /linstor-wait-until
+            - api-online
+          env:
+            - name: LS_CONTROLLERS
+              value: MY-LINSTOR-URL
       containers:
         - name: controller
           image: drbd.io/linstor-k8s-ha-controller:v0.3.0
