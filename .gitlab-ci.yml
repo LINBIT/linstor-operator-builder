@@ -7,9 +7,9 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.18.0
-  VMSHED_VERSION: v0.14.6
-  K8S_TEST_VERSION: v1.2.2
+  VIRTER_VERSION: v0.18.1
+  VMSHED_VERSION: v0.15.0
+  K8S_TEST_VERSION: v1.2.5
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -169,6 +169,7 @@ deploy_olm:
       --torun $TO_RUN
       --set values.DockerRegistryMirror=https://${DOCKER_REGISTRY_MIRROR}
       --set values.DrbdRegistryMirror=https://${DRBD_REGISTRY_MIRROR}
+      --set values.K8sRegistryMirror=https://${K8S_REGISTRY_MIRROR}
       --set values.DrbdIoUser=$PUBLISH_REGISTRY_USER
       --set values.DrbdIoPassword=$PUBLISH_REGISTRY_PASSWORD
       --set values.JustKubeadmImage=$LINBIT_DOCKER_REGISTRY/linstor-kubernetes-tests/just-kubeadm:$K8S_TEST_VERSION
