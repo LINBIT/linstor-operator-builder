@@ -10,7 +10,7 @@ entries:
       repository: ""
       version: 0.7.5
     description: A Helm chart for Linstor Operator
-    digest: 84cab0162a58428530e87d9e9d5b3b06b90183f791808eb6c22180488063c7d8
+    digest: fa276f986d066e6296d66ce3a676dac34d74f4487cf58bdd7f491f460f762958
     home: https://linstor.io/
     name: linstor
     type: application
