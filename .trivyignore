@@ -1,0 +1,2 @@
+# At no point are we using the server part of the k8s api, so we can ignore this CVE.
+CVE-2022-1996 
