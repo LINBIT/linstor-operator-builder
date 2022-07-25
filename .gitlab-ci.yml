@@ -229,17 +229,13 @@ container_scanning:
   image:
     name: docker.io/aquasec/trivy:latest
     entrypoint: [""]
-  variables:
-    # No need to clone the repo, we exclusively work on artifacts.  See
-    # https://docs.gitlab.com/ee/ci/runners/README.html#git-strategy
-    GIT_STRATEGY: none
   script:
     - trivy --version
-    - trivy client --exit-code 0 --format template --template "@/contrib/html.tpl" -o container-scan.html "$OPERATOR_IMAGE"
+    - trivy image --exit-code 0 --format template --template "@/contrib/html.tpl" -o container-scan.html "$OPERATOR_IMAGE"
     # Prints full report
-    - trivy client --exit-code 0 "$OPERATOR_IMAGE"
+    - trivy image --exit-code 0 "$OPERATOR_IMAGE"
     # Fail on critical (unfixed) vulnerabilities
-    - trivy client --exit-code 1 --ignore-unfixed --severity CRITICAL "$OPERATOR_IMAGE"
+    - trivy image --exit-code 1 --ignore-unfixed --severity CRITICAL "$OPERATOR_IMAGE"
   # Ideally, we would use container_scanning for the artifact here. That is currently a paid feature, so we have to use code quality
   artifacts:
     when: always
