@@ -1,0 +1,15 @@
+apiVersion: v2
+name: linstor-ha-controller
+description: |
+  Deploys the LINSTOR High Availability Controller. Using DRBD quorum, the controller speeds up fail over of stateful
+  workloads in case of storage interruptions.
+type: application
+maintainers:
+  - name: LINBIT
+    url: https://linbit.com/
+keywords:
+  - storage
+sources:
+  - https://github.com/piraeusdatastore/piraeus-ha-controller
+version: 1.0.1
+appVersion: "v1.0.1"

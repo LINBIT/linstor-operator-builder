@@ -6,6 +6,7 @@ DSTNAME ?= linstor
 DSTOP ?= linstor-operator
 DSTCHART ?= linstor-operator-helm
 DSTPVCHART ?= linstor-operator-helm-pv
+UPSTREAMCHARTS ?= ./upstream-charts
 DSTHELMPACKAGE ?= out/helm
 ARCH ?= $(shell go env GOARCH 2> /dev/null || echo amd64)
 REGISTRY ?= drbd.io/$(ARCH)
@@ -29,7 +30,7 @@ IMAGE := $(REGISTRY)/$(notdir $(DSTOP))
 all: operator chart pvchart olm
 
 distclean:
-	rm -rf "$(DSTOP)" "$(DSTCHART)" "$(DSTPVCHART)" "$(DSTHELMPACKAGE)"
+	rm -rf "$(DSTOP)" "$(DSTCHART)" "$(DSTPVCHART)" "$(DSTHELMPACKAGE)" "$(UPSTREAMCHARTS)"
 
 ########## operator #########
 
@@ -145,6 +146,18 @@ $(PVCHART_DST_FILES_CP): $(DSTPVCHART)/%: $(SRCPVCHART)/%
 	mkdir -p "$$(dirname "$@")"
 	cp -av "$^" "$@"
 
+######## Upstream Charts ########
+
+.PHONY: upstream-charts
+upstream-charts:
+	mkdir -p $(UPSTREAMCHARTS)
+	rsync -a --delete piraeus-charts/charts/linstor-affinity-controller/ $(UPSTREAMCHARTS)/linstor-affinity-controller
+	rsync -a --delete piraeus-charts/charts/piraeus-ha-controller/ $(UPSTREAMCHARTS)/linstor-ha-controller
+	# Customization for HA Controller
+	rsync -a charts/linstor-ha-controller/ $(UPSTREAMCHARTS)/linstor-ha-controller
+	helm package --destination $(DSTHELMPACKAGE) $(UPSTREAMCHARTS)/linstor-affinity-controller
+	helm package --destination $(DSTHELMPACKAGE) $(UPSTREAMCHARTS)/linstor-ha-controller
+
 ########## stork standalone deployment ##########
 
 DSTSTORK := $(abspath out/stork.yaml)
@@ -153,17 +166,17 @@ stork: $(DSTCHART)
 	mkdir -p $(dir $(DSTSTORK))
 	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.enabled=true --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
 
-########## HA Controller standalone deployment ########
+########## Legacy HA Controller standalone deployment ########
 
 DSTHACTRL := $(abspath out/ha-controller.yaml)
 
-ha-controller: $(DSTCHART)
+legacy-ha-controller: $(DSTCHART)
 	mkdir -p $(dir $(DSTHACTRL))
-	helm template linstor $(DSTCHART) --namespace MY-HA-CTRL-NAMESPACE --set global.setSecurityContext=false --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/ha-controller-deployment.yaml --show-only templates/ha-controller-rbac.yaml > $(DSTHACTRL)
+	helm template linstor $(DSTCHART) --namespace MY-HA-CTRL-NAMESPACE --set global.setSecurityContext=false --set haController.enabled=true --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/ha-controller-deployment.yaml --show-only templates/ha-controller-rbac.yaml > $(DSTHACTRL)
 
 ########## publishing #########
 
-publish: ha-controller chart pvchart stork
+publish: upstream-charts legacy-ha-controller chart pvchart stork
 	tmpd=$$(mktemp -p $$PWD -d) && pw=$$PWD && churl=https://charts.linstor.io && \
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \

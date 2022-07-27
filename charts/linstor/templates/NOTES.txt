@@ -18,3 +18,13 @@ Since you didn't configure any storage pools, now would be a great time to add s
 It looks like your cluster does not currently support snapshots. The documentation contains instructions on how
 to enable snapshots in your cluster.
 {{ end }}
+
+If you want to take full advantage of LINBIT SDS and are looking for faster fail-over of your workloads in case of storage
+issues, consider installing the LINSTOR HA Controller:
+
+  helm install linstor-ha-controller linstor/linstor-ha-controller
+
+If you are running on ephemeral infrastructure and still want to take advantage of strict volume affinity, take a look
+at our LINSTOR Affinity Controller. It helps ensure a PVs affinity is always in sync with the state of the LINSTOR volume.
+
+  helm install linstor-affinity-controller linstor/linstor-affinity-controller

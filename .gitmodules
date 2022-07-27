@@ -1,3 +1,6 @@
 [submodule "piraeus-operator"]
 	path = piraeus-operator
 	url = https://github.com/piraeusdatastore/piraeus-operator.git
+[submodule "helm-charts"]
+	path = piraeus-charts
+	url = https://github.com/piraeusdatastore/helm-charts.git
