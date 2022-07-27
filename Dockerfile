@@ -12,7 +12,7 @@ COPY pkg/ pkg/
 COPY version/ version/
 
 ARG TARGETARCH
-RUN GOARCH=$TARGETARCH CGO_ENABLED=0 go build --ldflags '-extldflags "-static"' -gcflags all=-trimpath=. --asmflags all=-trimpath=. -tags custom -o linstor-operator ./cmd/manager/main.go
+RUN --mount=type=cache,target=/root/.cache/go-build GOARCH=$TARGETARCH CGO_ENABLED=0 go build --ldflags '-extldflags "-static"' -gcflags all=-trimpath=. --asmflags all=-trimpath=. -tags custom -o linstor-operator ./cmd/manager/main.go
 
 # ubi-micro would be good enough, but that doesn't pass RHEL certification :/
 FROM --platform=$TARGETPLATFORM registry.access.redhat.com/ubi8/ubi-minimal:latest
