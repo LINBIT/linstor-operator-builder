@@ -5,6 +5,8 @@ kind: Deployment
 metadata:
   name: linstor-ha-controller
   namespace: MY-HA-CTRL-NAMESPACE
+  labels:
+    app.kubernetes.io/name: linstor-ha-controller
 spec:
   replicas: 1
   selector:
