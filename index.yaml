@@ -550,6 +550,25 @@ entries:
     version: 1.1.2
   linstor-ha-controller:
   - apiVersion: v2
+    appVersion: v1.1.0
+    created: "2022-08-08T11:58:06.827093834+02:00"
+    description: 'Deploys the LINSTOR High Availability Controller. Using DRBD quorum,
+      the controller speeds up fail over of stateful workloads in case of storage
+      interruptions. '
+    digest: 7705f1e9a3fe81f5c0c3e2385d2ade7cd0ea31d75107e0bd1a932d564c0e6e24
+    keywords:
+    - storage
+    maintainers:
+    - name: LINBIT
+      url: https://linbit.com/
+    name: linstor-ha-controller
+    sources:
+    - https://github.com/piraeusdatastore/piraeus-ha-controller
+    type: application
+    urls:
+    - https://charts.linstor.io/linstor-ha-controller-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
     appVersion: v1.0.1
     created: "2022-07-27T13:08:01.737318033Z"
     description: |
@@ -641,11 +660,11 @@ entries:
     - https://charts.linstor.io/pv-hostpath-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v1
-    created: "2022-07-27T13:08:01.737601211Z"
+    created: "2022-08-08T11:58:06.827276726+02:00"
     description: Hostpath volumes for etcd persistence
     digest: 665d4788654eaaf4ffcd280d7b03ff7601a1b609ee58c60d93566e38cdb23330
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2022-07-27T13:08:01.586224529Z"
+generated: "2022-08-08T11:58:06.74901973+02:00"
