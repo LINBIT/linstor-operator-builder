@@ -2,13 +2,13 @@ drbdRepoCred: drbdiocred
 csi:
   pluginImage: "drbd.io/linstor-csi:v0.20.0"
 operator:
-  image: "drbd.io/linstor-operator:v1.9.1"
+  image: "drbd.io/linstor-operator:v1.10.0"
   controller:
-    controllerImage: "drbd.io/linstor-controller:v1.19.1"
+    controllerImage: "drbd.io/linstor-controller:v1.20.0"
   satelliteSet:
     kernelModuleInjectionMode: ShippedModules
-    kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.1.9"
-    satelliteImage: "drbd.io/linstor-satellite:v1.19.1"
-    monitoringImage: "drbd.io/drbd-reactor:v0.8.0"
+    kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.1.11"
+    satelliteImage: "drbd.io/linstor-satellite:v1.20.0"
+    monitoringImage: "drbd.io/drbd-reactor:v0.9.0"
 haController:
   image: drbd.io/linstor-k8s-ha-controller:v0.3.0
