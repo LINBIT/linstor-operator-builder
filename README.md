@@ -5,6 +5,11 @@
 To deploy LINBIT SDS, you need to: 
 * Have a working Kubernetes Cluster
 * `kubectl` configured to point at the Cluster
+* [cert-manager.io](https://cert-manager.io) deployed in your cluster
 * Your customer credentials for [my.linbit.com](https://my.linbit.com)
 
-TODO: add deploy instructions
+```
+$ kubectl create namespace linbit-sds
+$ kubectl create secret -n linbit-sds docker-registry drbdio-pull-secret --docker-server=drbd.io --docker-username=$LINBIT_USERNAME --docker-password=$LINBIT_PASSWORD
+$ kubectl apply -k https://github.com/LINBIT/linstor-operator-builder?ref=v2
+```
