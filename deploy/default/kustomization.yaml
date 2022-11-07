@@ -45,7 +45,6 @@ resources:
 - https://github.com/piraeusdatastore/piraeus-operator//config/manager?ref=v2
 - https://github.com/piraeusdatastore/piraeus-operator//config/webhook?ref=v2
 - https://github.com/piraeusdatastore/piraeus-operator//config/certmanager?ref=v2
-- https://github.com/piraeusdatastore/piraeus-operator//config/samples?ref=v2
 
 patchesStrategicMerge:
 - manager_auth_proxy_patch.yaml
