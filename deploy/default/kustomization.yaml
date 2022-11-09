@@ -3,38 +3,38 @@ namespace: linbit-sds
 
 namePrefix: linstor-operator-
 labels:
-  - pairs:
-      app.kubernetes.io/name: linbit-sds
-    includeSelectors: true
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/name: linbit-sds
 
 patches:
-  - target:
-      kind: Deployment
+- patch: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
       name: controller-manager
-    patch: |
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: controller-manager
-      spec:
-        template:
-          spec:
-            imagePullSecrets:
-            - name: drbdio-pull-secret
-            containers:
-            - name: manager
-              env:
-                - name: PULL_SECRET
-                  value: drbdio-pull-secret
-  - target:
-      kind: ConfigMap
-      name: config
-    path: default_images.yaml
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: drbdio-pull-secret
+          containers:
+          - name: manager
+            env:
+              - name: PULL_SECRET
+                value: drbdio-pull-secret
+  target:
+    kind: Deployment
+    name: controller-manager
+- path: default_images.yaml
+  target:
+    kind: ConfigMap
+    name: config
 
 images:
-  - name: controller
-    newName: drbd.io/linstor-operator
-    newTag: v2
+- name: controller
+  newName: drbd.io/linstor-operator
+  newTag: v2
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -51,30 +51,55 @@ patchesStrategicMerge:
 - manager_webhook_patch.yaml
 - webhookcainjection_patch.yaml
 
-vars:
-- name: CERTIFICATE_NAMESPACE # namespace of the certificate CR
-  objref:
-    kind: Certificate
-    group: cert-manager.io
-    version: v1
-    name: serving-cert # this name should match the one in certificate.yaml
-  fieldref:
-    fieldpath: metadata.namespace
-- name: CERTIFICATE_NAME
-  objref:
-    kind: Certificate
-    group: cert-manager.io
-    version: v1
-    name: serving-cert # this name should match the one in certificate.yaml
-- name: SERVICE_NAMESPACE # namespace of the service
-  objref:
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+replacements:
+- source:
+    fieldPath: metadata.namespace
     kind: Service
-    version: v1
     name: webhook-service
-  fieldref:
-    fieldpath: metadata.namespace
-- name: SERVICE_NAME
-  objref:
+  targets:
+  - fieldPaths:
+    - spec.dnsNames.0
+    options:
+      delimiter: .
+      index: 1
+    select:
+      group: cert-manager.io
+      kind: Certificate
+      name: serving-cert
+      namespace: system
+      version: v1
+  - fieldPaths:
+    - spec.dnsNames.1
+    options:
+      delimiter: .
+      index: 1
+    select:
+      group: cert-manager.io
+      kind: Certificate
+      name: serving-cert
+      namespace: system
+      version: v1
+- source:
     kind: Service
-    version: v1
     name: webhook-service
+  targets:
+  - fieldPaths:
+    - spec.dnsNames.0
+    options:
+      delimiter: .
+    select:
+      group: cert-manager.io
+      kind: Certificate
+      name: serving-cert
+      version: v1
+  - fieldPaths:
+    - spec.dnsNames.1
+    options:
+      delimiter: .
+    select:
+      group: cert-manager.io
+      kind: Certificate
+      name: serving-cert
+      version: v1
