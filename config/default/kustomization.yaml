@@ -1,2 +1,2 @@
 resources:
-- https://github.com/piraeusdatastore/piraeus-operator//config/samples?ref=v2
+- ../../piraeus-operator/config/samples
