@@ -68,7 +68,6 @@ replacements:
       group: cert-manager.io
       kind: Certificate
       name: serving-cert
-      namespace: system
       version: v1
   - fieldPaths:
     - spec.dnsNames.1
@@ -79,7 +78,6 @@ replacements:
       group: cert-manager.io
       kind: Certificate
       name: serving-cert
-      namespace: system
       version: v1
 - source:
     kind: Service
@@ -103,3 +101,29 @@ replacements:
       kind: Certificate
       name: serving-cert
       version: v1
+- source:
+    kind: Certificate
+    name: serving-cert
+    fieldPath: metadata.namespace
+  targets:
+    - fieldPaths:
+        - metadata.annotations.[cert-manager.io/inject-ca-from]
+      options:
+        delimiter: /
+        index: 0
+      select:
+        kind: ValidatingWebhookConfiguration
+        name: validating-webhook-configuration
+- source:
+    kind: Certificate
+    name: serving-cert
+    fieldPath: metadata.name
+  targets:
+    - fieldPaths:
+        - metadata.annotations.[cert-manager.io/inject-ca-from]
+      options:
+        delimiter: /
+        index: 1
+      select:
+        kind: ValidatingWebhookConfiguration
+        name: validating-webhook-configuration
