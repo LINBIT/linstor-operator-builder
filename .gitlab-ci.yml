@@ -5,6 +5,34 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  VIRTER_VERSION: v0.20.1
+  VMSHED_VERSION: v0.18.1
+  KUSTOMIZE_VERSION: v4.5.7
+  K8S_TEST_VERSION: v2
+
+prepare-bins:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - if: $CI_COMMIT_BRANCH == 'v2'
+  image: ${LINBIT_DOCKER_REGISTRY}/build-helpers:latest
+  stage: build
+  script:
+    - . /usr/local/bin/gitlab-utils.sh
+    - ci_prepare_tools
+    - ci_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
+    - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
+    - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION-again $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
+    - ci_fetch_tar kustomize-$KUSTOMIZE_VERSION "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -z
+  cache:
+    key: bin-$VIRTER_VERSION-$VMSHED_VERSION
+    paths:
+      - download
+  artifacts:
+    paths:
+      - download
+      - bin
 
 build_operator:
   rules:
@@ -20,8 +48,8 @@ build_operator:
     - export "PATH=$PWD/bin:$PATH"
     - if [ -n "$CI_COMMIT_TAG" ]; then NOCACHE=true ; else NOCACHE=false ; fi
     - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
-    - docker buildx build --pull --push --platform $PUBLISH_PLATFORMS --build-arg=VERSION=$TAG-$CI_COMMIT_SHA -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG . --no-cache=$NOCACHE
-    - echo "OPERATOR_IMAGE=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG" > .build.env
+    - docker buildx build --pull --push --platform $PUBLISH_PLATFORMS --build-arg=VERSION=$TAG-$CI_COMMIT_SHA -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG . --no-cache=$NOCACHE --iidfile=.image-id
+    - echo "OPERATOR_IMAGE=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG@$(cat .image-id)" > .build.env
   artifacts:
     reports:
       dotenv:
@@ -52,6 +80,85 @@ container_scanning:
     expose_as: "Container Scan"
     paths:
       - container-scan.html
+
+.test:
+  stage: test
+  tags:
+    - libvirt
+  script:
+    - set -ex
+    - export PATH=$CI_PROJECT_DIR/bin:$PATH
+    - create-k8s-test-configs -stable-releases-to-check=$RELEASES_TO_CHECK -include-next=$INCLUDE_NEXT -base-image=alma-9 -output-dir=.
+    - ( cd deploy/default ; kustomize edit set image controller=$OPERATOR_IMAGE )
+    - virter image pull alma-9 ${LINBIT_DOCKER_REGISTRY}/vm/alma-9:latest
+    - echo "LOG_REVIEW_URL=https://log-viewer.apps.oc.at.linbit.com/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID" | tee .deploy.env
+    - >
+      vmshed
+      --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
+      --variant "$VARIANT"
+      --torun "$TO_RUN"
+      --set values.DockerRegistryMirror=https://${DOCKER_REGISTRY_MIRROR}
+      --set values.DrbdRegistryMirror=https://${DRBD_REGISTRY_MIRROR}
+      --set values.K8sGcrIoMirror=https://${K8S_REGISTRY_MIRROR}
+      --set values.RegistryK8sIoMirror=https://${REGISTRY_K8S_IO_MIRROR}
+      --set values.DrbdIoUser=${PUBLISH_REGISTRY_USER}
+      --set values.DrbdIoPassword=${PUBLISH_REGISTRY_PASSWORD}
+      --set values.JustKubeadmImage=${LINBIT_DOCKER_REGISTRY}/linstor-kubernetes-tests/just-kubeadm:${K8S_TEST_VERSION}
+      --set values.HelmImage=${LINBIT_DOCKER_REGISTRY}/linstor-kubernetes-tests/helm:${K8S_TEST_VERSION}
+      --set values.TestImage=${LINBIT_DOCKER_REGISTRY}/linstor-kubernetes-tests/tests:${K8S_TEST_VERSION}
+      --set values.DeploymentVersion=v2
+      --set values.DeploymentV2Source=/virter/workspace/deploy/default
+      --set "values.Skip=$SKIP"
+      --set "values.Focus=$FOCUS"
+  environment:
+    name: $CI_JOB_NAME_SLUG/$CI_COMMIT_REF_SLUG
+    url: $LOG_REVIEW_URL
+  artifacts:
+    when: always
+    paths:
+      - tests-out/
+      - .deploy.env
+    reports:
+      dotenv:
+        - .deploy.env
+      junit:
+        # These reports are created by vmshed, reporting if the test command itself succeeded.
+        - tests-out/test-results/*.xml
+        # These reports are created by the test binaries, holding details about all tests that ran.
+        - tests-out/log/**/*-report.xml
+
+test-fast:
+  extends: .test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - if: $CI_COMMIT_BRANCH == 'v2'
+    - if: $CI_COMMIT_TAG
+  timeout: 1h
+  variables:
+    TO_RUN: operator
+    VARIANT: k8s-backend
+    RELEASES_TO_CHECK: "4"
+    INCLUDE_NEXT: "true"
+
+test-full:
+  timeout: 8h
+  extends: .test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == 'v2'
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+      when: manual
+      allow_failure: true
+  variables:
+    RELEASES_TO_CHECK: "4"
+    INCLUDE_NEXT: "true"
+    SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|multiple|subPath"
+    VARIANT: "k8s-backend,no-helm-install"
 
 publish-image:
   stage: deploy
