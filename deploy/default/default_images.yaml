@@ -6,7 +6,7 @@ metadata:
 data:
   default_images.yaml: |
     base: drbd.io
-    defaults:
+    components:
       linstor-controller:
         tag: v1.20.0
         image: linstor-controller
@@ -21,7 +21,7 @@ data:
         image: drbd-reactor
       drbd-module-loader:
         tag: v9.2.1
-        image: drbd9-rhel9 # Fall back image: chose a very recent-ish kernel
+        image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux 7\.
             name: drbd9-rhel7
