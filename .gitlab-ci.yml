@@ -8,7 +8,7 @@ variables:
   VIRTER_VERSION: v0.20.1
   VMSHED_VERSION: v0.18.1
   KUSTOMIZE_VERSION: v4.5.7
-  K8S_TEST_VERSION: v2
+  K8S_TEST_VERSION: v2.0.0
 
 prepare-bins:
   rules:
@@ -23,7 +23,7 @@ prepare-bins:
     - ci_prepare_tools
     - ci_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
     - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
-    - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION-again $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
+    - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
     - ci_fetch_tar kustomize-$KUSTOMIZE_VERSION "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -z
   cache:
     key: bin-$VIRTER_VERSION-$VMSHED_VERSION
