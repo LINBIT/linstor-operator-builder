@@ -8,7 +8,7 @@ variables:
   VIRTER_VERSION: v0.20.1
   VMSHED_VERSION: v0.18.1
   KUSTOMIZE_VERSION: v4.5.7
-  K8S_TEST_VERSION: v2.0.0
+  K8S_TEST_VERSION: v2.0.1
 
 prepare-bins:
   rules:
@@ -137,7 +137,7 @@ test-fast:
   timeout: 1h
   variables:
     TO_RUN: operator
-    VARIANT: k8s-backend
+    VARIANT: k8s-backend,ipv6,dualstack
     RELEASES_TO_CHECK: "4"
     INCLUDE_NEXT: "true"
 
@@ -158,7 +158,7 @@ test-full:
     RELEASES_TO_CHECK: "4"
     INCLUDE_NEXT: "true"
     SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|multiple|subPath"
-    VARIANT: "k8s-backend,no-helm-install"
+    VARIANT: "k8s-backend,no-helm-install,dualstack"
 
 publish-image:
   stage: deploy
