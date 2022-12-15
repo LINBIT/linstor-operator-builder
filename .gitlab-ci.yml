@@ -7,9 +7,9 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.19.1
-  VMSHED_VERSION: v0.15.0
-  K8S_TEST_VERSION: v1.6.0
+  VIRTER_VERSION: v0.20.1
+  VMSHED_VERSION: v0.18.1
+  K8S_TEST_VERSION: v2.0.3
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -159,7 +159,7 @@ deploy_olm:
   script:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - virter image pull alma-8 $LINBIT_DOCKER_REGISTRY/vm/alma-8:latest
-    - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=alma-8
+    - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=alma-9
     - cp test-helm-config.yaml virter/operator-to-test.yml
     - cd virter
     - yq write --inplace operator-to-test.yml 'operator.image' "$OPERATOR_IMAGE"
@@ -167,6 +167,7 @@ deploy_olm:
       vmshed
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
       --torun $TO_RUN
+      --variant "$VARIANT"
       --set values.DockerRegistryMirror=https://${DOCKER_REGISTRY_MIRROR}
       --set values.DrbdRegistryMirror=https://${DRBD_REGISTRY_MIRROR}
       --set values.K8sGcrIoMirror=https://${K8S_REGISTRY_MIRROR}
@@ -202,6 +203,7 @@ test-chart:
   timeout: 30m
   variables:
     TO_RUN: chart,operator
+    VARIANT: "k8s-backend,etcd-backend,no-helm-install"
 
 test-e2e:
   extends: .test

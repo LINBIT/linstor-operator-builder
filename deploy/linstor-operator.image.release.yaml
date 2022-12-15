@@ -9,14 +9,14 @@
 - name: RELATED_IMAGE_CSI_PLUGIN
   value: registry.connect.redhat.com/linbit/linstor-csi:v0.17.0
 - name: RELATED_IMAGE_CSI_ATTACHER
-  value: registry.redhat.io/openshift4/ose-csi-external-attacher:v4.9
+  value: registry.redhat.io/openshift4/ose-csi-external-attacher:v4.11
 - name: RELATED_IMAGE_CSI_LIVENESSPROBE
-  value: registry.redhat.io/openshift4/ose-csi-livenessprobe:v4.9
+  value: registry.redhat.io/openshift4/ose-csi-livenessprobe:v4.11
 - name: RELATED_IMAGE_CSI_NODE_REGISTRAR
-  value: registry.redhat.io/openshift4/ose-csi-node-driver-registrar:v4.9
+  value: registry.redhat.io/openshift4/ose-csi-node-driver-registrar:v4.11
 - name: RELATED_IMAGE_CSI_PROVISIONER
-  value: registry.redhat.io/openshift4/ose-csi-external-provisioner:v4.9
+  value: registry.redhat.io/openshift4/ose-csi-external-provisioner:v4.11
 - name: RELATED_IMAGE_CSI_SNAPSHOTTER
-  value: registry.redhat.io/openshift4/ose-csi-external-snapshotter:v4.9
+  value: registry.redhat.io/openshift4/ose-csi-external-snapshotter:v4.11
 - name: RELATED_IMAGE_CSI_RESIZER
-  value: registry.redhat.io/openshift4/ose-csi-external-resizer:v4.9
+  value: registry.redhat.io/openshift4/ose-csi-external-resizer:v4.11
