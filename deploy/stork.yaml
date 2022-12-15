@@ -258,14 +258,14 @@ spec:
             - --policy-configmap-namespace=MY-STORK-NAMESPACE
             - --leader-elect-resource-name=linstor-stork-stork-scheduler
             - --leader-elect-resource-namespace=MY-STORK-NAMESPACE
-          image: "k8s.gcr.io/kube-scheduler-amd64:v1.16.0"
+          image: "registry.k8s.io/kube-scheduler:v1.16.0"
           imagePullPolicy: "IfNotPresent"
+          name: linstor-stork-stork-scheduler
           livenessProbe:
             httpGet:
               path: /healthz
               port: 10251
             initialDelaySeconds: 15
-          name: linstor-stork-stork-scheduler
           readinessProbe:
             httpGet:
               path: /healthz
