@@ -9,7 +9,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   VIRTER_VERSION: v0.21.0
   VMSHED_VERSION: v0.19.0
-  K8S_TEST_VERSION: v2.1.1
+  K8S_TEST_VERSION: v2.1.2
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
