@@ -11,6 +11,6 @@ To deploy LINBIT SDS, you need to:
 ```
 $ kubectl create namespace linbit-sds
 $ kubectl create secret -n linbit-sds docker-registry drbdio-pull-secret --docker-server=drbd.io --docker-username=$LINBIT_USERNAME --docker-password=$LINBIT_PASSWORD
-$ kubectl apply -k "https://github.com/LINBIT/linstor-operator-builder//deploy/default?ref=v2"
-$ kubectl apply -k "https://github.com/LINBIT/linstor-operator-builder//config/default?ref=v2"
+$ kubectl apply -k "https://github.com/LINBIT/linstor-operator-builder//deploy/default?ref=v2.0.0"
+$ kubectl apply -k "https://github.com/LINBIT/linstor-operator-builder//config/default?ref=v2.0.0"
 ```
