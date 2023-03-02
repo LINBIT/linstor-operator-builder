@@ -28,20 +28,28 @@ data:
         match:
           - osImage: Red Hat Enterprise Linux 7\.
             name: drbd9-rhel7
+            precompiled: true
           - osImage: Red Hat Enterprise Linux 8\.
             name: drbd9-rhel8
+            precompiled: true
           - osImage: Red Hat Enterprise Linux 9\.
             name: drbd9-rhel9
+            precompiled: true
           - osImage: Red Hat Enterprise Linux CoreOS
             name: drbd9-rhel8
+            precompiled: true
           - osImage: CentOS Linux 7
             name: drbd9-rhel7
+            precompiled: true
           - osImage: CentOS Linux 8
             name: drbd9-rhel8
+            precompiled: true
           - osImage: AlmaLinux 8
             image: drbd9-rhel8
+            precompiled: true
           - osImage: AlmaLinux 9
             image: drbd9-rhel9
+            precompiled: true
           - osImage: Ubuntu 18\.04
             image: drbd9-bionic
           - osImage: Ubuntu 20\.04
