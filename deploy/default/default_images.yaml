@@ -22,6 +22,9 @@ data:
       ha-controller:
         tag: v1.1.2
         image: linstor-k8s-ha-controller
+      drbd-shutdown-guard:
+        tag: v1.0.0
+        image: drbd-shutdown-guard
       drbd-module-loader:
         tag: v9.2.2
         image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
