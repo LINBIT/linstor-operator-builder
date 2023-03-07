@@ -50,6 +50,8 @@ data:
           - osImage: AlmaLinux 9
             image: drbd9-rhel9
             precompiled: true
+          - osImage: Amazon Linux 2
+            name: drbd9-amzn2
           - osImage: Ubuntu 18\.04
             image: drbd9-bionic
           - osImage: Ubuntu 20\.04
