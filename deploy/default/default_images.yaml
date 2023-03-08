@@ -30,22 +30,22 @@ data:
         image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux 7\.
-            name: drbd9-rhel7
+            image: drbd9-rhel7
             precompiled: true
           - osImage: Red Hat Enterprise Linux 8\.
-            name: drbd9-rhel8
+            image: drbd9-rhel8
             precompiled: true
           - osImage: Red Hat Enterprise Linux 9\.
-            name: drbd9-rhel9
+            image: drbd9-rhel9
             precompiled: true
           - osImage: Red Hat Enterprise Linux CoreOS
-            name: drbd9-rhel8
+            image: drbd9-rhel8
             precompiled: true
           - osImage: CentOS Linux 7
-            name: drbd9-rhel7
+            image: drbd9-rhel7
             precompiled: true
           - osImage: CentOS Linux 8
-            name: drbd9-rhel8
+            image: drbd9-rhel8
             precompiled: true
           - osImage: AlmaLinux 8
             image: drbd9-rhel8
@@ -54,7 +54,7 @@ data:
             image: drbd9-rhel9
             precompiled: true
           - osImage: Amazon Linux 2
-            name: drbd9-amzn2
+            image: drbd9-amzn2
           - osImage: Ubuntu 18\.04
             image: drbd9-bionic
           - osImage: Ubuntu 20\.04
