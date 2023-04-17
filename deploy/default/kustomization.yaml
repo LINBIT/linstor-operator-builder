@@ -26,10 +26,10 @@ patches:
   target:
     kind: Deployment
     name: controller-manager
-- path: default_images.yaml
+- path: images.yaml
   target:
     kind: ConfigMap
-    name: config
+    name: image-config
 
 images:
 - name: controller
@@ -127,3 +127,13 @@ replacements:
       select:
         kind: ValidatingWebhookConfiguration
         name: validating-webhook-configuration
+- source:
+    fieldPath: metadata.name
+    kind: ConfigMap
+    name: image-config
+  targets:
+    - select:
+        kind: Deployment
+        name: controller-manager
+      fieldPaths:
+        - spec.template.spec.containers.[name=manager].env.[name=IMAGE_CONFIG_MAP_NAME].value

@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config
+  name: image-config
 data:
-  default_images.yaml: |
+  images.yaml: |
     base: drbd.io
     components:
       linstor-controller:
