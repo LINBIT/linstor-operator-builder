@@ -8,25 +8,25 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.20.3
+        tag: v1.22.0
         image: linstor-controller
       linstor-satellite:
-        tag: v1.20.3
+        tag: v1.22.0
         image: linstor-satellite
       linstor-csi:
-        tag: v1.0.0
+        tag: v1.0.1
         image: linstor-csi
       drbd-reactor:
-        tag: v1.0.0
+        tag: v1.1.0
         image: drbd-reactor
       ha-controller:
-        tag: v1.1.2
+        tag: v1.1.3
         image: linstor-k8s-ha-controller
       drbd-shutdown-guard:
         tag: v1.0.0
         image: drbd-shutdown-guard
       drbd-module-loader:
-        tag: v9.2.2
+        tag: v9.2.3
         image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux 7\.
