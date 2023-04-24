@@ -158,7 +158,7 @@ deploy_olm:
   allow_failure: true
   script:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
-    - virter image pull alma-8 $LINBIT_DOCKER_REGISTRY/vm/alma-8:latest
+    - virter image pull alma-9 $LINBIT_DOCKER_REGISTRY/vm/alma-9:latest
     - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=alma-9
     - cp test-helm-config.yaml virter/operator-to-test.yml
     - cd virter
