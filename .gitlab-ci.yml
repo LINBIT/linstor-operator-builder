@@ -5,10 +5,10 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.23.0
-  VMSHED_VERSION: v0.19.0
-  KUSTOMIZE_VERSION: v4.5.7
-  K8S_TEST_VERSION: v2.2.0
+  VIRTER_VERSION: v0.24.0
+  VMSHED_VERSION: v0.20.1
+  KUSTOMIZE_VERSION: v5.0.1
+  K8S_TEST_VERSION: v2.2.1
 
 prepare-bins:
   rules:
@@ -90,11 +90,10 @@ container_scanning:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - create-k8s-test-configs -stable-releases-to-check=$RELEASES_TO_CHECK -include-next=$INCLUDE_NEXT -base-image=alma-9 -output-dir=.
     - ( cd deploy/default ; kustomize edit set image controller=$OPERATOR_IMAGE )
-    - virter image pull alma-9 ${LINBIT_DOCKER_REGISTRY}/vm/alma-9:latest
-    - echo "LOG_REVIEW_URL=https://log-viewer.apps.oc.at.linbit.com/projects/$CI_PROJECT_ID/jobs/$CI_JOB_ID" | tee .deploy.env
     - >
       vmshed
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
+      --pull-template "${LINBIT_DOCKER_REGISTRY}/vm/{{ .Image }}:latest"
       --variant "$VARIANT"
       --torun "$TO_RUN"
       --set values.DockerRegistryMirror=https://${DOCKER_REGISTRY_MIRROR}
@@ -110,17 +109,11 @@ container_scanning:
       --set values.DeploymentV2Source=/virter/workspace/deploy/default
       --set "values.Skip=$SKIP"
       --set "values.Focus=$FOCUS"
-  environment:
-    name: $CI_JOB_NAME_SLUG/$CI_COMMIT_REF_SLUG
-    url: $LOG_REVIEW_URL
   artifacts:
     when: always
     paths:
       - tests-out/
-      - .deploy.env
     reports:
-      dotenv:
-        - .deploy.env
       junit:
         # These reports are created by vmshed, reporting if the test command itself succeeded.
         - tests-out/test-results/*.xml
