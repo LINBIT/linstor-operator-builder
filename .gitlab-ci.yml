@@ -7,9 +7,9 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.21.0
-  VMSHED_VERSION: v0.19.0
-  K8S_TEST_VERSION: v2.1.2
+  VIRTER_VERSION: v0.24.0
+  VMSHED_VERSION: v0.20.1
+  K8S_TEST_VERSION: v2.2.1
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -158,13 +158,13 @@ deploy_olm:
   allow_failure: true
   script:
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
-    - virter image pull alma-9 $LINBIT_DOCKER_REGISTRY/vm/alma-9:latest
     - create-k8s-test-configs -stable-releases-to-check=4 -include-next=1 -base-image=alma-9
     - cp test-helm-config.yaml virter/operator-to-test.yml
     - cd virter
     - yq write --inplace operator-to-test.yml 'operator.image' "$OPERATOR_IMAGE"
     - >
       vmshed
+      --pull-template "${LINBIT_DOCKER_REGISTRY}/vm/{{ .Image }}:latest"
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
       --torun $TO_RUN
       --variant "$VARIANT"
