@@ -2,15 +2,15 @@ apiVersion: v1
 entries:
   linstor:
   - apiVersion: v2
-    appVersion: 1.10.2
-    created: "2023-04-24T13:19:22.257963341Z"
+    appVersion: 1.10.3
+    created: "2023-04-28T09:34:44.406826709+02:00"
     dependencies:
     - condition: etcd.enabled
       name: etcd
       repository: ""
       version: 0.7.5
     description: A Helm chart for Linstor Operator
-    digest: 0bd82ccbe0a4a71570dbf50a9b6fdc3e223381ea58d816b0f2f8810028ef97e1
+    digest: dfeffc469b8633945b0340ad5ef03187fb641dfd173c401437ce9ecce9d466bd
     home: https://linstor.io/
     name: linstor
     type: application
@@ -788,4 +788,4 @@ entries:
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2023-04-24T13:19:22.159732102Z"
+generated: "2023-04-28T09:34:44.360545807+02:00"
