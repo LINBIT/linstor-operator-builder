@@ -1,6 +1,6 @@
 # LINBIT SDS on K8s
 
-### Warning: Operator v2 is still in development
+See [the users guide](https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-deploy-linstor-operator-v2)
 
 To deploy LINBIT SDS, you need to: 
 * Have a working Kubernetes Cluster
