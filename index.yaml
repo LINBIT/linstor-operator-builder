@@ -592,6 +592,27 @@ entries:
     version: 0.1.4
   linstor-affinity-controller:
   - apiVersion: v2
+    appVersion: v0.3.0
+    created: "2023-05-22T11:21:27.824153173+02:00"
+    description: 'Deploys the LINSTOR Affinity Controller. It periodically checks
+      the state of Piraeus/LINSTOR volumes compared to PersistentVolumes (PV), and
+      updates the PV Affinity if changes are detected. '
+    digest: 7d5ac5c16e26237e68bee976ff06693a5f2d078c9a0f8c878687450415df86fb
+    home: https://github.com/piraeusdatastore/helm-charts
+    icon: https://raw.githubusercontent.com/piraeusdatastore/piraeus/master/artwork/sandbox-artwork/icon/color.svg
+    keywords:
+    - storage
+    maintainers:
+    - name: The Piraeus Maintainers
+      url: https://github.com/piraeusdatastore/
+    name: linstor-affinity-controller
+    sources:
+    - https://github.com/piraeusdatastore/linstor-affinity-controller
+    type: application
+    urls:
+    - https://charts.linstor.io/linstor-affinity-controller-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
     appVersion: v0.2.2
     created: "2023-04-24T13:19:22.362529593Z"
     description: |
@@ -613,6 +634,25 @@ entries:
     - https://charts.linstor.io/linstor-affinity-controller-1.1.2.tgz
     version: 1.1.2
   linstor-ha-controller:
+  - apiVersion: v2
+    appVersion: v1.1.4
+    created: "2023-05-22T11:21:27.828608651+02:00"
+    description: 'Deploys the LINSTOR High Availability Controller. Using DRBD quorum,
+      the controller speeds up fail over of stateful workloads in case of storage
+      interruptions. '
+    digest: cdba345e49b91a35be4255ba4ec16486048ea3791d88cbdfba3e9ccb7b874aa5
+    keywords:
+    - storage
+    maintainers:
+    - name: LINBIT
+      url: https://linbit.com/
+    name: linstor-ha-controller
+    sources:
+    - https://github.com/piraeusdatastore/piraeus-ha-controller
+    type: application
+    urls:
+    - https://charts.linstor.io/linstor-ha-controller-1.1.4.tgz
+    version: 1.1.4
   - apiVersion: v2
     appVersion: v1.1.3
     created: "2023-04-24T13:19:22.36921931Z"
@@ -788,4 +828,4 @@ entries:
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2023-04-28T09:34:44.360545807+02:00"
+generated: "2023-05-22T11:21:27.712861656+02:00"
