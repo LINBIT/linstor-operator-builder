@@ -34,7 +34,7 @@ patches:
 images:
 - name: controller
   newName: drbd.io/linstor-operator
-  newTag: v2.1.0
+  newTag: v2.1.1
 
 generatorOptions:
   disableNameSuffixHash: true
