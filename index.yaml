@@ -2,8 +2,24 @@ apiVersion: v1
 entries:
   linstor:
   - apiVersion: v2
+    appVersion: 1.10.4
+    created: "2023-05-25T15:06:16.06800187Z"
+    dependencies:
+    - condition: etcd.enabled
+      name: etcd
+      repository: ""
+      version: 0.7.5
+    description: A Helm chart for Linstor Operator
+    digest: d14c29201a2e1f5be9831935bda10e0f321063e6d0c3002cbd0226209a865b9b
+    home: https://linstor.io/
+    name: linstor
+    type: application
+    urls:
+    - https://charts.linstor.io/linstor-1.10.4.tgz
+    version: 1.10.4
+  - apiVersion: v2
     appVersion: 1.10.3
-    created: "2023-04-28T09:34:44.406826709+02:00"
+    created: "2023-05-25T15:06:16.059552704Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -19,7 +35,7 @@ entries:
     version: 1.10.3
   - apiVersion: v2
     appVersion: 1.10.2
-    created: "2023-04-24T13:19:22.247166057Z"
+    created: "2023-05-25T15:06:16.049919342Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -35,7 +51,7 @@ entries:
     version: 1.10.2
   - apiVersion: v2
     appVersion: 1.10.1
-    created: "2023-04-24T13:19:22.236426894Z"
+    created: "2023-05-25T15:06:16.041337146Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -51,7 +67,7 @@ entries:
     version: 1.10.1
   - apiVersion: v2
     appVersion: 1.10.0
-    created: "2023-04-24T13:19:22.22553938Z"
+    created: "2023-05-25T15:06:16.031881467Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -67,7 +83,7 @@ entries:
     version: 1.10.0
   - apiVersion: v2
     appVersion: 1.9.1
-    created: "2023-04-24T13:19:22.361586703Z"
+    created: "2023-05-25T15:06:16.148947187Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -83,7 +99,7 @@ entries:
     version: 1.9.1
   - apiVersion: v2
     appVersion: 1.8.2
-    created: "2023-04-24T13:19:22.351344492Z"
+    created: "2023-05-25T15:06:16.139874489Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -99,7 +115,7 @@ entries:
     version: 1.8.2
   - apiVersion: v2
     appVersion: 1.8.1
-    created: "2023-04-24T13:19:22.337820728Z"
+    created: "2023-05-25T15:06:16.131897472Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -115,7 +131,7 @@ entries:
     version: 1.8.1
   - apiVersion: v2
     appVersion: 1.8.0
-    created: "2023-04-24T13:19:22.333989949Z"
+    created: "2023-05-25T15:06:16.12833027Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -131,7 +147,7 @@ entries:
     version: 1.8.0
   - apiVersion: v2
     appVersion: 1.8.0-rc.1
-    created: "2023-04-24T13:19:22.329713341Z"
+    created: "2023-05-25T15:06:16.124234845Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -147,7 +163,7 @@ entries:
     version: 1.8.0-rc.1
   - apiVersion: v2
     appVersion: 1.7.1
-    created: "2023-04-24T13:19:22.323921977Z"
+    created: "2023-05-25T15:06:16.120415792Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -163,7 +179,7 @@ entries:
     version: 1.7.1
   - apiVersion: v2
     appVersion: 1.7.0
-    created: "2023-04-24T13:19:22.320245612Z"
+    created: "2023-05-25T15:06:16.116872394Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -179,7 +195,7 @@ entries:
     version: 1.7.0
   - apiVersion: v2
     appVersion: 1.7.0-rc.5
-    created: "2023-04-24T13:19:22.316234568Z"
+    created: "2023-05-25T15:06:16.113139909Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -195,7 +211,7 @@ entries:
     version: 1.7.0-rc.5
   - apiVersion: v2
     appVersion: 1.7.0-rc.4
-    created: "2023-04-24T13:19:22.311637851Z"
+    created: "2023-05-25T15:06:16.108946134Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -211,7 +227,7 @@ entries:
     version: 1.7.0-rc.4
   - apiVersion: v2
     appVersion: 1.16.0-rc.3
-    created: "2023-04-24T13:19:22.307106944Z"
+    created: "2023-05-25T15:06:16.105532201Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -227,7 +243,7 @@ entries:
     version: 1.7.0-rc.3
   - apiVersion: v2
     appVersion: 1.16.0-rc.3
-    created: "2023-04-24T13:19:22.302339228Z"
+    created: "2023-05-25T15:06:16.102013243Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -243,7 +259,7 @@ entries:
     version: 1.7.0-rc.2
   - apiVersion: v2
     appVersion: 1.16.0-rc.2
-    created: "2023-04-24T13:19:22.297846313Z"
+    created: "2023-05-25T15:06:16.097773017Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -259,7 +275,7 @@ entries:
     version: 1.7.0-rc.1
   - apiVersion: v2
     appVersion: 1.6.0
-    created: "2023-04-24T13:19:22.293082752Z"
+    created: "2023-05-25T15:06:16.094523146Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -275,7 +291,7 @@ entries:
     version: 1.6.0
   - apiVersion: v2
     appVersion: 1.5.1
-    created: "2023-04-24T13:19:22.286902177Z"
+    created: "2023-05-25T15:06:16.091245832Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -294,7 +310,7 @@ entries:
     version: 1.5.1
   - apiVersion: v2
     appVersion: 1.5.0
-    created: "2023-04-24T13:19:22.282994589Z"
+    created: "2023-05-25T15:06:16.087304475Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -313,7 +329,7 @@ entries:
     version: 1.5.0
   - apiVersion: v2
     appVersion: 1.4.0
-    created: "2023-04-24T13:19:22.278353066Z"
+    created: "2023-05-25T15:06:16.083200604Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -332,7 +348,7 @@ entries:
     version: 1.4.0
   - apiVersion: v2
     appVersion: 1.3.1
-    created: "2023-04-24T13:19:22.271997401Z"
+    created: "2023-05-25T15:06:16.079558043Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -351,7 +367,7 @@ entries:
     version: 1.3.1
   - apiVersion: v2
     appVersion: 1.3.0
-    created: "2023-04-24T13:19:22.267312853Z"
+    created: "2023-05-25T15:06:16.075939617Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -370,7 +386,7 @@ entries:
     version: 1.3.0
   - apiVersion: v2
     appVersion: 1.2.0
-    created: "2023-04-24T13:19:22.262586307Z"
+    created: "2023-05-25T15:06:16.071503313Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -389,7 +405,7 @@ entries:
     version: 1.2.0
   - apiVersion: v2
     appVersion: 1.1.0
-    created: "2023-04-24T13:19:22.212421455Z"
+    created: "2023-05-25T15:06:16.023642159Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -408,7 +424,7 @@ entries:
     version: 1.1.0
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-04-24T13:19:22.209011739Z"
+    created: "2023-05-25T15:06:16.020274236Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -427,7 +443,7 @@ entries:
     version: 1.0.0
   - apiVersion: v2
     appVersion: 0.5.0
-    created: "2023-04-24T13:19:22.201773977Z"
+    created: "2023-05-25T15:06:16.014613173Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -446,7 +462,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 0.4.1
-    created: "2023-04-24T13:19:22.199279375Z"
+    created: "2023-05-25T15:06:16.01232529Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -461,7 +477,7 @@ entries:
     version: 0.4.1
   - apiVersion: v2
     appVersion: 0.4.0
-    created: "2023-04-24T13:19:22.196034662Z"
+    created: "2023-05-25T15:06:16.009195617Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -476,7 +492,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: 0.3.0
-    created: "2023-04-24T13:19:22.192764744Z"
+    created: "2023-05-25T15:06:16.005902118Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -491,7 +507,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 0.2.2
-    created: "2023-04-24T13:19:22.188850175Z"
+    created: "2023-05-25T15:06:16.001606135Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -506,7 +522,7 @@ entries:
     version: 0.2.2
   - apiVersion: v2
     appVersion: 0.2.0
-    created: "2023-04-24T13:19:22.184040291Z"
+    created: "2023-05-25T15:06:15.998147784Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -521,7 +537,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: 0.2.0
-    created: "2023-04-24T13:19:22.180111919Z"
+    created: "2023-05-25T15:06:15.994541652Z"
     dependencies:
     - condition: etcd.enabled
       name: etcd
@@ -536,7 +552,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2023-04-24T13:19:22.176120299Z"
+    created: "2023-05-25T15:06:15.990943347Z"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -550,7 +566,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2023-04-24T13:19:22.172534678Z"
+    created: "2023-05-25T15:06:15.987656197Z"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -564,7 +580,7 @@ entries:
     version: 0.1.6
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2023-04-24T13:19:22.168625536Z"
+    created: "2023-05-25T15:06:15.984249009Z"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -578,7 +594,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2023-04-24T13:19:22.163989699Z"
+    created: "2023-05-25T15:06:15.97931449Z"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -593,11 +609,11 @@ entries:
   linstor-affinity-controller:
   - apiVersion: v2
     appVersion: v0.3.0
-    created: "2023-05-22T11:21:27.824153173+02:00"
-    description: 'Deploys the LINSTOR Affinity Controller. It periodically checks
-      the state of Piraeus/LINSTOR volumes compared to PersistentVolumes (PV), and
-      updates the PV Affinity if changes are detected. '
-    digest: 7d5ac5c16e26237e68bee976ff06693a5f2d078c9a0f8c878687450415df86fb
+    created: "2023-05-25T15:06:16.150758259Z"
+    description: |
+      Deploys the LINSTOR Affinity Controller. It periodically checks the state of Piraeus/LINSTOR volumes compared to
+      PersistentVolumes (PV), and updates the PV Affinity if changes are detected.
+    digest: 92799417d252f398b92c5a0b0f87724ddb4eabeb9240b57770cd1e8b96dfae79
     home: https://github.com/piraeusdatastore/helm-charts
     icon: https://raw.githubusercontent.com/piraeusdatastore/piraeus/master/artwork/sandbox-artwork/icon/color.svg
     keywords:
@@ -614,7 +630,7 @@ entries:
     version: 1.2.0
   - apiVersion: v2
     appVersion: v0.2.2
-    created: "2023-04-24T13:19:22.362529593Z"
+    created: "2023-05-25T15:06:16.149827036Z"
     description: |
       Deploys the LINSTOR Affinity Controller. It periodically checks the state of Piraeus/LINSTOR volumes compared to
       PersistentVolumes (PV), and updates the PV Affinity if changes are detected.
@@ -636,11 +652,11 @@ entries:
   linstor-ha-controller:
   - apiVersion: v2
     appVersion: v1.1.4
-    created: "2023-05-22T11:21:27.828608651+02:00"
-    description: 'Deploys the LINSTOR High Availability Controller. Using DRBD quorum,
-      the controller speeds up fail over of stateful workloads in case of storage
-      interruptions. '
-    digest: cdba345e49b91a35be4255ba4ec16486048ea3791d88cbdfba3e9ccb7b874aa5
+    created: "2023-05-25T15:06:16.157283245Z"
+    description: |
+      Deploys the LINSTOR High Availability Controller. Using DRBD quorum, the controller speeds up fail over of stateful
+      workloads in case of storage interruptions.
+    digest: deda269f10b503f365beb2eef08d3e90c5acd7961fb6b47a0f1a8b382a27588b
     keywords:
     - storage
     maintainers:
@@ -655,7 +671,7 @@ entries:
     version: 1.1.4
   - apiVersion: v2
     appVersion: v1.1.3
-    created: "2023-04-24T13:19:22.36921931Z"
+    created: "2023-05-25T15:06:16.155772649Z"
     description: |
       Deploys the LINSTOR High Availability Controller. Using DRBD quorum, the controller speeds up fail over of stateful
       workloads in case of storage interruptions.
@@ -674,7 +690,7 @@ entries:
     version: 1.1.3
   - apiVersion: v2
     appVersion: v1.1.1
-    created: "2023-04-24T13:19:22.368175742Z"
+    created: "2023-05-25T15:06:16.154759722Z"
     description: |
       Deploys the LINSTOR High Availability Controller. Using DRBD quorum, the controller speeds up fail over of stateful
       workloads in case of storage interruptions.
@@ -693,7 +709,7 @@ entries:
     version: 1.1.2
   - apiVersion: v2
     appVersion: v1.1.1
-    created: "2023-04-24T13:19:22.366489981Z"
+    created: "2023-05-25T15:06:16.153727724Z"
     description: |
       Deploys the LINSTOR High Availability Controller. Using DRBD quorum, the controller speeds up fail over of stateful
       workloads in case of storage interruptions.
@@ -712,7 +728,7 @@ entries:
     version: 1.1.1
   - apiVersion: v2
     appVersion: v1.1.0
-    created: "2023-04-24T13:19:22.364995697Z"
+    created: "2023-05-25T15:06:16.152770652Z"
     description: 'Deploys the LINSTOR High Availability Controller. Using DRBD quorum,
       the controller speeds up fail over of stateful workloads in case of storage
       interruptions. '
@@ -731,7 +747,7 @@ entries:
     version: 1.1.0
   - apiVersion: v2
     appVersion: v1.0.1
-    created: "2023-04-24T13:19:22.363624359Z"
+    created: "2023-05-25T15:06:16.151809156Z"
     description: |
       Deploys the LINSTOR High Availability Controller. Using DRBD quorum, the controller speeds up fail over of stateful
       workloads in case of storage interruptions.
@@ -751,16 +767,16 @@ entries:
   pv-hostpath:
   - apiVersion: v1
     appVersion: 0.3.0
-    created: "2023-04-24T13:19:22.372311298Z"
+    created: "2023-05-25T15:06:16.160407162Z"
     description: Hostpath volumes for etcd persistence
-    digest: fb1eeedbeba2d5056ea78d07d58775fe6c66448b3866c5795e496f46900782e6
+    digest: ae680d07b359641f9d9bf768a1df91e862bb7db8269f21d3a1d7d9a90ee61bce
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.3.1.tgz
     version: 0.3.1
   - apiVersion: v1
     appVersion: 0.3.0
-    created: "2023-04-24T13:19:22.371691399Z"
+    created: "2023-05-25T15:06:16.160045952Z"
     description: Hostpath volumes for etcd persistence
     digest: 47797c14c97bd4fcf5ee86f00a5a8f91ff9ed65f9eeed2cbd77276a29f214db1
     name: pv-hostpath
@@ -769,7 +785,7 @@ entries:
     version: 0.3.0
   - apiVersion: v1
     appVersion: 0.2.5
-    created: "2023-04-24T13:19:22.371310413Z"
+    created: "2023-05-25T15:06:16.159684787Z"
     description: Hostpath volumes for etcd persistence
     digest: 61fa76c3ddab6424a05efad34304475e132569a679d04c7f79f4f91b423dbf39
     name: pv-hostpath
@@ -778,7 +794,7 @@ entries:
     version: 0.2.5
   - apiVersion: v1
     appVersion: 0.2.4
-    created: "2023-04-24T13:19:22.370943821Z"
+    created: "2023-05-25T15:06:16.159342462Z"
     description: Hostpath volumes for etcd persistence
     digest: 067c0e4edab626914d4a8d2b11ad53e3ff6537d2328886b26bf41fa529f37be1
     name: pv-hostpath
@@ -787,7 +803,7 @@ entries:
     version: 0.2.4
   - apiVersion: v1
     appVersion: 0.2.3
-    created: "2023-04-24T13:19:22.370535584Z"
+    created: "2023-05-25T15:06:16.159017049Z"
     description: Hostpath volumes for etcd persistence
     digest: 6d3c9055fd8e98a992f1f36e7e02d982013f52c8d08823710b9a2f5925315e88
     name: pv-hostpath
@@ -796,7 +812,7 @@ entries:
     version: 0.2.3
   - apiVersion: v1
     appVersion: 0.2.2
-    created: "2023-04-24T13:19:22.370185399Z"
+    created: "2023-05-25T15:06:16.158666506Z"
     description: Hostpath volumes for etcd persistence
     digest: d00e945ceb6ab11bc687ff248c507ff2dc45a05eb485efffb4d1fd10db413d3a
     name: pv-hostpath
@@ -805,7 +821,7 @@ entries:
     version: 0.2.2
   - apiVersion: v1
     appVersion: 0.2.1
-    created: "2023-04-24T13:19:22.369934834Z"
+    created: "2023-05-25T15:06:16.158420985Z"
     description: Hostpath volumes for etcd persistence
     digest: 677c6c3cf30cee82550ddfa661ba216386571567faefec26611a61e4bc245ab8
     name: pv-hostpath
@@ -813,7 +829,7 @@ entries:
     - https://charts.linstor.io/pv-hostpath-0.2.1.tgz
     version: 0.2.1
   - apiVersion: v1
-    created: "2023-04-24T13:19:22.36968701Z"
+    created: "2023-05-25T15:06:16.158147311Z"
     description: Hostpath volumes for etcd persistence
     digest: d0844bc01d1aed716888a30d43d9de8e61c104dfcbc3084ed0177142d60948ad
     name: pv-hostpath
@@ -821,11 +837,11 @@ entries:
     - https://charts.linstor.io/pv-hostpath-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v1
-    created: "2023-04-24T13:19:22.369470657Z"
+    created: "2023-05-25T15:06:16.157591268Z"
     description: Hostpath volumes for etcd persistence
     digest: 665d4788654eaaf4ffcd280d7b03ff7601a1b609ee58c60d93566e38cdb23330
     name: pv-hostpath
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2023-05-22T11:21:27.712861656+02:00"
+generated: "2023-05-25T15:06:15.975385279Z"
