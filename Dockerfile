@@ -11,9 +11,9 @@ COPY piraeus-operator/go.sum go.sum
 RUN go mod download
 
 # Copy the go source
-COPY piraeus-operator/main.go main.go
+COPY piraeus-operator/cmd/ cmd/
 COPY piraeus-operator/api/ api/
-COPY piraeus-operator/controllers/ controllers/
+COPY piraeus-operator/internal/ internal/
 COPY piraeus-operator/pkg/ pkg/
 COPY override/pkg/vars/branding.go pkg/vars/branding.go
 
@@ -21,7 +21,7 @@ COPY override/pkg/vars/branding.go pkg/vars/branding.go
 ARG TARGETARCH
 ARG TARGETOS
 ARG VERSION=0.0.0
-RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -ldflags "-X github.com/piraeusdatastore/piraeus-operator/v2/pkg/vars.Version=$VERSION" -o manager main.go
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -ldflags "-X github.com/piraeusdatastore/piraeus-operator/v2/pkg/vars.Version=$VERSION" -o manager ./cmd
 
 # Use minimal base image to package the manager binary
 FROM registry.access.redhat.com/ubi9/ubi-micro:latest
