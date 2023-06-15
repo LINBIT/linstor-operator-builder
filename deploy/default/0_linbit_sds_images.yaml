@@ -1,0 +1,57 @@
+---
+base: drbd.io
+components:
+  linstor-controller:
+    tag: v1.23.0
+    image: linstor-controller
+  linstor-satellite:
+    tag: v1.23.0
+    image: linstor-satellite
+  linstor-csi:
+    tag: v1.1.0
+    image: linstor-csi
+  drbd-reactor:
+    tag: v1.2.0
+    image: drbd-reactor
+  ha-controller:
+    tag: v1.1.4
+    image: linstor-k8s-ha-controller
+  drbd-shutdown-guard:
+    tag: v1.0.0
+    image: drbd-shutdown-guard
+  drbd-module-loader:
+    tag: v9.2.4
+    image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
+    match:
+      - osImage: Red Hat Enterprise Linux 7\.
+        image: drbd9-rhel7
+        precompiled: true
+      - osImage: Red Hat Enterprise Linux 8\.
+        image: drbd9-rhel8
+        precompiled: true
+      - osImage: Red Hat Enterprise Linux 9\.
+        image: drbd9-rhel9
+        precompiled: true
+      - osImage: Red Hat Enterprise Linux CoreOS
+        image: drbd9-rhel8
+        precompiled: true
+      - osImage: CentOS Linux 7
+        image: drbd9-rhel7
+        precompiled: true
+      - osImage: CentOS Linux 8
+        image: drbd9-rhel8
+        precompiled: true
+      - osImage: AlmaLinux 8
+        image: drbd9-rhel8
+        precompiled: true
+      - osImage: AlmaLinux 9
+        image: drbd9-rhel9
+        precompiled: true
+      - osImage: Amazon Linux 2
+        image: drbd9-amzn2
+      - osImage: Ubuntu 18\.04
+        image: drbd9-bionic
+      - osImage: Ubuntu 20\.04
+        image: drbd9-focal
+      - osImage: Ubuntu 22\.04
+        image: drbd9-jammy

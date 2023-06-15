@@ -26,10 +26,18 @@ patches:
   target:
     kind: Deployment
     name: controller-manager
-- path: images.yaml
+- patch: |
+    - op: remove
+      path: /data/0_piraeus_datastore_images.yaml
   target:
     kind: ConfigMap
     name: image-config
+
+configMapGenerator:
+  - name: image-config
+    files:
+      - 0_linbit_sds_images.yaml
+    behavior: merge
 
 images:
 - name: controller
