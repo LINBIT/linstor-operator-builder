@@ -8,7 +8,7 @@ variables:
   VIRTER_VERSION: v0.24.0
   VMSHED_VERSION: v0.20.1
   KUSTOMIZE_VERSION: v5.0.3
-  K8S_TEST_VERSION: v2.2.6
+  K8S_TEST_VERSION: v2.3.0
 
 prepare-bins:
   rules:
@@ -48,7 +48,16 @@ build_operator:
     - export "PATH=$PWD/bin:$PATH"
     - if [ -n "$CI_COMMIT_TAG" ]; then NOCACHE=true ; else NOCACHE=false ; fi
     - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
-    - docker buildx build --pull --push --platform $PUBLISH_PLATFORMS --build-arg=VERSION=$TAG-$CI_COMMIT_SHA -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG . --no-cache=$NOCACHE --iidfile=.image-id
+    - >
+      docker buildx build
+      --pull
+      --push
+      --platform $PUBLISH_PLATFORMS
+      --build-arg=VERSION=$TAG-$CI_COMMIT_SHA
+      --tag $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG
+      --no-cache=$NOCACHE
+      --iidfile=.image-id
+      .
     - echo "OPERATOR_IMAGE=$LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator:$TAG@$(cat .image-id)" > .build.env
   artifacts:
     reports:

@@ -27,11 +27,25 @@ patches:
     kind: Deployment
     name: controller-manager
 - patch: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: gencert
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: drbdio-pull-secret
+  target:
+    kind: Deployment
+    name: gencert
+- patch: |
     - op: remove
       path: /data/0_piraeus_datastore_images.yaml
   target:
     kind: ConfigMap
     name: image-config
+- path: manager_webhook_patch.yaml
 
 configMapGenerator:
   - name: image-config
@@ -52,96 +66,41 @@ resources:
 - ../../piraeus-operator/config/rbac
 - ../../piraeus-operator/config/manager
 - ../../piraeus-operator/config/webhook
-- ../../piraeus-operator/config/certmanager
-
-patchesStrategicMerge:
-- manager_auth_proxy_patch.yaml
-- manager_webhook_patch.yaml
-- webhookcainjection_patch.yaml
+- ../../piraeus-operator/config/gencert
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 replacements:
 - source:
-    fieldPath: metadata.namespace
     kind: Service
     name: webhook-service
   targets:
-  - fieldPaths:
-    - spec.dnsNames.0
-    options:
-      delimiter: .
-      index: 1
-    select:
-      group: cert-manager.io
-      kind: Certificate
-      name: serving-cert
-      version: v1
-  - fieldPaths:
-    - spec.dnsNames.1
-    options:
-      delimiter: .
-      index: 1
-    select:
-      group: cert-manager.io
-      kind: Certificate
-      name: serving-cert
-      version: v1
+    - fieldPaths:
+        - spec.template.spec.containers.[name=gencert].env.[name=WEBHOOK_SERVICE_NAME].value
+      select:
+        kind: Deployment
+        name: gencert
 - source:
-    kind: Service
-    name: webhook-service
-  targets:
-  - fieldPaths:
-    - spec.dnsNames.0
-    options:
-      delimiter: .
-    select:
-      group: cert-manager.io
-      kind: Certificate
-      name: serving-cert
-      version: v1
-  - fieldPaths:
-    - spec.dnsNames.1
-    options:
-      delimiter: .
-    select:
-      group: cert-manager.io
-      kind: Certificate
-      name: serving-cert
-      version: v1
-- source:
-    kind: Certificate
-    name: serving-cert
-    fieldPath: metadata.namespace
+    kind: ValidatingWebhookConfiguration
+    name: validating-webhook-configuration
   targets:
     - fieldPaths:
-        - metadata.annotations.[cert-manager.io/inject-ca-from]
-      options:
-        delimiter: /
-        index: 0
+        - spec.template.spec.containers.[name=gencert].env.[name=WEBHOOK_CONFIGURATION_NAME].value
       select:
-        kind: ValidatingWebhookConfiguration
-        name: validating-webhook-configuration
-- source:
-    kind: Certificate
-    name: serving-cert
-    fieldPath: metadata.name
-  targets:
+        kind: Deployment
+        name: gencert
     - fieldPaths:
-        - metadata.annotations.[cert-manager.io/inject-ca-from]
-      options:
-        delimiter: /
-        index: 1
+        - rules.0.resourceNames.0
       select:
-        kind: ValidatingWebhookConfiguration
-        name: validating-webhook-configuration
+        kind: ClusterRole
+        name: gencert
 - source:
     fieldPath: metadata.name
     kind: ConfigMap
     name: image-config
   targets:
-    - select:
+    - fieldPaths:
+        - spec.template.spec.containers.[name=manager].env.[name=IMAGE_CONFIG_MAP_NAME].value
+      select:
         kind: Deployment
         name: controller-manager
-      fieldPaths:
-        - spec.template.spec.containers.[name=manager].env.[name=IMAGE_CONFIG_MAP_NAME].value

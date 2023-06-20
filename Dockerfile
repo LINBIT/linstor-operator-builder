@@ -21,12 +21,12 @@ COPY override/pkg/vars/branding.go pkg/vars/branding.go
 ARG TARGETARCH
 ARG TARGETOS
 ARG VERSION=0.0.0
-RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -ldflags "-X github.com/piraeusdatastore/piraeus-operator/v2/pkg/vars.Version=$VERSION" -o manager ./cmd
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -ldflags "-X github.com/piraeusdatastore/piraeus-operator/v2/pkg/vars.Version=$VERSION" -o manager ./cmd
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -ldflags "-X github.com/piraeusdatastore/piraeus-operator/v2/pkg/vars.Version=$VERSION" -o gencert ./cmd/gencert
 
 # Use minimal base image to package the manager binary
 FROM registry.access.redhat.com/ubi9/ubi-micro:latest
-WORKDIR /
-COPY --from=builder /workspace/manager .
+COPY --from=builder /workspace/manager /workspace/gencert /
 USER 65534:65534
 
 ENTRYPOINT ["/manager"]
