@@ -251,7 +251,6 @@ spec:
       containers:
         - command:
             - /usr/local/bin/kube-scheduler
-            - --address=0.0.0.0
             - --leader-elect=true
             - --scheduler-name=stork
             - --policy-configmap=linstor-stork-stork-config
