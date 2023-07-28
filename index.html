@@ -1,96 +1,69 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Helm Charts</title>
+<head>
+    <title>Operator v2</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css" />
-    <style>
-      .markdown-body {
-        box-sizing: border-box;
-        min-width: 200px;
-        max-width: 980px;
-        margin: 0 auto;
-        padding: 45px;
-      }
-      @media (max-width: 767px) {
-        .markdown-body {
-          padding: 15px;
-        }
-      }
-    </style>
-  </head>
+    <link rel="stylesheet" href="content/mvp.css"/>
+    <link rel="icon" href="content/symbol.svg"/>
+    <script type="application/javascript" src="content/v2.js"></script>
+</head>
+<body>
+<header>
+    <nav>
+        <img alt="Logo" src="content/linbit_sds.svg" height="70"/>
+        <ul>
+            <li>Operator v2</li>
+            <li><a href="helm.html">Operator v1</a></li>
+        </ul>
+    </nav>
 
-  <body>
+    <h1>Operator v2</h1>
 
-    <section class="markdown-body">
-      <h1>Helm Charts</h1>
+    <p>Operator for deploying <a href="https://linbit.com/kubernetes/">LINBIT SDS for Kubernetes</a>.</p>
 
-      <h2>Usage</h2>
-      <pre lang="no-highlight"><code>
-        helm repo add linstor https://charts.linstor.io
-      </code></pre>
+    <p>The Operator requires access to LINBIT customer only container images.</p>
 
-		<p>Charts as supported by <a href="https://www.linbit.com">LINBIT</a>. Note that this chart pulls LINBIT customer only container images.</p>
+</header>
+<main>
+    <section id="usage">
+        <header>
+            <h2>Usage</h2>
 
-      <h2>Charts</h2>
-
-      <ul>
-<!-- </ul></section></body></html> -->
-<li><p><a href='https://charts.linstor.io/linstor-0.1.4.tgz' title='https://charts.linstor.io/linstor-0.1.4.tgz'>linstor-0.1.4.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.1.5.tgz' title='https://charts.linstor.io/linstor-0.1.5.tgz'>linstor-0.1.5.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.1.6.tgz' title='https://charts.linstor.io/linstor-0.1.6.tgz'>linstor-0.1.6.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.1.7.tgz' title='https://charts.linstor.io/linstor-0.1.7.tgz'>linstor-0.1.7.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.2.0.tgz' title='https://charts.linstor.io/linstor-0.2.0.tgz'>linstor-0.2.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.2.1.tgz' title='https://charts.linstor.io/linstor-0.2.1.tgz'>linstor-0.2.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.2.2.tgz' title='https://charts.linstor.io/linstor-0.2.2.tgz'>linstor-0.2.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.3.0.tgz' title='https://charts.linstor.io/linstor-0.3.0.tgz'>linstor-0.3.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.4.0.tgz' title='https://charts.linstor.io/linstor-0.4.0.tgz'>linstor-0.4.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.4.1.tgz' title='https://charts.linstor.io/linstor-0.4.1.tgz'>linstor-0.4.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-0.5.0.tgz' title='https://charts.linstor.io/linstor-0.5.0.tgz'>linstor-0.5.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.0.0.tgz' title='https://charts.linstor.io/linstor-1.0.0.tgz'>linstor-1.0.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.1.0.tgz' title='https://charts.linstor.io/linstor-1.1.0.tgz'>linstor-1.1.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.2.0.tgz' title='https://charts.linstor.io/linstor-1.2.0.tgz'>linstor-1.2.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.3.0.tgz' title='https://charts.linstor.io/linstor-1.3.0.tgz'>linstor-1.3.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.3.1.tgz' title='https://charts.linstor.io/linstor-1.3.1.tgz'>linstor-1.3.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.4.0.tgz' title='https://charts.linstor.io/linstor-1.4.0.tgz'>linstor-1.4.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.5.0.tgz' title='https://charts.linstor.io/linstor-1.5.0.tgz'>linstor-1.5.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.5.1.tgz' title='https://charts.linstor.io/linstor-1.5.1.tgz'>linstor-1.5.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.6.0.tgz' title='https://charts.linstor.io/linstor-1.6.0.tgz'>linstor-1.6.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.0.tgz' title='https://charts.linstor.io/linstor-1.7.0.tgz'>linstor-1.7.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.0-rc.1.tgz' title='https://charts.linstor.io/linstor-1.7.0-rc.1.tgz'>linstor-1.7.0-rc.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.0-rc.2.tgz' title='https://charts.linstor.io/linstor-1.7.0-rc.2.tgz'>linstor-1.7.0-rc.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.0-rc.3.tgz' title='https://charts.linstor.io/linstor-1.7.0-rc.3.tgz'>linstor-1.7.0-rc.3.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.0-rc.4.tgz' title='https://charts.linstor.io/linstor-1.7.0-rc.4.tgz'>linstor-1.7.0-rc.4.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.0-rc.5.tgz' title='https://charts.linstor.io/linstor-1.7.0-rc.5.tgz'>linstor-1.7.0-rc.5.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.7.1.tgz' title='https://charts.linstor.io/linstor-1.7.1.tgz'>linstor-1.7.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.8.0.tgz' title='https://charts.linstor.io/linstor-1.8.0.tgz'>linstor-1.8.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.8.0-rc.1.tgz' title='https://charts.linstor.io/linstor-1.8.0-rc.1.tgz'>linstor-1.8.0-rc.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.8.1.tgz' title='https://charts.linstor.io/linstor-1.8.1.tgz'>linstor-1.8.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.8.2.tgz' title='https://charts.linstor.io/linstor-1.8.2.tgz'>linstor-1.8.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.9.1.tgz' title='https://charts.linstor.io/linstor-1.9.1.tgz'>linstor-1.9.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.0.tgz' title='https://charts.linstor.io/linstor-1.10.0.tgz'>linstor-1.10.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.1.tgz' title='https://charts.linstor.io/linstor-1.10.1.tgz'>linstor-1.10.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.2.tgz' title='https://charts.linstor.io/linstor-1.10.2.tgz'>linstor-1.10.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.3.tgz' title='https://charts.linstor.io/linstor-1.10.3.tgz'>linstor-1.10.3.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.4.tgz' title='https://charts.linstor.io/linstor-1.10.4.tgz'>linstor-1.10.4.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.5.tgz' title='https://charts.linstor.io/linstor-1.10.5.tgz'>linstor-1.10.5.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-1.10.6.tgz' title='https://charts.linstor.io/linstor-1.10.6.tgz'>linstor-1.10.6.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-affinity-controller-1.1.2.tgz' title='https://charts.linstor.io/linstor-affinity-controller-1.1.2.tgz'>linstor-affinity-controller-1.1.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-affinity-controller-1.2.0.tgz' title='https://charts.linstor.io/linstor-affinity-controller-1.2.0.tgz'>linstor-affinity-controller-1.2.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-ha-controller-1.0.1.tgz' title='https://charts.linstor.io/linstor-ha-controller-1.0.1.tgz'>linstor-ha-controller-1.0.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-ha-controller-1.1.0.tgz' title='https://charts.linstor.io/linstor-ha-controller-1.1.0.tgz'>linstor-ha-controller-1.1.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-ha-controller-1.1.1.tgz' title='https://charts.linstor.io/linstor-ha-controller-1.1.1.tgz'>linstor-ha-controller-1.1.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-ha-controller-1.1.2.tgz' title='https://charts.linstor.io/linstor-ha-controller-1.1.2.tgz'>linstor-ha-controller-1.1.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-ha-controller-1.1.3.tgz' title='https://charts.linstor.io/linstor-ha-controller-1.1.3.tgz'>linstor-ha-controller-1.1.3.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/linstor-ha-controller-1.1.4.tgz' title='https://charts.linstor.io/linstor-ha-controller-1.1.4.tgz'>linstor-ha-controller-1.1.4.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.1.0.tgz' title='https://charts.linstor.io/pv-hostpath-0.1.0.tgz'>pv-hostpath-0.1.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.2.0.tgz' title='https://charts.linstor.io/pv-hostpath-0.2.0.tgz'>pv-hostpath-0.2.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.2.1.tgz' title='https://charts.linstor.io/pv-hostpath-0.2.1.tgz'>pv-hostpath-0.2.1.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.2.2.tgz' title='https://charts.linstor.io/pv-hostpath-0.2.2.tgz'>pv-hostpath-0.2.2.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.2.3.tgz' title='https://charts.linstor.io/pv-hostpath-0.2.3.tgz'>pv-hostpath-0.2.3.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.2.4.tgz' title='https://charts.linstor.io/pv-hostpath-0.2.4.tgz'>pv-hostpath-0.2.4.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.2.5.tgz' title='https://charts.linstor.io/pv-hostpath-0.2.5.tgz'>pv-hostpath-0.2.5.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.3.0.tgz' title='https://charts.linstor.io/pv-hostpath-0.3.0.tgz'>pv-hostpath-0.3.0.tgz</a></p></li>
-<li><p><a href='https://charts.linstor.io/pv-hostpath-0.3.1.tgz' title='https://charts.linstor.io/pv-hostpath-0.3.1.tgz'>pv-hostpath-0.3.1.tgz</a></p></li>
-</ul></section></body></html>
+            <p>Detailed instructions can be found in the <a
+                    href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-deploy-linstor-operator-v2">LINSTOR
+                User Guide</a>.</p>
+        </header>
+        <pre lang="no-highlight"><samp id="usage-instructions">
+$ <b>cat &lt;&lt;EOF &gt; kustomization.yaml</b>
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: linbit-sds
+resources:
+  - https://charts.linstor.io/static/latest.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+  - name: drbdio-pull-secret
+    type: kubernetes.io/dockerconfigjson
+    literals:
+      - .dockerconfigjson={"auths":{"drbd.io":{"username":"MY_LINBIT_USER","password":"MY_LINBIT_PASSWORD"}}}
+<b>EOF</b>
+$ <b>kubectl apply -k .</b>
+$ <b>kubectl apply -f - &lt;&lt;EOF</b>
+apiVersion: piraeus.io/v1
+kind: LinstorCluster
+metadata:
+  name: linstorcluster
+spec: {}
+<b>EOF</b>
+</samp></pre>
+    </section>
+    <section id="releases">
+        <header>
+            <h2>Releases</h2>
+        </header>
+    </section>
+</main>
+</body>
+</html>
