@@ -185,8 +185,8 @@ publish: upstream-charts legacy-ha-controller chart pvchart stork
 	mkdir -p ./deploy && \
 	cp -t ./deploy $(DSTSTORK) $(DSTHACTRL) && \
 	helm repo index . --url $$churl && \
-	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> helm.html; done && \
-	echo '</ul></section></body></html>' >> helm.html && \
+	for f in $$(ls -v *.tgz); do echo "<aside><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></aside>" >> helm.html; done && \
+	echo '</section></main></body></html>' >> helm.html && \
 	git add . && \
 	git commit -am 'gh-pages' && \
 	git push $(UPSTREAMGIT) gh-pages:gh-pages && \

@@ -1,44 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Helm Charts</title>
+  <title>Operator v1</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css" />
-  <style>
-    .markdown-body {
-      box-sizing: border-box;
-      min-width: 200px;
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 45px;
-    }
-    @media (max-width: 767px) {
-      .markdown-body {
-        padding: 15px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="content/mvp.css"/>
+  <link rel="icon" href="content/symbol.svg"/>
 </head>
-
 <body>
+<header>
+  <nav>
+    <img alt="Logo" src="content/linbit_sds.svg" height="70"/>
+    <ul>
+      <li><a href=".">Operator v2</a></li>
+      <li>Operator v1</li>
+    </ul>
+  </nav>
 
-<section class="markdown-body">
-  <h1>Helm Charts</h1>
+  <h1>Operator v1</h1>
 
-  <p>Charts to install <a href="https://linbit.com/kubernetes/">LINBIT SDS for Kubernetes</a></p>
-
-  <p>The preferred deployment method is using <a href="/"><code>Kustomize</code></a> </p>
+  <p>Charts to install <a href="https://linbit.com/kubernetes/">LINBIT SDS for Kubernetes</a>.</p>
 
   <p>These charts pull LINBIT customer only container images.</p>
 
-  <h2>Usage</h2>
-  <pre lang="no-highlight"><code>
-        helm repo add linstor https://charts.linstor.io
-        helm install linstor-op linstor/linstor --set etcd.enabled=false --set operator.controller.dbConnectionURL=k8s
-      </code></pre>
+</header>
+<main>
+  <section id="usage">
+    <header>
+      <h2>Usage</h2>
 
-  <h2>Charts</h2>
-
-  <ul>
-    <!-- </ul></section></body></html> -->
+      <p>Detailed instructions can be found in the <a
+              href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-deploy-linstor-operator-v1">LINSTOR
+        User Guide</a>.</p>
+    </header>
+    <pre lang="no-highlight"><samp>
+$ <b>helm repo add linstor https://charts.linstor.io</b>
+$ <b>helm install linstor-op linstor/linstor --set etcd.enabled=false --set operator.controller.dbConnectionURL=k8s</b>
+    </samp></pre>
+  </section>
+  <section>
+    <header>
+      <h2>Charts</h2>
+    </header>
