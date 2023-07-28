@@ -180,13 +180,13 @@ publish: upstream-charts legacy-ha-controller chart pvchart stork
 	tmpd=$$(mktemp -p $$PWD -d) && pw=$$PWD && churl=https://charts.linstor.io && \
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
-	cp $$pw/index.template.html ./index.html && \
+	cp $$pw/helm.template.html ./helm.html && \
 	cp "$(DSTHELMPACKAGE)"/* . && \
 	mkdir -p ./deploy && \
 	cp -t ./deploy $(DSTSTORK) $(DSTHACTRL) && \
 	helm repo index . --url $$churl && \
-	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> index.html; done && \
-	echo '</ul></section></body></html>' >> index.html && \
+	for f in $$(ls -v *.tgz); do echo "<li><p><a href='$$churl/$$f' title='$$churl/$$f'>$$(basename $$f)</a></p></li>" >> helm.html; done && \
+	echo '</ul></section></body></html>' >> helm.html && \
 	git add . && \
 	git commit -am 'gh-pages' && \
 	git push $(UPSTREAMGIT) gh-pages:gh-pages && \
