@@ -125,7 +125,7 @@ olm: $(DSTOP)/deploy/crds $(DSTOP)/deploy/operator.yaml $(DSTOP)/deploy/linstor-
 
 $(DSTOP)/deploy/operator.yaml: $(DSTCHART) deploy/linstor-operator-csv.helm-values.yaml
 	mkdir -p "$$(dirname "$@")"
-	helm template linstor $(DSTCHART) -f deploy/linstor-operator-csv.helm-values.yaml --set operator.image=$(OLM_REGISTRY)/linstor-operator:$(TAG) > "$@"
+	helm template linstor $(DSTCHART) -f deploy/linstor-operator-csv.helm-values.yaml --set operator.image=$(OLM_REGISTRY)/linstor-operator:$(TAG) --set operator.controller.dbConnectionURL=k8s > "$@"
 
 $(DSTOP)/deploy/crds: $(DSTCHART)
 	mkdir -p "$@"

@@ -12,7 +12,7 @@ metadata:
           },
           "spec": {
             "controllerImage": "",
-            "dbConnectionURL": "etcd://linstor-etcd:2379",
+            "dbConnectionURL": "k8s",
             "drbdRepoCred": "",
             "priorityClassName": ""
           },
