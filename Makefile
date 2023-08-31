@@ -166,17 +166,9 @@ stork: $(DSTCHART)
 	mkdir -p $(dir $(DSTSTORK))
 	helm template linstor-stork $(DSTCHART) --namespace MY-STORK-NAMESPACE --set global.setSecurityContext=false --set stork.enabled=true --set stork.schedulerTag=v1.16.0 --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/stork-deployment.yaml > $(DSTSTORK)
 
-########## Legacy HA Controller standalone deployment ########
-
-DSTHACTRL := $(abspath out/ha-controller.yaml)
-
-legacy-ha-controller: $(DSTCHART)
-	mkdir -p $(dir $(DSTHACTRL))
-	helm template linstor $(DSTCHART) --namespace MY-HA-CTRL-NAMESPACE --set global.setSecurityContext=false --set haController.enabled=true --set controllerEndpoint=MY-LINSTOR-URL --show-only templates/ha-controller-deployment.yaml --show-only templates/ha-controller-rbac.yaml > $(DSTHACTRL)
-
 ########## publishing #########
 
-publish: upstream-charts legacy-ha-controller chart pvchart stork
+publish: upstream-charts chart pvchart stork
 	tmpd=$$(mktemp -p $$PWD -d) && pw=$$PWD && churl=https://charts.linstor.io && \
 	chmod 775 $$tmpd && cd $$tmpd && \
 	git clone -b gh-pages --single-branch $(UPSTREAMGIT) . && \
