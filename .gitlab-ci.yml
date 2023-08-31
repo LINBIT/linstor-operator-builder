@@ -7,9 +7,9 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.24.0
+  VIRTER_VERSION: v0.25.0
   VMSHED_VERSION: v0.20.1
-  K8S_TEST_VERSION: v2.3.0
+  K8S_TEST_VERSION: v2.4.0
   # Upstream uses a newer version. This is fine, as we only use this version for building the CSV.
   # Newer versions do not support "operator-sdk generate csv"
   OPERATOR_SDK_VERSION: v0.18.0
@@ -92,6 +92,7 @@ build_chart:
   stage: build
   script:
     - export "PATH=$PWD/bin:$PATH"
+    - helm repo add linstor https://charts.linstor.io
     - make chart SEMVER=$SEMVER
     - curl --fail --user $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/helm/linstor-$SEMVER.tgz $LINBIT_REGISTRY_HELM/
   tags:
@@ -129,6 +130,7 @@ build_olm:
   script:
     - export "PATH=$PWD/bin:$PATH"
     - ln -snf $DOCKER_AUTH_CONFIG_FILE $HOME/.docker/config.json
+    - helm repo add linstor https://charts.linstor.io
     - make olm SEMVER=$SEMVER OLM_REGISTRY=$LINBIT_DOCKER_REGISTRY/linstor-operator-test
     - docker build -t $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG out/olm-bundle/$SEMVER/
     - docker push $LINBIT_DOCKER_REGISTRY/linstor-operator-test/linstor-operator-bundle:$TAG

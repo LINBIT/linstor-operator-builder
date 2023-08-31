@@ -1,2 +1,7 @@
-version: 1.10.6
-appVersion: 1.10.6
+version: 1.10.7
+appVersion: 1.10.7
+dependencies:
+  - name: etcd
+  - name: "piraeus-ha-controller"
+    repository: "https://charts.linstor.io"
+    condition: piraeus-ha-controller.enabled
