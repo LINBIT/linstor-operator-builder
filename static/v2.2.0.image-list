@@ -10,7 +10,7 @@ drbd.io/drbd9-rhel9:v9.2.5
 drbd.io/linstor-controller:v1.24.2
 drbd.io/linstor-csi:v1.2.3
 drbd.io/linstor-k8s-ha-controller:v1.1.4
-drbd.io/linstor-operator:v2.0.0
+drbd.io/linstor-operator:v2.2.0
 drbd.io/linstor-satellite:v1.24.2
 registry.k8s.io/sig-storage/csi-attacher:v4.3.0
 registry.k8s.io/sig-storage/csi-external-health-monitor-controller:v0.9.0

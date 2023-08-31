@@ -1848,7 +1848,7 @@ spec:
               fieldPath: metadata.namespace
         - name: IMAGE_CONFIG_MAP_NAME
           value: linstor-operator-image-config
-        image: drbd.io/linstor-operator:v2.0.0
+        image: drbd.io/linstor-operator:v2.2.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -1934,7 +1934,7 @@ spec:
           value: linstor-operator-webhook-service
         - name: WEBHOOK_TLS_SECRET_NAME
           value: webhook-server-cert
-        image: drbd.io/linstor-operator:v2.0.0
+        image: drbd.io/linstor-operator:v2.2.0
         livenessProbe:
           httpGet:
             path: /healthz
