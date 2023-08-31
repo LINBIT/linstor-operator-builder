@@ -6,10 +6,10 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.24.0
+  VIRTER_VERSION: v0.25.0
   VMSHED_VERSION: v0.20.1
-  KUSTOMIZE_VERSION: v5.0.3
-  K8S_TEST_VERSION: v2.3.0
+  KUSTOMIZE_VERSION: v5.1.1
+  K8S_TEST_VERSION: v2.4.0
 
 prepare-bins:
   rules:
