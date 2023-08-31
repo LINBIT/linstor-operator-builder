@@ -229,7 +229,7 @@ publish-config:
       variables:
         RELEASE_VERSION: v2.99.0+$CI_COMMIT_REF_SLUG.$CI_COMMIT_SHORT_SHA
   variables:
-    UPSTREAM: https://github.com/LINBIT/linstor-operator-builder.git
+    UPSTREAM: git@github.com/LINBIT/linstor-operator-builder.git
     GIT_AUTHOR_NAME: LinbitPRBot
     GIT_COMMITTER_NAME: LinbitPRBot
     GIT_AUTHOR_EMAIL: linbitprbot@users.noreply.github.com
