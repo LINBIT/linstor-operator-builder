@@ -2,16 +2,16 @@
 base: drbd.io
 components:
   linstor-controller:
-    tag: v1.24.2
+    tag: v1.25.0
     image: linstor-controller
   linstor-satellite:
-    tag: v1.24.2
+    tag: v1.25.0
     image: linstor-satellite
   linstor-csi:
     tag: v1.2.3
     image: linstor-csi
   drbd-reactor:
-    tag: v1.2.0
+    tag: v1.3.0
     image: drbd-reactor
   ha-controller:
     tag: v1.1.4
