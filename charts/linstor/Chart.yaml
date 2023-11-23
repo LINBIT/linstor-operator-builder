@@ -1,5 +1,5 @@
-version: 1.10.7
-appVersion: 1.10.7
+version: 1.10.8
+appVersion: 1.10.8
 dependencies:
   - name: etcd
   - name: "piraeus-ha-controller"

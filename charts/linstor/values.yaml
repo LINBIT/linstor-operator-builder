@@ -1,15 +1,15 @@
 drbdRepoCred: drbdiocred
 csi:
-  pluginImage: "drbd.io/linstor-csi:v1.2.3"
+  pluginImage: "drbd.io/linstor-csi:v1.3.0"
 operator:
-  image: "drbd.io/linstor-operator:v1.10.7"
+  image: "drbd.io/linstor-operator:v1.10.8"
   controller:
-    controllerImage: "drbd.io/linstor-controller:v1.24.2"
+    controllerImage: "drbd.io/linstor-controller:v1.25.1"
   satelliteSet:
     kernelModuleInjectionMode: ShippedModules
-    kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.1.16"
-    satelliteImage: "drbd.io/linstor-satellite:v1.24.2"
-    monitoringImage: "drbd.io/drbd-reactor:v1.2.0"
+    kernelModuleInjectionImage: "drbd.io/drbd9-rhel7:v9.1.17"
+    satelliteImage: "drbd.io/linstor-satellite:v1.25.1"
+    monitoringImage: "drbd.io/drbd-reactor:v1.4.0"
 piraeus-ha-controller:
   image:
     repository: drbd.io/linstor-k8s-ha-controller
