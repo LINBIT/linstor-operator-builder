@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Migrating to Operator V2</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/content/mvp.css"/>
+    <link rel="icon" href="/content/symbol.svg"/>
+</head>
+<body>
+<header>
+    <nav>
+        <img alt="Logo" src="/content/linbit_sds.svg" height="70"/>
+        <ul>
+            <li><a href="/">Operator v2</a></li>
+            <li>Migration ▾
+                <ul>
+                    <li><a href="1-migrate-db.html">1. Migrate Database</a></li>
+                </ul>
+            </li>
+            <li><a href="/helm.html">Operator v1</a></li>
+        </ul>
+    </nav>
+
+    <h1>Migrating to Operator V2</h1>
+</header>
+<main>
+    <article>
+        <p>
+            The following document guides you through the upgrade process for LINSTOR&reg; Operator from version 1 ("v1")
+            to version 2 ("v2").
+        </p>
+
+        <p>
+            LINSTOR Operator v2 offers improved convenience and customization. This however made it necessary to make
+            significant changes to the way LINSTOR Operator manages LINBIT SDS. As such, upgrading from v1 to v2
+            is a procedure requiring manual oversight.
+        </p>
+
+        <p>
+            Upgrading LINSTOR Operator is done in four steps:
+        </p>
+
+        <ol>
+            <li><a href="1-migrate-db.html">(Optional) Migrate the LINSTOR database to use the Kubernetes backend.</a></li>
+            <li>Collect information about the current deployment.</li>
+            <li>Remove the LINSTOR Operator v1 deployment, keeping existing volumes untouched.</li>
+            <li>Deploy LINSTOR Operator v2 using the information gathered in step 2.</li>
+        </ol>
+
+        <h2>Prerequisites</h2>
+
+        <p>
+            This guide assumes:
+        </p>
+
+        <ul>
+            <li>You used Helm to create the original deployment and are familiar with upgrading Helm deployments.</li>
+            <li>Your LINBIT SDS deployment is up-to-date with the latest v1 release. Check the releases <a
+                    href="/helm.html">here</a>.
+            </li>
+            <li>You have the following command line tools available:
+                <ul>
+                    <li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a>
+                    <li><a href="https://docs.helm.sh/docs/intro/install/">helm</a>
+                    <li><a href="https://jqlang.github.io/jq/download/">jq</a>
+                </ul>
+            </li>
+            <li>You are familiar with the <code>linstor</code> command line utility, specifically to verify the cluster
+                state.
+            </li>
+        </ul>
+
+        <h2>Key Changes Between Operator V1 and V2</h2>
+
+        <h3>Administrative Changes</h3>
+
+        <ul>
+            <li>
+                The resources <code>LinstorController</code>, <code>LinstorSatelliteSet</code> and <code>LinstorCSIDriver</code>
+                have been replaced by
+                <a href="https://github.com/piraeusdatastore/piraeus-operator/blob/v2/docs/reference/linstorcluster.md"><code>LinstorCluster</code></a>
+                and
+                <a href="https://github.com/piraeusdatastore/piraeus-operator/blob/v2/docs/reference/linstorsatelliteconfiguration.md"><code>LinstorSatelliteConfgiuration</code></a>
+            </li>
+            <li>
+                The default deployment runs the LINSTOR Satellite in the
+                <a href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-drbd-replication-via-host-network-v2">container network</a>
+                The migration script will propose changing to the host network.
+            </li>
+        </ul>
+
+        <h3>Operational Changes</h3>
+
+        <ul>
+            <li>
+                In Operator v1, all labels on the Kubernetes node resource where replicated on the satellite, making
+                them usable in the <code>replicasOnSame</code> and <code>replicasOnDifferent</code> parameters on the
+                storage class. In Operator v2, only the following labels are automatically synchronized:
+                <ul>
+                    <li><code>kubernetes.io/hostname</code></li>
+                    <li><code>topology.kubernetes.io/region</code></li>
+                    <li><code>topology.kubernetes.io/zone</code></li>
+                </ul>
+                Use
+                <a href="https://github.com/piraeusdatastore/piraeus-operator/blob/v2/docs/reference/linstorsatelliteconfiguration.md#specproperties">
+                    <code>LinstorSatelliteConfiguration.spec.properties</code>
+                </a>
+                to synchronize additional labels.
+            </li>
+            <li>
+                The following settings are applied by Operator v2 cluster-wide:
+                <ul>
+                    <li><code>DrbdOptions/Net/rr-conflict: retry-connect</code></li>
+                    <li><code>DrbdOptions/Resource/on-suspended-primary-outdated: force-secondary</code></li>
+                    <li><code>DrbdOptions/Resource/on-no-data-accessible: suspend-io</code></li>
+                    <li><code>DrbdOptions/auto-quorum: suspend-io</code></li>
+                </ul>
+            </li>
+            <li>
+                Operator v2 also includes a <a href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-ha-controller-v1">High-Availability Controller</a>
+            </li>
+        </ul>
+    </article>
+</main>
+</body>
+</html>

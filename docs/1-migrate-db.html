@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Migrating a Kubernetes Database in a LINSTOR&reg; Operator V1 Deployment</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/content/mvp.css"/>
+    <link rel="icon" href="/content/symbol.svg"/>
+</head>
+<body>
+<header>
+    <nav>
+        <img alt="Logo" src="/content/linbit_sds.svg" height="70"/>
+        <ul>
+            <li><a href="/">Operator v2</a></li>
+            <li><a href="/docs/">Migration ▾</a>
+                <ul>
+                    <li>1. Migrate Database</li>
+                </ul>
+            </li>
+            <li><a href="/helm.html">Operator v1</a></li>
+        </ul>
+    </nav>
+
+    <h1>Migrating a Kubernetes Database in a LINSTOR Operator V1 Deployment</h1>
+</header>
+<main>
+    <article>
+        <p>
+            This document guides you through the steps to convert a LINBIT SDS Operator deployment using a separate etcd
+            cluster to a deployment using the Kubernetes API as database.
+        </p>
+
+        <h2>When to Consider a Migration</h2>
+        <p>
+            Because the Operator v1 for LINSTOR&reg; is older than the LINSTOR Kubernetes
+            back end database, the default Operator v1 deployment for a long time used a
+            separate etcd cluster. Since then, maintaining etcd as the back end database
+            proved to be difficult, and often required manual intervention.
+        </p>
+        <p>
+            Because of this, consider migrating away from using a separate etcd cluster and
+            use the Kubernetes back end.
+        </p>
+        <p>
+            If you already use a back end other than etcd, no migration is necessary. You
+            can check which back end your LINSTOR cluster currently uses by entering the
+            following command:
+        </p>
+        <pre><code class="console">kubectl exec deploy/linstor-op-cs-controller -- cat /etc/linstor/linstor.toml</code></pre>
+        <p>If the deployment is using an etcd back end, output should show this:</p>
+        <pre><samp>[db]
+  connection_url = "etcd://linstor-op-etcd:2379"</samp></pre>
+        <p>
+            If the <code>connection_url</code> value starts with <code>etcd://</code> then the LINSTOR controller
+            uses an etcd back end and you should consider migrating to a native Kubernetes
+            database back end.
+        </p>
+
+        <h2>Prerequisites</h2>
+        <p>
+            This guide assumes:
+        </p>
+        <ul>
+            <li>You used Helm to create the original deployment and are familiar with upgrading Helm deployments.</li>
+            <li>Your LINBIT SDS deployment is up-to-date with the latest v1 release. Check the releases <a href="/helm.html">here</a>.
+            </li>
+            <li>You have the following command line tools available:
+                <ul>
+                    <li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a>
+                    <li><a href="https://docs.helm.sh/docs/intro/install/">helm</a>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>Migrating the LINSTOR Controller Database</h2>
+        <p>
+            During the database migration, the LINSTOR controller cannot be running so you
+            will need to stop it. This means that you will not be able to use LINSTOR to
+            provision or delete volumes during this time. Existing volumes will continue to
+            work normally.
+        </p>
+
+        <h3>Stopping the LINSTOR Controller</h3>
+        <p>
+            To prevent unwanted modifications to the database during the migration
+            operation, you need to stop the LINSTOR controller. To stop the LINSTOR
+            controller, set the expected replicas for the controller to zero.
+        </p>
+        <p>
+            First, find the release information for your current LINSTOR in Kubernetes
+            deployment by using a <code>helm list</code> command.
+        </p>
+
+        <pre><code class="console">helm list</code></pre>
+        <p>
+            Output under the <code>APP VERSION</code> column should show the version number of your
+            LINSTOR Operator deployment, for example:
+        </p>
+        <pre><code>
+NAME        [...]   APP VERSION
+[...]
+linstor-op  [...]   1.10.8</code></pre>
+
+        <p>Next, set a variable equal to your installed LINSTOR Operator version.</p>
+        <pre><code class="console">CURRENTVERS=1.10.7</code></pre>
+        <aside>
+            <p>📝 <strong>IMPORTANT:</strong>: You need to use a Helm chart version that matches your
+                currently deployed version. Otherwise, you might accidentally upgrade the
+                controller.</p>
+        </aside>
+        <p>
+            Next, change the deployment so that there are no deployed replicas of the
+            LINSTOR controller. For the purposes of this how-to guide, this is the same as
+            “stopping” the controller.
+        </p>
+        <pre><code><span class="console">helm upgrade linstor-op linstor/linstor --version $CURRENTVERS --reuse-values --set operator.controller.replicas=0</span>
+<span class="console">kubectl rollout status deploy/linstor-op-cs-controller --watch</span>
+</code></pre>
+        <p>
+            Output should eventually show that the LINSTOR Operator was successfully rolled
+            out:
+        </p>
+        <pre><code>deployment "linstor-op-cs-controller" successfully rolled out</code></pre>
+
+        <h4>Verifying That the LINSTOR Controller Is Not Running</h4>
+        <p>If you enter a <code>kubectl get pods</code> command, output should not show a
+            <code>linstor-op-cs-controller</code> pod. You can also verify the new deployment by using
+            a <code>kubectl describe</code> command:</p>
+        <pre><code class="console">kubectl describe deployments.apps linstor-op-cs-controller | grep -i replicas</code></pre>
+        <p>Output should show that there are no replicas of the deployment:</p>
+        <pre><code>Replicas:   0 desired | 0 updated | 0 total | 0 available | 0 unavailable
+[...]</code></pre>
+
+        <h3>Preparing a Pod for Running the Database Migration</h3>
+        <p>
+            After stopping the LINSTOR controller in your Kubernetes deployment, you can
+            prepare a pod that will run the database migration, from etcd to Kubernetes
+            native.
+        </p>
+
+        <h4>Getting Information About the Current Deployment</h4>
+        <p>
+            First, get information about the current deployment that you will use to
+            populate environment variables that you will use to create the database
+            migration pod:
+        </p>
+        <pre><code class="console">kubectl get deploy/linstor-op-cs-controller --output=jsonpath=&#39;IMAGE={$.spec.template.spec.containers[?(@.name==&quot;linstor-controller&quot;)].image}{&quot;\n&quot;}CONFIG_MAP={$.spec.template.spec.volumes[?(@.name==&quot;linstor-conf&quot;)].configMap.name}{&quot;\n&quot;}SERVICE_ACCOUNT={$.spec.template.spec.serviceAccountName}{&quot;\n&quot;}&#39;</code></pre>
+
+        <p>Output should be similar to this:</p>
+        <pre><code>IMAGE=drbd.io/linstor-controller:v1.24.2
+CONFIG_MAP=linstor-op-cs-controller-config
+SERVICE_ACCOUNT=linstor-controller</code></pre>
+
+        <h4>Creating Environment Variables</h4>
+        <p>
+            Copy this output and paste it into your shell to create the <code>IMAGE</code>,
+            <code>CONFIG_MAP</code>, and <code>SERVICE_ACCOUNT</code> environment variables.
+        </p>
+
+        <h4>Deploying a Database Migration Pod</h4>
+        <p>
+            To deploy a pod that will handle the database migration work, first create a
+            YAML configuration file that will describe the database migration pod by
+            entering the following command:
+        </p>
+        <pre><code class="console">cat &lt;&lt; EOF &gt; linstor-db-migration-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: linstor-database-migration
+spec:
+  serviceAccountName: $SERVICE_ACCOUNT
+  containers:
+    - name: backup
+      image: $IMAGE
+      command:
+        - /bin/bash
+        - -c
+        - &quot;sleep infinity&quot;
+      volumeMounts:
+        - name: linstor-conf
+          mountPath: /etc/linstor
+          readOnly: true
+        - name: backup
+          mountPath: /backup
+        - name: logs
+          mountPath: /logs
+  volumes:
+    - name: backup
+      emptyDir: {}
+    - name: logs
+      emptyDir: {}
+    - name: linstor-conf
+      configMap:
+        name: $CONFIG_MAP
+EOF</code></pre>
+
+        <p>
+            Next, apply the configuration file to your Kubernetes deployment and wait for
+            the pod to reach a ready state.
+        </p>
+        <pre><code><span class="console">kubectl apply -f linstor-db-migration-pod.yaml</span>
+<span class="console">kubectl wait -f linstor-db-migration-pod.yaml --for=condition=Ready --timeout=15m</span></code></pre>
+
+        <h4>Backing Up the Database</h4>
+        <p>
+            After the pod is in a ready state, you can use it to create a backup of your
+            existing database. You will use this backup later to migrate your deployment
+            data to the native Kubernetes back-end database.
+        </p>
+
+        <p>To back up the etcd database, enter the following command:</p>
+        <pre><code class="console">kubectl exec linstor-database-migration -- /usr/share/linstor-server/bin/linstor-database export-db -c /etc/linstor /backup/backup-before-migration.json</code></pre>
+
+        <p>
+            After exporting the backup, copy it to you host. This will be an additional "backup
+            copy” should there be issues during the migration.
+        </p>
+        <pre><code class="console">kubectl cp linstor-database-migration:/backup/backup-before-migration.json backup-before-migration.json</code></pre>
+
+        <h4>Updating the LINSTOR Configuration to Point to the New Database Back End</h4>
+        <p>
+            Enter the following command to update the LINSTOR controller configuration so
+            that it uses the native Kubernetes database as a back end.
+        </p>
+        <pre><code class="console">helm upgrade linstor-op linstor/linstor --version $CURRENTVERS --reuse-values --set operator.controller.dbConnectionURL=k8s</code></pre>
+
+        <p>
+            This will cause the LINSTOR Configuration to be updated, setting the Kubernetes API as new <code>connection_url</code>.
+            However, it can take a few seconds for the configuration in the Pod to be updated. Wait until the
+            configuration has updated in the container and shows the <code>connection_url = "k8s"</code>:
+        </p>
+        <pre><code><span class="console">kubectl exec linstor-database-migration -- cat /etc/linstor/linstor.toml</span>
+[db]
+  connection_url = &quot;k8s&quot;</code></pre>
+
+        <h4>Importing the Database From a Backup</h4>
+        <p>
+            Import the database into the new Kubernetes back end from the backup that you
+            made earlier, by entering the following command:
+        </p>
+        <pre><code class="console">kubectl exec linstor-database-migration -- /usr/share/linstor-server/bin/linstor-database import-db -c /etc/linstor /backup/backup-before-migration.json</code></pre>
+
+        <p>Output should eventually show that the database import operation finished.</p>
+        <pre><code>[...]
+20:32:26.970 [main] INFO LINSTOR/linstor-db -- SYSTEM - Import finished</code></pre>
+
+        <h3>Starting the LINSTOR Controller</h3>
+        <p>
+            After importing the database to the new backend, you can start the LINSTOR
+            controller by updating the replica count of its pod, by entering the following
+            command:
+        </p>
+
+        <pre><code class="console">helm upgrade linstor-op linstor/linstor --version $CURRENTVERS --reuse-values --set operator.controller.replicas=1</code></pre>
+
+        <h4>Verifying That the LINSTOR Controller Is Running</h4>
+        <p>
+            You can enter another <code>kubectl get pods</code> command to verify that you started
+            the LINSTOR controller successfully. Output should show a
+            <code>linstor-op-cs-controller</code> pod in a running state.
+        </p>
+
+        <p>
+            In addition, you can check the state of the LINSTOR cluster using the <code>linstor</code> command:
+        </p>
+
+        <pre><code><span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor node list</span>
+<span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor resource list</span>
+<span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor volumes list</span>
+        </code></pre>
+
+        <h2>Verifying the LINSTOR Controller Database Back End</h2>
+        <p>
+            Finally, you can verify that the LINSTOR controller has a connection to the
+            native Kubernetes database back end, by entering the following command:
+        </p>
+        <pre><code class="console">kubectl exec deploy/linstor-op-cs-controller -- cat /etc/linstor/linstor.toml</code></pre>
+        <p>Output from the command should show that the LINSTOR controller uses the
+            native Kubernetes database as its back end:</p>
+        <pre><code>[db]
+  connection_url = &quot;k8s&quot;</code></pre>
+        <h2>Cleaning Up the Database Migration and etcd Resources</h2>
+        <p>
+            After successfully verifying that the LINSTOR controller pod is again up and
+            running, you can delete the database migration pod.
+        </p>
+
+        <pre><code class="console">kubectl delete pod linstor-database-migration</code></pre>
+        <p>
+            Because your LINSTOR controller no longer uses an etcd database as its back end,
+            you can upgrade the deployment and disable it in the configuration, by entering
+            the following command:
+        </p>
+        <pre><code class="console">helm upgrade linstor-op linstor/linstor --version $CURRENTVERS --reuse-values --set etcd.enabled=false</code></pre>
+
+    </article>
+</main>
+</body>
+</html>

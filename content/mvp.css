@@ -209,6 +209,11 @@ samp {
     padding: 0 0.5rem;
 }
 
+.console::before {
+    content: "$";
+    padding: 0.2rem;
+}
+
 details {
     margin: 1.3rem 0;
 }
