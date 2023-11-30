@@ -34,8 +34,8 @@
         <h2>When to Consider a Migration</h2>
         <p>
             Because the Operator v1 for LINSTOR&reg; is older than the LINSTOR Kubernetes
-            back end database, the default Operator v1 deployment for a long time used a
-            separate etcd cluster. Since then, maintaining etcd as the back end database
+            back-end database, the default Operator v1 deployment for a long time used a
+            separate etcd cluster. Since then, maintaining etcd as the back-end database
             proved to be difficult, and often required manual intervention.
         </p>
         <p>
@@ -125,7 +125,7 @@ linstor-op  [...]   1.10.8</code></pre>
 
         <h4>Verifying That the LINSTOR Controller Is Not Running</h4>
         <p>If you enter a <code>kubectl get pods</code> command, output should not show a
-            <code>linstor-op-cs-controller</code> pod. You can also verify the new deployment by using
+            <code>linstor-op-cs-controller</code> Pod. You can also verify the new deployment by using
             a <code>kubectl describe</code> command:</p>
         <pre><code class="console">kubectl describe deployments.apps linstor-op-cs-controller | grep -i replicas</code></pre>
         <p>Output should show that there are no replicas of the deployment:</p>
@@ -135,7 +135,7 @@ linstor-op  [...]   1.10.8</code></pre>
         <h3>Preparing a Pod for Running the Database Migration</h3>
         <p>
             After stopping the LINSTOR controller in your Kubernetes deployment, you can
-            prepare a pod that will run the database migration, from etcd to Kubernetes
+            prepare a Pod that will run the database migration, from etcd to Kubernetes
             native.
         </p>
 
@@ -143,7 +143,7 @@ linstor-op  [...]   1.10.8</code></pre>
         <p>
             First, get information about the current deployment that you will use to
             populate environment variables that you will use to create the database
-            migration pod:
+            migration Pod:
         </p>
         <pre><code class="console">kubectl get deploy/linstor-op-cs-controller --output=jsonpath=&#39;IMAGE={$.spec.template.spec.containers[?(@.name==&quot;linstor-controller&quot;)].image}{&quot;\n&quot;}CONFIG_MAP={$.spec.template.spec.volumes[?(@.name==&quot;linstor-conf&quot;)].configMap.name}{&quot;\n&quot;}SERVICE_ACCOUNT={$.spec.template.spec.serviceAccountName}{&quot;\n&quot;}&#39;</code></pre>
 
@@ -160,8 +160,8 @@ SERVICE_ACCOUNT=linstor-controller</code></pre>
 
         <h4>Deploying a Database Migration Pod</h4>
         <p>
-            To deploy a pod that will handle the database migration work, first create a
-            YAML configuration file that will describe the database migration pod by
+            To deploy a Pod that will handle the database migration work, first create a
+            YAML configuration file that will describe the database migration Pod by
             entering the following command:
         </p>
         <pre><code class="console">cat &lt;&lt; EOF &gt; linstor-db-migration-pod.yaml
@@ -198,14 +198,14 @@ EOF</code></pre>
 
         <p>
             Next, apply the configuration file to your Kubernetes deployment and wait for
-            the pod to reach a ready state.
+            the Pod to reach a ready state.
         </p>
         <pre><code><span class="console">kubectl apply -f linstor-db-migration-pod.yaml</span>
 <span class="console">kubectl wait -f linstor-db-migration-pod.yaml --for=condition=Ready --timeout=15m</span></code></pre>
 
         <h4>Backing Up the Database</h4>
         <p>
-            After the pod is in a ready state, you can use it to create a backup of your
+            After the Pod is in a ready state, you can use it to create a backup of your
             existing database. You will use this backup later to migrate your deployment
             data to the native Kubernetes back-end database.
         </p>
@@ -214,7 +214,7 @@ EOF</code></pre>
         <pre><code class="console">kubectl exec linstor-database-migration -- /usr/share/linstor-server/bin/linstor-database export-db -c /etc/linstor /backup/backup-before-migration.json</code></pre>
 
         <p>
-            After exporting the backup, copy it to you host. This will be an additional "backup
+            After exporting the backup, copy it to your host. This will be an additional "backup
             copy” should there be issues during the migration.
         </p>
         <pre><code class="console">kubectl cp linstor-database-migration:/backup/backup-before-migration.json backup-before-migration.json</code></pre>
@@ -227,7 +227,7 @@ EOF</code></pre>
         <pre><code class="console">helm upgrade linstor-op linstor/linstor --version $CURRENTVERS --reuse-values --set operator.controller.dbConnectionURL=k8s</code></pre>
 
         <p>
-            This will cause the LINSTOR Configuration to be updated, setting the Kubernetes API as new <code>connection_url</code>.
+            This will cause the LINSTOR configuration to be updated, setting the Kubernetes API as new <code>connection_url</code>.
             However, it can take a few seconds for the configuration in the Pod to be updated. Wait until the
             configuration has updated in the container and shows the <code>connection_url = "k8s"</code>:
         </p>
@@ -248,8 +248,8 @@ EOF</code></pre>
 
         <h3>Starting the LINSTOR Controller</h3>
         <p>
-            After importing the database to the new backend, you can start the LINSTOR
-            controller by updating the replica count of its pod, by entering the following
+            After importing the database to the new back end, you can start the LINSTOR
+            controller by updating the replica count of its Pod, by entering the following
             command:
         </p>
 
@@ -259,7 +259,7 @@ EOF</code></pre>
         <p>
             You can enter another <code>kubectl get pods</code> command to verify that you started
             the LINSTOR controller successfully. Output should show a
-            <code>linstor-op-cs-controller</code> pod in a running state.
+            <code>linstor-op-cs-controller</code> Pod in a running state.
         </p>
 
         <p>
@@ -283,14 +283,14 @@ EOF</code></pre>
   connection_url = &quot;k8s&quot;</code></pre>
         <h2>Cleaning Up the Database Migration and etcd Resources</h2>
         <p>
-            After successfully verifying that the LINSTOR controller pod is again up and
-            running, you can delete the database migration pod.
+            After successfully verifying that the LINSTOR controller Pod is again up and
+            running, you can delete the database migration Pod.
         </p>
 
         <pre><code class="console">kubectl delete pod linstor-database-migration</code></pre>
         <p>
             Because your LINSTOR controller no longer uses an etcd database as its back end,
-            you can upgrade the deployment and disable it in the configuration, by entering
+            you can upgrade the deployment and disable the etcd back end in the configuration, by entering
             the following command:
         </p>
         <pre><code class="console">helm upgrade linstor-op linstor/linstor --version $CURRENTVERS --reuse-values --set etcd.enabled=false</code></pre>
