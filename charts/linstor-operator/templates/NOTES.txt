@@ -1,0 +1,32 @@
+LINSTOR Operator {{ .Chart.AppVersion }} installed.
+
+{{- $piraeusResources := .Capabilities.APIVersions.Has "piraeus.linbit.com/v1/LinstorController" }}
+{{- $linbitResources := .Capabilities.APIVersions.Has "linstor.linbit.com/v1/LinstorController" }}
+{{- if or $piraeusResources $linbitResources }}
+{{- fail `
+
+	Refusing to upgrade from v1 deployment!
+	=======================================
+
+	Please read the upgrade instructions at:
+
+		https://charts.linstor.io/migration/
+` }}
+{{- end }}
+
+{{- if and (not .Values.installCRDs) (not (.Capabilities.APIVersions.Has "piraeus.io/v1/LinstorCluster")) }}
+It looks like the necessary CRDs for Piraeus Operator are still missing.
+
+To apply them via helm now use:
+
+  helm upgrade {{ .Release.Name }} ./charts/piraeus --reuse-values --set installCRDs=true
+
+Alternatively, you can manage them manually:
+
+  kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/crd?ref=v2"
+
+{{- end }}
+
+To get started with LINBIT SDS, simply deploy the linbit-sds chart:
+
+  helm install linbit-sds linstor/linbit-sds

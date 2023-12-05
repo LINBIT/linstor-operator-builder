@@ -1,0 +1,19 @@
+apiVersion: v2
+name: linstor-operator
+description: |-
+  The LINSTOR® Operator manages software defined storage clusters using LINSTOR in Kubernetes.
+type: application
+version: 2.3.0
+appVersion: "v2.3.0"
+kubeVersion: ">= 1.20.0"
+maintainers:
+  - name: LINBIT
+    url: https://linbit.com
+home: https://charts.linstor.io/
+icon: https://charts.linstor.io/content/symbol.svg
+keywords:
+  - storage
+sources:
+  - https://github.com/LINBIT/linstor-operator-builder
+  - https://github.com/LINBIT/linstor-csi-builder
+  - https://github.com/LINBIT/linstor-server
