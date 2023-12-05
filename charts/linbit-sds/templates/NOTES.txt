@@ -1,0 +1,14 @@
+LinstorCluster: {{ include "linstor-cluster.fullname" $ }}
+{{- range .Values.linstorSatelliteConfigurations }}
+LinstorSatelliteConfiguration: {{ .name }}
+{{- end }}
+{{- range .Values.linstorNodeConnections }}
+LinstorNodeConnection: {{ .name }}
+{{- end }}
+{{- range .Values.storageClasses }}
+StorageClass: {{ .name }}
+{{- end }}
+
+Successfully deployed!
+
+For next steps, see our users guide: https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-basic-configuration-and-deployment

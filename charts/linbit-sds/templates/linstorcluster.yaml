@@ -1,0 +1,24 @@
+apiVersion: piraeus.io/v1
+kind: LinstorCluster
+metadata:
+  name: {{ include "linstor-cluster.fullname" $ }}
+  labels:
+    {{- include "linstor-cluster.labels" $ | nindent 4 }}
+{{- $spec := .Values.linstorCluster }}
+{{- if .Values.linstorPassphrase }}
+{{- $_ := set $spec "linstorPassphraseSecret" (include "linstor-cluster.linstorPassphraseSecret" .) }}
+{{- end }}
+{{- if eq .Values.createApiTLS "cert-manager" }}
+{{- $apiTLS := merge (default dict .Values.linstorCluster.apiTLS) (dict "certManager" (dict "name" (include "linstor-cluster.apiTLSIssuer" .) "kind" "Issuer"))}}
+{{- $_ := set $spec "apiTLS" $apiTLS }}
+{{- else if eq .Values.createApiTLS "helm" }}
+{{- $_ := set $spec "apiTLS" (default dict .Values.linstorCluster.apiTLS)}}
+{{- end }}
+{{- if eq .Values.createInternalTLS "cert-manager" }}
+{{- $internalTLS := merge (default dict .Values.linstorCluster.internalTLS) (dict "certManager" (dict "name" (include "linstor-cluster.internalTLSIssuer" .) "kind" "Issuer"))}}
+{{- $_ := set $spec "internalTLS" $internalTLS }}
+{{- else if eq .Values.createInternalTLS "helm" }}
+{{- $_ := set $spec "internalTLS" (default dict .Values.linstorCluster.internalTLS)}}
+{{- end }}
+spec:
+  {{- toYaml $spec | nindent 2 }}

@@ -1,0 +1,12 @@
+{{- range .Values.linstorNodeConnections }}
+---
+apiVersion: piraeus.io/v1
+kind: LinstorNodeConnection
+metadata:
+  name: {{ include "linstor-cluster.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "linstor-cluster.labels" $ | nindent 4 }}
+{{- $spec := omit . "name" }}
+spec:
+  {{- toYaml $spec | nindent 2}}
+{{- end }}

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "linstorCluster",
+    "linstorSatelliteConfigurations",
+    "linstorNodeConnections",
+    "storageClasses"
+  ],
+  "properties": {
+    "linstorCluster": {
+      "type": "object"
+    },
+    "linstorPassphrase": {
+      "type": "string"
+    },
+    "createApiTLS": {
+      "type": "string",
+      "enum": [
+        "",
+        "cert-manager",
+        "helm"
+      ]
+    },
+    "createInternalTLS": {
+      "type": "string",
+      "enum": [
+        "",
+        "cert-manager",
+        "helm"
+      ]
+    },
+    "linstorSatelliteConfigurations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "linstorNodeConnections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storageClasses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "allowVolumeExpansion": {
+            "type": "boolean"
+          },
+          "annotations": {
+            "type": "object"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "provisioner": {
+            "type": "string"
+          },
+          "reclaimPolicy": {
+            "type": "string"
+          },
+          "volumeBindingMode": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

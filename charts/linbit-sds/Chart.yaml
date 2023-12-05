@@ -1,0 +1,17 @@
+apiVersion: v2
+name: linbit-sds
+description: |-
+  Deploy LINBIT® SDS via LINSTOR® Operator
+type: application
+version: 1.0.0
+appVersion: "v2.3.0"
+kubeVersion: ">= 1.20.0"
+maintainers:
+  - name: LINBIT
+    url: https://linbit.com
+home: https://charts.linstor.io/
+icon: https://charts.linstor.io/content/symbol.svg
+keywords:
+  - storage
+sources:
+  - https://github.com/LINBIT/linstor-operator-builder
