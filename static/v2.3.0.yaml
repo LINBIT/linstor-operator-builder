@@ -1969,6 +1969,9 @@ data:
       drbd-shutdown-guard:
         tag: v1.0.0
         image: drbd-shutdown-guard
+      ktls-utils:
+        tag: v0.10
+        image: ktls-utils
       drbd-module-loader:
         tag: v9.2.6
         image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use

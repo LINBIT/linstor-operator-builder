@@ -7,6 +7,7 @@ drbd.io/drbd9-jammy:v9.2.6
 drbd.io/drbd9-rhel7:v9.2.6
 drbd.io/drbd9-rhel8:v9.2.6
 drbd.io/drbd9-rhel9:v9.2.6
+drbd.io/ktls-utils:v0.10
 drbd.io/linstor-controller:v1.25.1
 drbd.io/linstor-csi:v1.3.0
 drbd.io/linstor-k8s-ha-controller:v1.1.4
