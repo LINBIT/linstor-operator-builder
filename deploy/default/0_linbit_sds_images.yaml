@@ -2,16 +2,16 @@
 base: drbd.io
 components:
   linstor-controller:
-    tag: v1.25.0
+    tag: v1.25.1
     image: linstor-controller
   linstor-satellite:
-    tag: v1.25.0
+    tag: v1.25.1
     image: linstor-satellite
   linstor-csi:
-    tag: v1.2.3
+    tag: v1.3.0
     image: linstor-csi
   drbd-reactor:
-    tag: v1.3.0
+    tag: v1.4.0
     image: drbd-reactor
   ha-controller:
     tag: v1.1.4
@@ -48,6 +48,12 @@ components:
         image: drbd9-rhel8
         precompiled: true
       - osImage: AlmaLinux 9
+        image: drbd9-rhel9
+        precompiled: true
+      - osImage: Oracle Linux Server 8\.
+        image: drbd9-rhel8
+        precompiled: true
+      - osImage: Oracle Linux Server 9\.
         image: drbd9-rhel9
         precompiled: true
       - osImage: Amazon Linux 2
