@@ -34,7 +34,9 @@
                     href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-deploy-linstor-operator-v2">LINSTOR
                 User Guide</a>.</p>
         </header>
-        <pre lang="no-highlight"><samp id="usage-instructions">
+        <details open>
+            <summary>Deployment using kubectl</summary>
+            <pre lang="no-highlight"><samp id="kubectl-instructions">
 $ <b>cat &lt;&lt;EOF &gt; kustomization.yaml</b>
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -57,6 +59,37 @@ metadata:
   name: linstorcluster
 spec: {}
 <b>EOF</b>
+</samp></pre>
+        </details>
+        <details>
+            <summary>Deployment using helm</summary>
+            <pre lang="no-highlight"><samp id="helm-instructions">
+$ <b>MY_LINBIT_USER=my-linbit-user</b>
+$ <b>MY_LINBIT_PASSWORD=my-linbit-password</b>
+$ <b>helm repo add linstor https://charts.linstor.io</b>
+$ <b>helm repo add linstor https://charts.linstor.io</b>
+"linstor" has been added to your repositories
+$ <b>helm install linstor-operator linstor/linstor-operator \
+  --set imageCredentials.username=$MY_LINBIT_USER \
+  --set imageCredentials.password=$MY_LINBIT_PASSWORD \
+  --wait</b>
+...
+LINSTOR Operator v2.3.0 installed.
+
+To get started with LINBIT SDS, deploy the linbit-sds chart:
+
+  helm install linbit-sds linstor/linbit-sds
+
+$ <b>helm install linbit-sds linstor/linbit-sds</b>
+...
+LinstorCluster: linbit-sds
+
+Successfully deployed!
+
+For next steps, see our users guide: https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-basic-configuration-and-deployment
+Or check available values with:
+
+  helm show values linstor/linbit-sds
 </samp></pre>
     </section>
     <section id="releases">
