@@ -1,0 +1,65 @@
+<h1>Collecting Information About the Current Deployment</h1>
+<p>Before you upgrade a LINSTOR Operator v1 deployment to Operator v2, and remove the old v1 deployment, collect information on the state of your cluster. You will use this collected information from your Operator v1 deployment when you deploy Operator v2. Doing this ensures that the new upgraded deployment will have a compatible configuration with your old deployment.</p>
+<p>This is the second step when migrating the LINSTOR Operator from version 1 (v1) to
+version 2 (v2).</p>
+<h2>Prerequisites</h2>
+<p>To collect information about your current deployment, you will need to install
+the following tools:</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/"><code>kubectl</code></a></li>
+<li><a href="https://docs.helm.sh/docs/intro/install/">Helm</a></li>
+<li><a href="https://jqlang.github.io/jq/download/"><code>jq</code></a></li>
+</ul>
+<h2>Running the Data Collection Script</h2>
+<p>To collect the necessary information to migrate resources in your Operator v1 deployment to an upgraded Operator v2 deployment, you can run a script provided by the upstream Piraeus project GitHub repository. First, clone this repository to your Kubernetes control plane node:</p>
+<pre><code># git clone -b v2 https://github.com/piraeusdatastore/piraeus-operator.git
+# cd piraeus-operator</code></pre>
+<p>After changing directories to the locally cloned <code>piraeus-operator</code> repository,
+you can make the script executable and then run it by entering the following
+commands:</p>
+<pre><code># chmod +x docs/how-to/upgrade/collect-operator-v1-information.sh
+# ./docs/how-to/upgrade/collect-operator-v1-information.sh</code></pre>
+<p>When you run the script, the script will ask you if you want to keep modifications made with the LINSTOR Operator. For each modification, the script will show you the proposed change to the deployed resources and ask you for confirmation before making a change.</p>
+<p>The script will also tell you about values in your deployment that cannot automatically be migrated, along with recommended actions, in case you need to keep the modification.</p>
+<p>Example output from the script is as follows:</p>
+<pre><code>Using kubectl context: kubernetes-admin@kubernetes
+Found LinstorControllers: [&quot;linstor-op-cs&quot;]
+Found LinstorSatelliteSets: [&quot;linstor-op-ns&quot;]
+Found LinstorCSIDrivers: [&quot;linstor-op&quot;]
+Found LINSTOR Controller passphrase secret
+--- Default resource
++++ Updated resource
+@@ -3,4 +3,5 @@ kind: LinstorCluster
+ metadata:
+   name: linstorcluster
+ spec:
++  linstorPassphraseSecret: linstor-op-passphrase
+   patches: []
+Apply the patch (Y/n)? y
+[...]
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| The following non-default values have not been converted:                                                                                                       |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Resource            | Key                            | Recommended Action                                  | Value                                              |
+|---------------------|--------------------------------|-----------------------------------------------------|----------------------------------------------------|
+| LinstorCluster      | .spec.controllerImage          | Adjust image configuration                          | drbd.io/linstor-controller:v1.25.1                 | 
+| LinstorController   | .spec.drbdRepoCred             | Use pull secret to deploy the operator              | drbdiocred                                         | 
+| LinstorCSIDriver    | .spec.linstorPluginImage       | Adjust image configuration                          | drbd.io/linstor-csi:v1.3.0                         | 
+| LinstorCSIDriver    | .spec.imagePullSecret          | Use pull secret to deploy the operator              | drbdiocred                                         | 
+| LinstorSatelliteSet | .spec.drbdRepoCred             | Use pull secret to deploy the operator              | drbdiocred                                         | 
+| LinstorSatelliteSet | .spec.kernelModuleInjectionIma | Adjust image configuration                          | drbd.io/drbd9-rhel8:latest                         | 
+| LinstorSatelliteSet | .spec.monitoringImage          | Adjust image configuration                          | drbd.io/drbd-reactor:v1.4.0                        | 
+| LinstorSatelliteSet | .spec.satelliteImage           | Adjust image configuration                          | drbd.io/linstor-satellite:v1.25.1                  | 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------
+| After upgrading, apply the following resources. They have been saved to v2-resources.yaml |
+---------------------------------------------------------------------------------------------
+[...]</code></pre>
+<p>A copy of the identified resources in your current deployment is saved in a file named <code>v2-resources.yaml</code>.</p>
+<h2>Collecting Helm-Generated Secrets</h2>
+<p>Helm automatically generates a passphrase for LINSTOR. Once LINSTOR is initialized with the passphrase, the LINSTOR Controller will not be able fully start without supplying the passphrase.</p>
+<p>To migrate the generated passphrase to Piraeus Operator v2, create a backup of the secret by entering the following command:</p>
+<pre><code># kubectl get secrets linstor-op-passphrase \
+-ogo-template=&#39;{{.data.MASTER_PASSPHRASE}}{{&quot;\n&quot;}}&#39;</code></pre>
+<p>Output from the command will show a generated passphrase. Save the passphrase for later use.</p>
