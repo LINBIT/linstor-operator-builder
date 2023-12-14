@@ -1,0 +1,69 @@
+<h1>Removing the LINSTOR Operator v1 Deployment</h1>
+<p>To migrate a LINSTOR Operator v1 deployment to a v2 deployment you need to temporarily remove the existing Operator v1 deployment from your cluster.</p>
+<p>After completing this step, you will not be able to create new volumes, nor attach or detach existing volumes, until you roll out your new deployment. However, storage volumes that are attached to your LINSTOR satellite Pods will continue to function.</p>
+<p>This is the third step when migrating the LINSTOR Operator from version 1 (v1) to version 2 (v2).</p>
+<h2>Prerequisites</h2>
+<p>To temporarily remove the LINSTOR Operator v1 from your current deployment, you will need to install the following tools:</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/"><code>kubectl</code></a></li>
+<li><a href="https://docs.helm.sh/docs/intro/install/">Helm</a></li>
+</ul>
+<h2>Scaling Down the Operator Deployment</h2>
+<p>To prevent the LINSTOR Operator from modifying the existing cluster or its LINSTOR resources, scale down the existing LINSTOR Operator deployment so that there are no replicas of the Operator Pod. To do this, enter the following commands:</p>
+<pre><code># helm upgrade linstor-op linstor/linstor --set operator.replicas=0
+# kubectl rollout status -w deploy/linstor-op-operator</code></pre>
+<p>Output from successfully running these commands will show that the Helm release
+was upgraded and that the Operator deployment was rolled out.</p>
+<pre><code>Release &quot;linstor-op&quot; has been upgraded. Happy Helming!
+[...]
+deployment &quot;linstor-op-operator&quot; successfully rolled out</code></pre>
+<h2>Removing the Finalizers from LINSTOR Resources</h2>
+<p>The LINSTOR Operator sets <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/">finalizers</a> on the resources that it controls. This prevents the deletion of these resources when the
+Operator is not running. Remove the finalizers by applying a patch to each of
+the resources, by entering the following commands:</p>
+<pre><code># kubectl patch linstorsatellitesets linstor-op-ns --type merge --patch &#39;{&quot;metadata&quot;: {&quot;finalizers&quot;: []}}&#39;
+# kubectl patch linstorcontrollers linstor-op-cs --type merge --patch &#39;{&quot;metadata&quot;: {&quot;finalizers&quot;: []}}&#39;</code></pre>
+<p>Output after each successful <code>kubectl patch</code> command will show that the patch was applied.</p>
+<pre><code>[...]
+linstorsatelliteset.linstor.linbit.com/linstor-op-ns patched
+[...]
+linstorcontroller.linstor.linbit.com/linstor-op-cs patched</code></pre>
+<h2>Removing the LINSTOR Resources</h2>
+<p>After removing the finalizers, you can delete the LINSTOR resources. This will stop the LINSTOR cluster. To do this, enter the following commands:</p>
+<pre><code># kubectl delete linstorcsidrivers/linstor-op
+# kubectl delete linstorsatellitesets/linstor-op-ns
+# kubectl delete linstorcontrollers/linstor-op-cs</code></pre>
+<blockquote>
+<p>❗ <strong>IMPORTANT:</strong> After you delete these resources, you cannot create new volumes nor attach or detach existing volumes. Volumes that are already attached to a Pod will continue to be available and will continue to replicate.</p>
+</blockquote>
+<p>After each successful <code>kubectl delete</code> command, output will show that the resource was deleted.</p>
+<pre><code>[...]
+linstorcsidriver.linstor.linbit.com &quot;linstor-op&quot; deleted
+[...]
+linstorsatelliteset.linstor.linbit.com &quot;linstor-op-ns&quot; deleted
+[...]
+linstorcontroller.linstor.linbit.com &quot;linstor-op-cs&quot; deleted</code></pre>
+<h2>Removing the LINSTOR Deployment</h2>
+<p>As a last step, you can completely remove the LINSTOR Operator v1 Helm deployment, and delete additional resources such as service accounts
+and <a href="https://kubernetes.io/docs/reference/access-authn-authz/rbac/">role-based access control
+(RBAC)</a>
+resources. You can also delete the <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/">custom resources (CRDs)</a>. To do these
+tasks, enter the following commands:</p>
+<pre><code># helm uninstall linstor-op
+# kubectl delete crds \
+linstorcsidrivers.linstor.linbit.com \
+linstorsatellitesets.linstor.linbit.com \
+linstorcontrollers.linstor.linbit.com</code></pre>
+<p>Output from successful commands will show that the Helm deployment was uninstalled
+and that resources were deleted.</p>
+<pre><code>[...]
+release &quot;linstor-op&quot; uninstalled
+[...]
+customresourcedefinition.apiextensions.k8s.io &quot;linstorcsidrivers.linstor.linbit.com&quot; deleted
+customresourcedefinition.apiextensions.k8s.io &quot;linstorsatellitesets.linstor.linbit.com&quot; deleted
+customresourcedefinition.apiextensions.k8s.io &quot;linstorcontrollers.linstor.linbit.com&quot; deleted</code></pre>
+<h2>Removing Additional LINSTOR Components</h2>
+<p>If you have deployed additional LINSTOR components, such as the High Availability (HA) Controller or LINSTOR Affinity Controller, you also need to remove them.
+After completing the migration to LINSTOR Operator v2, you can install these components again, if you need to. To delete these additional components, enter the following commands:</p>
+<pre><code># helm uninstall linstor-ha-controller
+# helm uninstall linstor-affinity-controller</code></pre>
