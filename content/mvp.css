@@ -250,7 +250,6 @@ p {
 pre {
     margin: 1rem 0;
     max-width: var(--width-card-wide);
-    padding: 1rem 0;
 }
 
 pre code,
@@ -258,7 +257,7 @@ pre samp {
     display: block;
     max-width: var(--width-card-wide);
     padding: 0.5rem 2rem;
-    white-space: pre-wrap;
+    overflow-x: scroll;
 }
 
 small {
