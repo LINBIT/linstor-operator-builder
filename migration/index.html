@@ -15,7 +15,10 @@
             <li><a href="/">Operator v2</a></li>
             <li>Migration ▾
                 <ul>
-                    <li><a href="1-migrate-db.html">1. Migrate Database</a></li>
+                    <li><a href="/migration/1-migrate-db.html">1. Migrate Database</a></li>
+                    <li><a href="/migration/2-collect-information.html">2. Collect Information</a></li>
+                    <li><a href="/migration/3-remove-operator-v1.html">3. Remove Operator v1</a></li>
+                    <li><a href="/migration/4-install-operator-v2.html">4. Install Operator v2</a></li>
                 </ul>
             </li>
             <li><a href="/helm.html">Operator v1</a></li>
@@ -43,9 +46,9 @@
 
         <ol>
             <li><a href="1-migrate-db.html">(Optional) Migrate the LINSTOR database to use the Kubernetes backend.</a></li>
-            <li>Collect information about the current deployment.</li>
-            <li>Remove the LINSTOR Operator v1 deployment, keeping existing volumes untouched.</li>
-            <li>Deploy LINSTOR Operator v2 using the information gathered in step 2.</li>
+            <li><a href="2-collect-information.html">Collect information about the current deployment.</a></li>
+            <li><a href="3-remove-operator-v1.html">Remove the LINSTOR Operator v1 deployment, keeping existing volumes untouched.</a></li>
+            <li><a href="4-install-operator-v2.html">Deploy LINSTOR Operator v2 using the information gathered in step 2.</a></li>
         </ol>
 
         <h2>Prerequisites</h2>
@@ -62,7 +65,7 @@
             <li>You have the following command line tools available:
                 <ul>
                     <li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a>
-                    <li><a href="https://docs.helm.sh/docs/intro/install/">helm</a>
+                    <li><a href="https://docs.helm.sh/docs/intro/install/">Helm</a>
                     <li><a href="https://jqlang.github.io/jq/download/">jq</a>
                 </ul>
             </li>

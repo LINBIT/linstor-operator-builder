@@ -220,7 +220,7 @@ EOF</code></pre>
             After exporting the backup, copy it to your host. This will be an additional "backup
             copy” should there be issues during the migration.
         </p>
-        <pre><code class="console">kubectl cp linstor-database-migration:/backup/backup-before-migration.json backup-before-migration.json</code></pre>
+        <pre><code class="console">kubectl cp linstor-database-migration:backup/backup-before-migration.json backup-before-migration.json</code></pre>
 
         <h4>Updating the LINSTOR Configuration to Point to the New Database Back End</h4>
         <p>
