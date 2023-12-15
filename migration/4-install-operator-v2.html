@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Removing the LINSTOR Operator v1 Deployment</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/content/mvp.css"/>
+    <link rel="icon" href="/content/symbol.svg"/>
+</head>
+<body>
+<header>
+    <nav>
+        <img alt="Logo" src="/content/linbit_sds.svg" height="70"/>
+        <ul>
+            <li><a href="/">Operator v2</a></li>
+            <li><a href="/migration/">Migration ▾</a>
+                <ul>
+                    <li><a href="1-migrate-db.html">1. Migrate Database</a></li>
+                    <li><a href="2-collect-information.html">2. Collect Information</a></li>
+                    <li><a href="3-remove-operator-v1.html">3. Remove Operator v1</a></li>
+                    <li>4. Install Operator v2</li>
+                </ul>
+            </li>
+            <li><a href="/helm.html">Operator v1</a></li>
+        </ul>
+    </nav>
+
+    <h1 id="installing-linstor-operator-v2">Installing LINSTOR Operator v2</h1>
+</header>
+<main>
+    <article>
+        <p>
+            After <a href="./3-remove-operator-v1.html">removing the LINSTOR Operator v1 deployment</a>, you can install
+            LINSTOR Operator v2.
+        </p>
+
+        <p>
+            You can deploy the LINSTOR Operator v2 by using either the
+            <a href="https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization">Kustomize</a> tool,
+            integrated with <code>kubectl</code>, or else by using Helm and a LINBIT Helm chart.
+        </p>
+
+        <p>This is the last step when migrating the LINSTOR Operator from version 1 (v1) to version 2 (v2).</p>
+
+        <h2 id="prerequisites">Prerequisites</h2>
+        <p>
+            To install the LINSTOR Operator v2 into your current deployment, you will need to install the following
+            tools:
+        </p>
+
+        <ul>
+            <li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a></li>
+            <li><a href="https://docs.helm.sh/docs/intro/install/">Helm</a></li>
+        </ul>
+
+        <h2 id="deploying-linstor-operator-v2-by-using-kustomize">Deploying LINSTOR Operator v2 by Using Kustomize</h2>
+        <p>
+            You can use <code>kubectl</code> and the built-in <code>kustomize</code> feature to deploy LINSTOR Operator
+            v2.</p>
+
+        <p>
+            For instructions on how to do this, refer to the documentation in the
+            <em><a href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-creating-operator-v2-kustomize">LINSTOR User’s Guide</a></em>.
+            Follow the user’s guide instructions for deploying the Operator v2, After deploying the Operator, return to
+            this page (Step 4) and continue to the “Deploying the LINBIT SDS Cluster” instructions below.
+        </p>
+
+        <h2 id="deploying-linstor-operator-v2-by-using-helm">Deploying LINSTOR Operator v2 by Using Helm</h2>
+        <p>You can also use Helm to deploy LINSTOR Operator v2.</p>
+
+        <p>
+            Instructions on how to do this are also in the
+            <em><a href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-creating-operator-helm">LINSTOR User’s Guide</a></em>.
+            Follow the user’s guide instructions for deploying the Operator v2, After deploying the Operator, return to
+            this page (Step 4) and continue to the “Deploying the LINBIT SDS Cluster” instructions below.
+        </p>
+
+        <h2 id="deploying-the-linbit-sds-cluster">Deploying the LINBIT SDS Cluster</h2>
+        <p>
+            LINBIT SDS is the term that describes a LINSTOR and DRBD deployment. The LINSTOR
+            Operator is a part of a LINBIT SDS deployment in Kubernetes. After deploying the
+            LINSTOR Operator v2, you can fully deploy LINBIT SDS in your Kubernetes cluster by using the resources that
+            you generated in <a href="./2-collect-information.html#running-the-data-collection-script">Step 2</a>.
+        </p>
+
+        <h3 id="creating-a-secret">Creating a Secret</h3>
+        <p>
+            When installing the LINSTOR Operator v1 by using Helm, Helm automatically generates a passphrase for LINSTOR.
+            After Helm initializes LINSTOR with the passphrase, the LINSTOR controller will not be able to fully start
+            without supplying the passphrase. In <a href="./2-collect-information.html#collecting-helm-generated-secrets">Step 2</a> of the migration
+            instructions, you collected the passphrase from your existing Operator v1 deployment. You will use that
+            passphrase to create a secret that you can use to migrate your resources into the Operator v2 deployment.
+        </p>
+        <p>To create the secret, enter the following commands:</p>
+        <pre><code><span class="console">PASSPHRASE=&lt;passphrase-collected-from-kubectl-get-secrets-command-in-step-2&gt;</span>
+<span class="console">cat &lt;&lt; EOF | kubectl apply -f - --server-side</span>
+apiVersion: v1
+kind: Secret
+metadata:
+  name: linstor-op-passphrase
+  namespace: linbit-sds # Change the namespace here
+data:
+  MASTER_PASSPHRASE: $PASSPHRASE
+EOF
+<span class="console">unset PASSPHRASE</span></code></pre>
+
+        <p>Output from a successful <code>kubectl apply</code> command will show that the secret was applied.</p>
+        <pre><code>secret/linstor-op-passphrase serverside-applied</code></pre>
+
+        <h3 id="applying-resources">Applying Resources</h3>
+        <p>
+            Next, apply the resources that you collected in a <code>v2-resources.yaml</code> file by running the
+            collection script in the <a href="./2-collect-information.html#running-the-data-collection-script">Step 2</a>
+            instructions.
+        </p>
+
+        <pre><code class="console">kubectl apply -f v2-resources.yaml --server-side</code></pre>
+
+        <p>Output from a successful command will show that your resources were created.</p>
+
+        <pre><code>linstorcluster.piraeus.io/linstorcluster serverside-applied
+linstorsatelliteconfiguration.piraeus.io/host-networking serverside-applied
+linstorsatelliteconfiguration.piraeus.io/linstor-op-ns serverside-applied</code></pre>
+
+        <p>Now the cluster will come up, using the existing data to restore the cluster state.</p>
+
+        <h2 id="verifying-cluster-state">Verifying Cluster State</h2>
+        <p>
+            Before verifying your cluster state, you can change your <code>kubectl</code> command context to the
+            <code>linbit-sds</code> namespace, by entering the following command:
+        </p>
+
+        <pre><code class="console">kubectl config set-context --current --namespace=linbit-sds</code></pre>
+
+        <p>Next, you can check the cluster state by using various <code>linstor</code> command line client commands:</p>
+        <pre><code><span class="console">kubectl exec deploy/linstor-controller -- linstor node list</span>
+<span class="console">kubectl exec deploy/linstor-controller -- linstor storage-pool list</span>
+<span class="console">kubectl exec deploy/linstor-controller -- linstor resource list-volumes</span>
+<span class="console">kubectl exec deploy/linstor-controller -- linstor error-reports list</span></code></pre>
+
+        <p>
+            You can also
+            <a href="https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-basic-configuration-and-deployment">provision new volumes</a>,
+            to verify that the cluster is operational.
+        </p>
+    </article>
+</main>
+</body>
+</html>

@@ -18,6 +18,7 @@
                     <li><a href="1-migrate-db.html">1. Migrate Database</a></li>
                     <li>2. Collect Information</li>
                     <li><a href="3-remove-operator-v1.html">3. Remove Operator v1</a></li>
+                    <li><a href="4-install-operator-v2.html">4. Install Operator v2</a></li>
                 </ul>
             </li>
             <li><a href="/helm.html">Operator v1</a></li>
@@ -49,7 +50,7 @@
             <li><a href="https://jqlang.github.io/jq/download/">jq</a> - a command-line JSON processor</li>
         </ul>
 
-        <h2>Running the Data Collection Script</h2>
+        <h2 id="running-the-data-collection-script">Running the Data Collection Script</h2>
         <p>
             To collect the necessary information to migrate resources in your Operator v1 deployment to an upgraded
             Operator v2 deployment, you can run a script provided by LINBIT.
@@ -101,7 +102,7 @@ Apply the patch (Y/n)? y
             A copy of the identified resources in your current deployment is saved in a file named <code>v2-resources.yaml</code>.
         </p>
 
-        <h2>Collecting Helm-Generated Secrets</h2>
+        <h2 id="collecting-helm-generated-secrets">Collecting Helm-Generated Secrets</h2>
         <p>
             Helm automatically generates a passphrase for LINSTOR. Once LINSTOR is initialized with the passphrase, the
             LINSTOR Controller will not be able fully start without supplying the passphrase.
