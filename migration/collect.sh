@@ -121,8 +121,8 @@ get_sources() {
 		return
 	fi
 
-	if curl -fsSL https://github.com/piraeusdatastore/piraeus-operator/archive/refs/heads/v2.tar.gz | tar -xz 2>/dev/null ; then
-		echo piraeus-operator-2
+	if curl -fsSL https://github.com/piraeusdatastore/piraeus-operator/archive/refs/heads/v2.tar.gz | tar -xzC "$1" 2>/dev/null ; then
+		echo "$1/piraeus-operator-2"
 	else
 		echo "Could not download operator sources, not showing rich diffs." >&2
 	fi
