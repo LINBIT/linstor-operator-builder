@@ -27,7 +27,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .Values.linstorCluster.linstorPassphraseSecret }}
     {{- .Values.linstorCluster.linstorPassphraseSecret }}
 {{- else }}
-    {{- include "linstor-cluster.fullname" }}-passphrase
+    {{- include "linstor-cluster.fullname" . }}-passphrase
 {{- end }}
 {{- end }}
 
