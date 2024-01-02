@@ -1,0 +1,51 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../piraeus-operator/config/extras/monitoring
+  - ../../charts/linbit-sds
+patches:
+  - target:
+      kind: ConfigMap
+      name: piraeus-datastore-dashboard
+    patch: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: piraeus-datastore-dashboard
+      $patch: delete
+  - target:
+      kind: PrometheusRule
+      name: piraeus-datastore
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: linbit-sds
+# **************************************************************
+# Add to when using LinstorCluster.spec.apiTLS to secure LINSTOR
+# **************************************************************
+#  - target:
+#      kind: ServiceMonitor
+#      name: linstor-controller
+#    patch: |
+#      apiVersion: monitoring.coreos.com/v1
+#      kind: ServiceMonitor
+#      metadata:
+#        name: linstor-controller
+#      spec:
+#        endpoints:
+#          - path: /metrics
+#            port: secure-api
+#            scheme: https
+#            tlsConfig:
+#              ca:
+#                secret:
+#                  key: ca.crt
+#                  name: linstor-client-tls
+#              cert:
+#                secret:
+#                  key: tls.crt
+#                  name: linstor-client-tls
+#              keySecret:
+#                key: tls.key
+#                name: linstor-client-tls
+#              serverName: linstor-controller

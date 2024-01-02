@@ -5,6 +5,7 @@
     "linstorCluster",
     "linstorSatelliteConfigurations",
     "linstorNodeConnections",
+    "monitoring",
     "storageClasses"
   ],
   "properties": {
@@ -59,6 +60,33 @@
           }
         }
       }
+    },
+    "monitoring": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "dashboard": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "namespace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "namespace"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "dashboard"
+      ]
     },
     "storageClasses": {
       "type": "array",
