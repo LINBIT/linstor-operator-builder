@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../monitoring
+patches:
+  - target:
+      kind: ServiceMonitor
+      name: linstor-controller
+    patch: |
+      apiVersion: monitoring.coreos.com/v1
+      kind: ServiceMonitor
+      metadata:
+        name: linstor-controller
+      spec:
+        endpoints:
+          - path: /metrics
+            port: secure-api
+            scheme: https
+            tlsConfig:
+              ca:
+                secret:
+                  key: ca.crt
+                  name: linstor-client-tls
+              cert:
+                secret:
+                  key: tls.crt
+                  name: linstor-client-tls
+              keySecret:
+                key: tls.key
+                name: linstor-client-tls
+              serverName: linstor-controller
