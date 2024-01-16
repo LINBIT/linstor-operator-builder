@@ -2,8 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 configMapGenerator:
   - name: linbit-sds-dashboard
-    namespace: monitoring
     files:
       - linbit-sds-dashboard.json=dashboard.json
     options:
       disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"

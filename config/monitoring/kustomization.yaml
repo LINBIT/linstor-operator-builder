@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../piraeus-operator/config/extras/monitoring
   - ../../charts/linbit-sds
+namespace: linbit-sds
 patches:
   - target:
       kind: ConfigMap

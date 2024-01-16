@@ -72,14 +72,10 @@
           "properties": {
             "enabled": {
               "type": "boolean"
-            },
-            "namespace": {
-              "type": "string"
             }
           },
           "required": [
-            "enabled",
-            "namespace"
+            "enabled"
           ]
         }
       },

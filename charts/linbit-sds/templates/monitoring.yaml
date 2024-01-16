@@ -8,7 +8,6 @@ metadata:
     grafana_dashboard: "1"
     {{- include "linstor-cluster.labels" . | nindent 4 }}
   name: linbit-sds-dashboard
-  namespace: {{ .Values.monitoring.dashboard.namespace }}
 data:
   linbit-sds-dashboard.json: |
     {{- .Files.Get "dashboard.json" | nindent 4 }}

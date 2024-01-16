@@ -211,8 +211,6 @@ monitoring:
   dashboard:
     # Enable deployment of the Grafana dashboard
     enabled: true
-    # The namespace of grafana, to which the dashboard should be deployed
-    namespace: prometheus
 
 # List of storageClasses. You can create different SC with different params
 storageClasses: []
