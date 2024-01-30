@@ -3,8 +3,8 @@ name: linstor-operator
 description: |-
   The LINSTOR® Operator manages software defined storage clusters using LINSTOR in Kubernetes.
 type: application
-version: 2.3.0
-appVersion: "v2.3.0"
+version: 2.4.0
+appVersion: "v2.4.0"
 kubeVersion: ">= 1.20.0"
 maintainers:
   - name: LINBIT

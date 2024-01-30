@@ -14,7 +14,7 @@ To deploy LINBIT SDS, you need to:
    kind: Kustomization
    namespace: linbit-sds
    resources:
-     - https://charts.linstor.io/static/v2.3.0.yaml
+     - https://charts.linstor.io/static/v2.4.0.yaml
    generatorOptions:
      disableNameSuffixHash: true
    secretGenerator:
