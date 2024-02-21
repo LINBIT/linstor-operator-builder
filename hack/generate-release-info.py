@@ -41,7 +41,7 @@ def collect_static_files(base: pathlib.Path):
     for name, manifest in static_files.items():
         version = get_static_version(name)
         parsed = parse_static_manifest(manifest)
-        images = base.joinpath(f"v{version}.image-list").read_text().splitlines()
+        images = base.joinpath(f"v{version}.image-list.txt").read_text().splitlines()
         result[name] = {
             "file": name,
             "version": version,

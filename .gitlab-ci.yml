@@ -10,6 +10,7 @@ variables:
   VMSHED_VERSION: v0.20.1
   KUSTOMIZE_VERSION: v5.2.1
   K8S_TEST_VERSION: v2.5.0
+  HELM_VERSION: v3.14.1
 
 prepare-bins:
   rules:
@@ -26,8 +27,9 @@ prepare-bins:
     - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
     - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
     - ci_fetch_tar kustomize-$KUSTOMIZE_VERSION "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -z
+    - ci_fetch_tar helm-$HELM_VERSION "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -z
   cache:
-    key: bin-$VIRTER_VERSION-$VMSHED_VERSION-$K8S_TEST_VERSION-$KUSTOMIZE_VERSION
+    key: bin-$VIRTER_VERSION-$VMSHED_VERSION-$K8S_TEST_VERSION-$KUSTOMIZE_VERSION-$HELM_VERSION
     paths:
       - download
   artifacts:
@@ -90,6 +92,23 @@ build_static_deployment:
     paths:
       - static-deployment.yaml
       - image.list
+
+build_helm_deployment:
+  image:
+    name: python:3
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - if: $CI_COMMIT_BRANCH == 'v2'
+  stage: build
+  script:
+    - bin/helm package charts/linbit-sds charts/linstor-operator
+  cache:
+  artifacts:
+    paths:
+      - "*.tgz"
 
 container_scanning:
   stage: test
@@ -240,18 +259,23 @@ publish-config:
     - mkdir -p .cache/pip
     - pip install --cache-dir .cache/pip pyyaml semver
   script:
+    - mkdir -p $HOME/.ssh
+    - ln -snf $GITHUB_KNOWN_HOSTS $HOME/.ssh/known_hosts
     - eval $(ssh-agent -s)
     - cat $GITHUB_DEPLOY_KEY | ssh-add -
     - git clone -b gh-pages --single-branch --depth=1 "$UPSTREAM" gh-pages
-    - mkdir -p "gh-pages/static"
+    - mkdir -p gh-pages/static
+    - cp --no-clobber -t gh-pages *.tgz
     - cp static-deployment.yaml "gh-pages/static/$RELEASE_VERSION.yaml"
-    - cp image.list "gh-pages/static/$RELEASE_VERSION.image-list"
-    - ln -snf "$CI_COMMIT_TAG.yaml" "gh-pages/static/latest.yaml"
-    - ln -snf "$CI_COMMIT_TAG.image-list" "gh-pages/static/latest.image-list"
+    - cp image.list "gh-pages/static/$RELEASE_VERSION.image-list.txt"
+    - ln -snf "$RELEASE_VERSION.yaml" "gh-pages/static/latest.yaml"
+    - ln -snf "$RELEASE_VERSION.image-list.txt" "gh-pages/static/latest.image-list.txt"
     - hack/generate-release-info.py gh-pages/static | tee gh-pages/content/releases.json
+    - bin/helm repo index --url https://charts.linstor.io gh-pages
+    - git -C gh-pages add .
+    - git -C gh-pages diff --staged
     - if [ -n "$CI_COMMIT_TAG" ]; then
-    -   git -C gh-pages add .
-    -   git -C gh-pages commit -am "Release $RELEASE_VERSION"
+    -   git -C gh-pages commit -m "Release $RELEASE_VERSION"
     -   git -C gh-pages push "$UPSTREAM" gh-pages:gh-pages
     - fi
   cache:
