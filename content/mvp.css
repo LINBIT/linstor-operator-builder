@@ -110,6 +110,11 @@ section aside:hover {
     box-shadow: var(--box-shadow) var(--color-bg-secondary);
 }
 
+dt {
+    font-weight: lighter;
+    font-style: italic;
+}
+
 [hidden] {
     display: none;
 }
