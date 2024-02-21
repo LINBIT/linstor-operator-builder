@@ -14,7 +14,7 @@ addEventListener("DOMContentLoaded", (event) => {
                 card.innerHTML = `
                     <h3>${v.version}</h3>
                     <p><a href="static/v${v.version}.yaml">Manifest</a></p>
-                    <p><a href="static/v${v.version}.image-list">Image List</a></p>
+                    <p><a href="static/v${v.version}.image-list.txt">Image List</a></p>
                     <p><a href="linstor-operator-${v.version}.tgz">Chart</a></p>
                 `;
                 return card;
