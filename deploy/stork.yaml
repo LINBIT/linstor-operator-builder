@@ -24,22 +24,27 @@ data:
   # of Kubernetes, so please update those as required. The requirement to manually specify this
   # list will go away with Kubernetes v1.10 where it will use the defaults if nothing is
   # specified.
-  policy.cfg: |-
-    {
-      "kind": "Policy",
-      "apiVersion": "v1",
-      "extenders": [
-        {
-          "urlPrefix": "http://linstor-stork-stork-service.MY-STORK-NAMESPACE.svc.cluster.local:8099",
-          "apiVersion": "v1beta1",
-          "filterVerb": "filter",
-          "prioritizeVerb": "prioritize",
-          "weight": 5,
-          "enableHttps": false,
-          "nodeCacheCapable": false
-        }
-      ]
-    }
+  stork-config.yaml: |-
+    apiVersion: kubescheduler.config.k8s.io/v1beta3
+    kind: KubeSchedulerConfiguration
+    leaderElection:
+      leaderElect: true
+      leaseDuration: 15s
+      renewDeadline: 10s
+      retryPeriod: 2s
+      resourceLock: leases
+      resourceNamespace: MY-STORK-NAMESPACE
+      resourceName: linstor-stork-stork-scheduler
+    profiles:
+      - schedulerName: stork
+    extenders:
+      - urlPrefix: http://linstor-stork-stork-service.MY-STORK-NAMESPACE:8099
+        filterVerb: filter
+        prioritizeVerb: prioritize
+        weight: 5
+        enableHTTPS: false
+        httpTimeout: 300000s
+        nodeCacheCapable: false
 ---
 # Source: linstor/templates/stork-deployment.yaml
 kind: ClusterRole
@@ -251,24 +256,24 @@ spec:
       containers:
         - command:
             - /usr/local/bin/kube-scheduler
-            - --leader-elect=true
-            - --scheduler-name=stork
-            - --policy-configmap=linstor-stork-stork-config
-            - --policy-configmap-namespace=MY-STORK-NAMESPACE
-            - --leader-elect-resource-name=linstor-stork-stork-scheduler
-            - --leader-elect-resource-namespace=MY-STORK-NAMESPACE
+            - --config=/etc/kubernetes/stork-config.yaml
           image: "registry.k8s.io/kube-scheduler:v1.16.0"
           imagePullPolicy: "IfNotPresent"
           name: linstor-stork-stork-scheduler
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 10251
+              port: 10259
+              scheme: HTTPS
             initialDelaySeconds: 15
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 10251
+              port: 10259
+              scheme: HTTPS
+          volumeMounts:
+          - mountPath: /etc/kubernetes
+            name: stork-config
           resources:
             {}
       affinity:
@@ -285,6 +290,11 @@ spec:
       securityContext:
         
       serviceAccountName: stork-scheduler-account
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: linstor-stork-stork-config
+        name: stork-config
 ---
 # Source: linstor/templates/stork-deployment.yaml
 # Source: https://github.com/libopenstorage/stork/blob/v2.8.2/specs/stork-deployment.yaml
