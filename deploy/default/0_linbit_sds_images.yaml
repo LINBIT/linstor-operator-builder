@@ -23,7 +23,7 @@ components:
     tag: v0.10
     image: ktls-utils
   drbd-module-loader:
-    tag: v9.2.8-rc.1
+    tag: v9.2.8
     image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
     match:
       - osImage: Red Hat Enterprise Linux 7\.
