@@ -145,6 +145,7 @@ container_scanning:
     - ( cd deploy/default ; kustomize edit set image controller=$OPERATOR_IMAGE )
     - >
       vmshed
+      --error-details=false
       --nvms $(( ${LINBIT_CI_MAX_CPUS:-20} / 3 ))
       --pull-template "${LINBIT_DOCKER_REGISTRY}/vm/{{ .Image }}:latest"
       --variant "$VARIANT"
