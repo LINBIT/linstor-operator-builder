@@ -9,7 +9,7 @@ variables:
   VIRTER_VERSION: v0.26.0
   VMSHED_VERSION: v0.21.0
   KUSTOMIZE_VERSION: v5.3.0
-  K8S_TEST_VERSION: v2.6.4
+  K8S_TEST_VERSION: v2.7.0
   HELM_VERSION: v3.14.2
 
 prepare-bins:
@@ -136,13 +136,11 @@ container_scanning:
 
 .test:
   stage: test
-  tags:
-    - libvirt
   script:
     - set -ex
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - create-k8s-test-configs -stable-releases-to-check=$RELEASES_TO_CHECK -include-next=$INCLUDE_NEXT -base-image=alma-9 -output-dir=.
-    - ( cd deploy/default ; kustomize edit set image controller=$OPERATOR_IMAGE )
+    - ( cd deploy/default ; kustomize edit set image controller=$OPERATOR_IMAGE ; kustomize edit add patch --kind Deployment --name controller-manager --patch '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--linstor-node-cache-duration=15s"}]' )
     - >
       vmshed
       --error-details=false
@@ -175,6 +173,8 @@ container_scanning:
         - tests-out/log/**/*-report.xml
 
 test-fast:
+  tags:
+  - libvirt-xs
   extends: .test
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -184,11 +184,13 @@ test-fast:
   timeout: 1h
   variables:
     TO_RUN: operator
-    VARIANT: k8s-backend,ipv6,dualstack
+    VARIANT: dualstack
     RELEASES_TO_CHECK: "4"
     INCLUDE_NEXT: "true"
 
 test-full:
+  tags:
+  - libvirt
   timeout: 8h
   extends: .test
   rules:
@@ -205,7 +207,7 @@ test-full:
     RELEASES_TO_CHECK: "4"
     INCLUDE_NEXT: "true"
     SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|multiple|subPath"
-    VARIANT: "k8s-backend,no-helm-install,ipv6,dualstack"
+    VARIANT: "ipv4,ipv6,dualstack"
 
 publish-image:
   stage: deploy
