@@ -11,13 +11,14 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.27.0
+        tag: v1.27.1
         image: linstor-controller
       linstor-satellite:
-        tag: v1.27.0
+        # Pin with digest to ensure we pull the version with downgraded thin-send-recv
+        tag: v1.27.1@sha256:55129a50186233c15b66757a4c09490794e9e6b6d4801764694c2643c11dc1fd
         image: linstor-satellite
       linstor-csi:
-        tag: v1.5.0
+        tag: v1.6.0
         image: linstor-csi
       drbd-reactor:
         tag: v1.4.0
@@ -32,8 +33,8 @@ data:
         tag: v0.10
         image: ktls-utils
       drbd-module-loader:
-        tag: v9.2.8
-        image: drbd9-jammy # Fallback image: chose a fairly recent kernel, which can hopefully compile whatever config is actually in use
+        tag: v9.2.9
+        image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux 7\.
             image: drbd9-rhel7
@@ -80,6 +81,8 @@ data:
             image: drbd9-focal
           - osImage: Ubuntu 22\.04
             image: drbd9-jammy
+          - osImage: Ubuntu 24\.04
+            image: drbd9-noble
   0_sig_storage_images.yaml: |
     ---
     base: registry.k8s.io/sig-storage
