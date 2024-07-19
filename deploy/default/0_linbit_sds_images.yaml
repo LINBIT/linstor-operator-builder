@@ -2,17 +2,16 @@
 base: drbd.io
 components:
   linstor-controller:
-    tag: v1.27.1
+    tag: v1.28.0
     image: linstor-controller
   linstor-satellite:
-    # Pin with digest to ensure we pull the version with downgraded thin-send-recv
-    tag: v1.27.1@sha256:55129a50186233c15b66757a4c09490794e9e6b6d4801764694c2643c11dc1fd
+    tag: v1.28.0
     image: linstor-satellite
   linstor-csi:
-    tag: v1.6.0
+    tag: v1.6.3
     image: linstor-csi
   drbd-reactor:
-    tag: v1.4.0
+    tag: v1.4.1
     image: drbd-reactor
   ha-controller:
     tag: v1.2.1
@@ -21,10 +20,10 @@ components:
     tag: v1.0.0
     image: drbd-shutdown-guard
   ktls-utils:
-    tag: v0.10
+    tag: v0.11
     image: ktls-utils
   drbd-module-loader:
-    tag: v9.2.9
+    tag: v9.2.10
     image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
     match:
       - osImage: Red Hat Enterprise Linux 7\.
