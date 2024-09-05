@@ -1,1 +1,1 @@
-v2.5.2.image-list.txt
+v2.6.0.image-list.txt
