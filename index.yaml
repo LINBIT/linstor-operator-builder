@@ -781,6 +781,27 @@ entries:
     version: 0.1.4
   linstor-affinity-controller:
   - apiVersion: v2
+    appVersion: v1.1.0
+    created: "2024-10-23T09:44:31.49217568+02:00"
+    description: 'Deploys the LINSTOR Affinity Controller. It periodically checks
+      the state of Piraeus/LINSTOR volumes compared to PersistentVolumes (PV), and
+      updates the PV Affinity if changes are detected. '
+    digest: b2a2991d379da62f2c0193b6730eab05d250b0f645df5dd9eafb152eb631b31b
+    home: https://github.com/piraeusdatastore/helm-charts
+    icon: https://raw.githubusercontent.com/piraeusdatastore/piraeus/master/artwork/sandbox-artwork/icon/color.svg
+    keywords:
+    - storage
+    maintainers:
+    - name: The Piraeus Maintainers
+      url: https://github.com/piraeusdatastore/
+    name: linstor-affinity-controller
+    sources:
+    - https://github.com/piraeusdatastore/linstor-affinity-controller
+    type: application
+    urls:
+    - https://charts.linstor.io/linstor-affinity-controller-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
     appVersion: v1.0.2
     created: "2024-09-05T10:03:19.551900144Z"
     description: 'Deploys the LINSTOR Affinity Controller. It periodically checks
@@ -1242,4 +1263,4 @@ entries:
     urls:
     - https://charts.linstor.io/pv-hostpath-0.1.0.tgz
     version: 0.1.0
-generated: "2024-09-05T10:03:19.307098911Z"
+generated: "2024-10-23T07:44:31.369228901Z"
