@@ -100,13 +100,12 @@
             Output under the <code>APP VERSION</code> column should show the version number of your
             LINSTOR Operator deployment, for example:
         </p>
-        <pre><code>
-NAME        [...]   APP VERSION
+        <pre><code>NAME        [...]   APP VERSION
 [...]
 linstor-op  [...]   1.10.8</code></pre>
 
         <p>Next, set a variable equal to your installed LINSTOR Operator version.</p>
-        <pre><code class="console">CURRENTVERS=1.10.7</code></pre>
+        <pre><code class="console">CURRENTVERS=1.10.8</code></pre>
         <aside>
             <p>📝 <strong>IMPORTANT:</strong>: You need to use a Helm chart version that matches your
                 currently deployed version. Otherwise, you might accidentally upgrade the
@@ -271,8 +270,7 @@ EOF</code></pre>
 
         <pre><code><span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor node list</span>
 <span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor resource list</span>
-<span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor volume list</span>
-        </code></pre>
+<span class="console">kubectl exec deploy/linstor-op-cs-controller -- linstor volume list</span></code></pre>
 
         <h2>Verifying the LINSTOR Controller Database Back End</h2>
         <p>
