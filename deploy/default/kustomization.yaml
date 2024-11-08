@@ -56,7 +56,7 @@ configMapGenerator:
 images:
 - name: controller
   newName: drbd.io/linstor-operator
-  newTag: v2.6.0
+  newTag: v2.7.0
 
 generatorOptions:
   disableNameSuffixHash: true
