@@ -77,6 +77,8 @@ $ <b>MY_LINBIT_PASSWORD=my-linbit-password</b>
 $ <b>helm repo add linstor https://charts.linstor.io</b>
 "linstor" has been added to your repositories
 $ <b>helm install linstor-operator linstor/linstor-operator \
+  --namespace linbit-sds \
+  --create-namespace \
   --set imageCredentials.username=$MY_LINBIT_USER \
   --set imageCredentials.password=$MY_LINBIT_PASSWORD \
   --wait</b>
