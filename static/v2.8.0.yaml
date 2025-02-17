@@ -2384,7 +2384,7 @@ spec:
           value: "false"
         - name: IMAGE_CONFIG_MAP_NAME
           value: linstor-operator-image-config
-        image: drbd.io/linstor-operator:v2.7.1
+        image: drbd.io/linstor-operator:v2.8.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -2479,7 +2479,7 @@ spec:
           value: webhook-server-cert
         - name: ZAP_DEVEL
           value: "false"
-        image: drbd.io/linstor-operator:v2.7.1
+        image: drbd.io/linstor-operator:v2.8.0
         livenessProbe:
           httpGet:
             path: /healthz
