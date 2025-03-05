@@ -70,8 +70,10 @@ data:
             precompiled: true
           - osImage: Rocky Linux 8
             image: drbd9-rhel8
+            precompiled: true
           - osImage: Rocky Linux 9
             image: drbd9-rhel9
+            precompiled: true
           - osImage: Amazon Linux 2
             image: drbd9-amzn2
           - osImage: Ubuntu 18\.04
