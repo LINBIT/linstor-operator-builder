@@ -84,6 +84,9 @@ data:
             image: drbd9-jammy
           - osImage: Ubuntu 24\.04
             image: drbd9-noble
+          - osImage: Harvester
+            image: drbd9-sles15
+            precompiled: true
   0_sig_storage_images.yaml: |
     ---
     base: registry.k8s.io/sig-storage
