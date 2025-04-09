@@ -1,0 +1,29 @@
+resources:
+- ../default
+
+patches:
+  - target:
+      name: linstor-operator-controller-manager
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --linstor-node-cache-duration=10s
+  - target:
+      kind: Deployment
+      name: linstor-operator-controller-manager
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: linstor-operator-controller-manager
+      spec:
+        template:
+          spec:
+            containers:
+            - name: manager
+              env:
+              - name: ZAP_DEVEL
+                value: "true"
+              - name: REQUEUE_INTERVAL
+                value: "10s"

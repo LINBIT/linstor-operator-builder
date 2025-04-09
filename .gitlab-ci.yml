@@ -6,11 +6,11 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v0.28.0
-  VMSHED_VERSION: v0.22.1
-  KUSTOMIZE_VERSION: v5.5.0
-  K8S_TEST_VERSION: v2.7.4
-  HELM_VERSION: v3.16.2
+  VIRTER_VERSION: v0.29.0
+  VMSHED_VERSION: v0.23.0
+  KUSTOMIZE_VERSION: v5.6.0
+  K8S_TEST_VERSION: v2.8.3
+  HELM_VERSION: v3.17.2
 
 prepare-bins:
   rules:
@@ -133,7 +133,7 @@ container_scanning:
     - set -ex
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
     - create-k8s-test-configs -stable-releases-to-check=$RELEASES_TO_CHECK -include-next=$INCLUDE_NEXT -base-image=alma-9 -output-dir=.
-    - ( cd deploy/default ; kustomize edit set image controller=$OPERATOR_IMAGE ; kustomize edit add patch --kind Deployment --name controller-manager --patch '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--linstor-node-cache-duration=15s"}]' )
+    - ( cd deploy/debug ; kustomize edit set image drbd.io/linstor-operator=$OPERATOR_IMAGE )
     - >
       vmshed
       --error-details=false
@@ -151,7 +151,7 @@ container_scanning:
       --set values.HelmImage=${LINBIT_DOCKER_REGISTRY}/linstor-kubernetes-tests/helm:${K8S_TEST_VERSION}
       --set values.TestImage=${LINBIT_DOCKER_REGISTRY}/linstor-kubernetes-tests/tests:${K8S_TEST_VERSION}
       --set values.DeploymentVersion=v2
-      --set values.DeploymentV2Source=/virter/workspace/deploy/default
+      --set values.DeploymentV2Source=/virter/workspace/deploy/debug
       --set "values.Skip=$SKIP"
       --set "values.Focus=$FOCUS"
   artifacts:

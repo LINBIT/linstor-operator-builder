@@ -11,13 +11,13 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.30.4
+        tag: v1.31.0
         image: linstor-controller
       linstor-satellite:
-        tag: v1.30.4
+        tag: v1.31.0
         image: linstor-satellite
       linstor-csi:
-        tag: v1.7.0
+        tag: v1.7.1
         image: linstor-csi
       drbd-reactor:
         tag: v1.8.0
@@ -32,7 +32,7 @@ data:
         tag: v0.11
         image: ktls-utils
       drbd-module-loader:
-        tag: v9.2.12
+        tag: v9.2.13
         image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux Server 7\.
@@ -92,7 +92,7 @@ data:
     base: registry.k8s.io/sig-storage
     components:
       csi-attacher:
-        tag: v4.8.0
+        tag: v4.8.1
         image: csi-attacher
       csi-livenessprobe:
         tag: v2.15.0
@@ -101,10 +101,10 @@ data:
         tag: v5.2.0
         image: csi-provisioner
       csi-snapshotter:
-        tag: v8.2.0
+        tag: v8.2.1
         image: csi-snapshotter
       csi-resizer:
-        tag: v1.13.1
+        tag: v1.13.2
         image: csi-resizer
       csi-external-health-monitor-controller:
         tag: v0.14.0
