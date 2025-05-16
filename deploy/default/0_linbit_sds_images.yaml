@@ -35,6 +35,9 @@ components:
       - osImage: Red Hat Enterprise Linux 9\.
         image: drbd9-rhel9
         precompiled: true
+      - osImage: Red Hat Enterprise Linux 10\.
+        image: drbd9-rhel10
+        precompiled: true
       - osImage: "Red Hat Enterprise Linux CoreOS 41[3-9]"
         image: drbd9-rhel9
         precompiled: true
@@ -53,10 +56,16 @@ components:
       - osImage: AlmaLinux 9
         image: drbd9-rhel9
         precompiled: true
+      - osImage: AlmaLinux 10
+        image: drbd9-rhel10
+        precompiled: true
       - osImage: Oracle Linux Server 8\.
         image: drbd9-rhel8
         precompiled: true
       - osImage: Oracle Linux Server 9\.
+        image: drbd9-rhel9
+        precompiled: true
+      - osImage: Oracle Linux Server 10\.
         image: drbd9-rhel9
         precompiled: true
       - osImage: Rocky Linux 8
@@ -64,6 +73,9 @@ components:
         precompiled: true
       - osImage: Rocky Linux 9
         image: drbd9-rhel9
+        precompiled: true
+      - osImage: Rocky Linux 10
+        image: drbd9-rhel10
         precompiled: true
       - osImage: Amazon Linux 2
         image: drbd9-amzn2
