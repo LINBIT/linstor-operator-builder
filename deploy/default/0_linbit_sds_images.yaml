@@ -38,7 +38,7 @@ components:
       - osImage: Red Hat Enterprise Linux 10\.
         image: drbd9-rhel10
         precompiled: true
-      - osImage: "Red Hat Enterprise Linux CoreOS 41[3-9]"
+      - osImage: "Red Hat Enterprise Linux CoreOS 9|(41[3-9])"
         image: drbd9-rhel9
         precompiled: true
       - osImage: Red Hat Enterprise Linux CoreOS
