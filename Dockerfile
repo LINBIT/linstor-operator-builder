@@ -27,7 +27,19 @@ RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=$TARGETOS
 
 # Use minimal base image to package the manager binary
 FROM registry.access.redhat.com/ubi9/ubi-micro:latest
+
+COPY LICENSE /licenses/Apache-2.0.txt
+
 COPY --from=builder /workspace/manager /workspace/gencert /
 USER 65534:65534
+
+LABEL name="linstor-operator"
+LABEL maintainer="LINBIT HA Solutions GmbH"
+LABEL vendor="LINBIT HA Solutions GmbH"
+ARG VERSION
+LABEL version="$VERSION"
+LABEL release=1
+LABEL summary="Operator that deploys and maintains LINBIT SDS"
+LABEL description="LINBIT SDS combines LINSTOR and DRBD open source software to provide high availability, scalability, and storage cluster management."
 
 ENTRYPOINT ["/manager"]

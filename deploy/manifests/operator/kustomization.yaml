@@ -1,0 +1,17 @@
+resources:
+- ../../operator
+
+namespace: linbit-sds
+namePrefix: linstor-operator-
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/name: linbit-sds
+
+patches:
+- path: remove-cert-secret.yaml
+
+images:
+- name: controller
+  newName: drbd.io/linstor-operator
+  newTag: v2.8.1

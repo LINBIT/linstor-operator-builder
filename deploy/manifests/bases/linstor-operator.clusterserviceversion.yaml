@@ -1,0 +1,135 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    categories: Storage
+    description: LINSTOR Operator deploys LINBIT SDS in the cluster.
+    support: LINBIT
+    capabilities: Full Lifecycle
+    operatorframework.io/suggested-namespace: linbit-sds
+    operators.openshift.io/valid-subscription: "['LINBIT SDS Subscription']"
+    features.operators.openshift.io/disconnected: "true"
+    features.operators.openshift.io/csi: "true"
+    features.operators.openshift.io/fips-compliant: "false"
+    features.operators.openshift.io/proxy-aware: "false"
+    features.operators.openshift.io/tls-profiles: "false"
+    features.operators.openshift.io/token-auth-aws: "false"
+    features.operators.openshift.io/token-auth-azure: "false"
+    features.operators.openshift.io/token-auth-gcp: "false"
+    operators.operatorframework.io/project_layout: "go.kubebuilder.io/v4"
+    operators.operatorframework.io/internal-objects: '["linstorsatellites.piraeus.io"]'
+    com.redhat.openshift.versions: "v4.7"
+  labels:
+    operatorframework.io/arch.amd64: supported
+    operatorframework.io/arch.arm64: supported
+    operatorframework.io/os.linux: supported
+  name: linstor-operator.v0.0.0
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Cluster-wide configuration for LINSTOR.
+      displayName: Linstor Cluster
+      kind: LinstorCluster
+      name: linstorclusters.piraeus.io
+      version: v1
+      resources:
+        - kind: LinstorCluster
+          name: linstorcluster
+          version: v1
+      statusDescriptors:
+      - path: conditions
+        displayName: Cluster Conditions
+        description: Conditions describe the current state of the LINSTOR Cluster
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+    - description: Configuration for connections between specific nodes.
+      displayName: Linstor Node Connection
+      kind: LinstorNodeConnection
+      name: linstornodeconnections.piraeus.io
+      version: v1
+      resources:
+      - kind: LinstorNodeConnection
+        name: example-connection
+        version: v1
+      statusDescriptors:
+      - path: conditions
+        displayName: Node Connection Conditions
+        description: Conditions describe the current state of the LINSTOR Node Connection
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+    - description: Configuration for specific Satellites/Nodes in the LINSTOR Cluster.
+      displayName: Linstor Satellite Configuration
+      kind: LinstorSatelliteConfiguration
+      name: linstorsatelliteconfigurations.piraeus.io
+      version: v1
+      resources:
+      - kind: LinstorSatelliteConfiguration
+        name: all-satellites
+        version: v1
+      statusDescriptors:
+      - path: conditions
+        displayName: Satellite Configuration Conditions
+        description: Conditions decsribe the current state of the LINSTOR Satellite Configuration
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+    - description: Resource to configure a single satellite, managed by the Operator itself.
+      displayName: Linstor Satellite
+      kind: LinstorSatellite
+      name: linstorsatellites.piraeus.io
+      version: v1
+      resources:
+      - kind: LinstorSatellite
+        name: example-satellite
+        version: v1
+      specDescriptors:
+      - path: clusterRef
+        displayName: Cluster Reference
+        description: Reference to the LINSTOR Cluster resource this Satellite is a part of.
+      statusDescriptors:
+      - path: conditions
+        displayName: Satellite Conditions
+        description: Conditions describe the current state of the LINSTOR Satellite
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.conditions'
+  description: |
+    The LINSTOR Operator manages [LINSTOR](https://github.com/LINBIT/linstor-server) clusters in Kubernetes.
+
+    All components of the LINSTOR software stack can be managed by the operator:
+    * DRBD
+    * LINSTOR
+    * LINSTOR CSI driver
+    * LINSTOR HA Controller
+  displayName: LINSTOR Operator
+  icon:
+  - base64data: |
+      PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiBpZD0iTGF5ZXJfMSIgeD0iMCIgeT0iMCIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMTAwMCAxMDAwIj48c3R5bGU+LnN0MHtkaXNwbGF5Om5vbmV9LnN0MXtkaXNwbGF5OmlubGluZX0uc3QzLC5zdDR7Y2xpcC1wYXRoOnVybCgjU1ZHSURfNF8pO2ZpbGw6I2YyOGUyNn0uc3Q0e2ZpbGw6IzFlMjkzYX0uc3Q2LC5zdDd7Y2xpcC1wYXRoOnVybCgjU1ZHSURfOF8pO2ZpbGw6IzI3MmMzYn0uc3Q3e2ZpbGw6I2YyOGQwM30uc3QxMCwuc3Q5e2NsaXAtcGF0aDp1cmwoI1NWR0lEXzEyXyk7ZmlsbDojZjI4ZDIzfS5zdDEwe2ZpbGw6IzFlMjkzYX0uc3QxMiwuc3QxM3tjbGlwLXBhdGg6dXJsKCNTVkdJRF8xNl8pO2ZpbGw6I2YyOGQyM30uc3QxM3tmaWxsOiNmZmZ9PC9zdHlsZT48ZyBpZD0iQXJ0d29ya183XzFfIj48ZGVmcz48cGF0aCBpZD0iU1ZHSURfMTdfIiBkPSJNMjQyLjIgMGg1MTUuN3YxMDAwSDI0Mi4yeiIvPjwvZGVmcz48Y2xpcFBhdGggaWQ9IlNWR0lEXzE4XyI+PHVzZSB4bGluazpocmVmPSIjU1ZHSURfMTdfIiBzdHlsZT0ib3ZlcmZsb3c6dmlzaWJsZSIvPjwvY2xpcFBhdGg+PGcgc3R5bGU9ImNsaXAtcGF0aDp1cmwoI1NWR0lEXzE4XykiPjxkZWZzPjxwYXRoIGlkPSJTVkdJRF8xOV8iIGQ9Ik0yNDIuMiAwaDUxNS43djEwMDBIMjQyLjJ6Ii8+PC9kZWZzPjxjbGlwUGF0aCBpZD0iU1ZHSURfMjBfIj48dXNlIHhsaW5rOmhyZWY9IiNTVkdJRF8xOV8iIHN0eWxlPSJvdmVyZmxvdzp2aXNpYmxlIi8+PC9jbGlwUGF0aD48cGF0aCBkPSJtNzEyIDEwNi45LTE2Ni4yLTk2Yy0yNS4yLTE0LjUtNjYuNS0xNC41LTkxLjYgMGwtMTY2LjIgOTZjLTIzLjYgMTMuNi00Mi40IDQ1LjUtNDQuOSA3My41LS4yIDEuOS0uOSA0LS45IDUuOXYxOTEuOWMwIDEuOS44IDQgLjkgNS45IDIuMiAyNC42IDE3LjIgNTEuNSAzNyA2Ny4xbDEzMi42LTc2LjVjMzEuNS0xOC4yIDY0LjktMjIgODcuMy0yMiAyMi41IDAgNTUuOSAzLjggODcuNCAyMi4xbDEzMi41IDc2LjVjMjEuMy0xNi44IDM3LjktNDcuMSAzNy45LTczVjE4Ni4yYzAtMjkuMS0yMC42LTY0LjgtNDUuOC03OS4zIiBzdHlsZT0iY2xpcC1wYXRoOnVybCgjU1ZHSURfMjBfKTtmaWxsOiNmMjhkMjMiLz48cGF0aCBkPSJNNzE5LjkgNTQ4LjljLTIuNy0yLjEtNS4xLTQuOC03LjgtNi40TDYzOC40IDUwMGwtOTIuNi01My41Yy0xMi42LTcuMy0yOS4yLTEwLjktNDUuOC0xMC45cy0zMy4yIDMuNi00NS44IDEwLjlMMzYxLjYgNTAwIDI4OCA1NDIuNWMtMi44IDEuNi01LjIgNC4zLTcuOSA2LjQtMTkuOCAxNS42LTM0LjggNDIuNS0zNyA2Ny4xLS4yIDEuOS0uOSA0LS45IDUuOXYxOTEuOWMwIDEuOS44IDQgLjkgNS45IDIuNCAyNy45IDIxLjMgNTkuOSA0NC45IDczLjVsMTY2LjIgOTZjMTIuNiA3LjMgMjkuMiAxMC45IDQ1LjggMTAuOXMzMy4yLTMuNiA0NS44LTEwLjlsMTY2LjItOTZjMjUuMi0xNC41IDQ1LjgtNTAuMiA0NS44LTc5LjNWNjIxLjhjMC0yNS44LTE2LjYtNTYuMi0zNy45LTcyLjkiIHN0eWxlPSJjbGlwLXBhdGg6dXJsKCNTVkdJRF8yMF8pO2ZpbGw6IzFlMjkzYSIvPjwvZz48L2c+PC9zdmc+
+    mediatype: image/svg+xml
+  maintainers:
+  - name: LINBIT
+    email: support@linbit.com
+  install:
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: false
+    type: AllNamespaces
+  keywords:
+  - storage
+  links:
+  - name: User Guide
+    url: https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/
+  - name: LINSTOR Operator
+    url: https://charts.linstor.io/
+  - name: Source Code
+    url: https://github.com/LINBIT/linstor-operator-builder
+  maturity: stable
+  minKubeVersion: 1.20.0
+  provider:
+    name: LINBIT
+    url: https://linbit.com

@@ -1,0 +1,22 @@
+resources:
+- bases/linstor-operator.clusterserviceversion.yaml
+- ./operator
+- ../../piraeus-operator/config/samples
+- ../../piraeus-operator/config/scorecard
+
+patches:
+- target:
+    kind: ClusterServiceVersion
+  path: csv-resource-patch.yaml
+
+replacements:
+- source:
+    fieldPath: metadata.name
+    kind: ConfigMap
+    name: image-config
+  targets:
+  - fieldPaths:
+    - spec.template.spec.containers.[name=manager].env.[name=IMAGE_CONFIG_MAP_NAME].value
+    select:
+      kind: Deployment
+      name: controller-manager

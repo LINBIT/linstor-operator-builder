@@ -1,0 +1,9 @@
+domain: piraeus.io
+layout:
+- go.kubebuilder.io/v4
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: linstor-operator
+repo: github.com/LINBIT/linstor-operator-builder
+version: "3"

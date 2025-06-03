@@ -76,15 +76,14 @@ build_static_deployment:
     - mkdir -p .cache/pip
     - pip install --cache-dir .cache/pip pyyaml
   script:
-    - bin/kustomize build ./deploy/default > static-deployment.yaml
-    - hack/get-image-list.py static-deployment.yaml > image.list
+    - make out/static-deployment.yaml out/image.list KUSTOMIZE=bin/kustomize
   cache:
     paths:
       - .cache/pip
   artifacts:
     paths:
-      - static-deployment.yaml
-      - image.list
+      - out/static-deployment.yaml
+      - out/image.list
 
 build_helm_deployment:
   image:
@@ -256,8 +255,8 @@ publish-config:
     - git clone -b gh-pages --single-branch --depth=1 "$UPSTREAM" gh-pages
     - mkdir -p gh-pages/static
     - cp --no-clobber -t gh-pages *.tgz
-    - cp static-deployment.yaml "gh-pages/static/$RELEASE_VERSION.yaml"
-    - cp image.list "gh-pages/static/$RELEASE_VERSION.image-list.txt"
+    - cp out/static-deployment.yaml "gh-pages/static/$RELEASE_VERSION.yaml"
+    - cp out/image.list "gh-pages/static/$RELEASE_VERSION.image-list.txt"
     - ln -snf "$RELEASE_VERSION.yaml" "gh-pages/static/latest.yaml"
     - ln -snf "$RELEASE_VERSION.image-list.txt" "gh-pages/static/latest.image-list.txt"
     - hack/generate-release-info.py gh-pages/static | tee gh-pages/content/releases.json

@@ -1,0 +1,41 @@
+patches:
+- patch: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: controller-manager
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: drbdio-pull-secret
+          containers:
+          - name: manager
+            env:
+              - name: PULL_SECRET
+                value: drbdio-pull-secret
+  target:
+    kind: Deployment
+    name: controller-manager
+- patch: |
+    - op: remove
+      path: /data/0_piraeus_datastore_images.yaml
+  target:
+    kind: ConfigMap
+    name: image-config
+- path: manager_webhook_patch.yaml
+
+configMapGenerator:
+  - name: image-config
+    files:
+      - 0_linbit_sds_images.yaml
+    behavior: merge
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- ../../piraeus-operator/config/crd
+- ../../piraeus-operator/config/rbac
+- ../../piraeus-operator/config/manager
+- ../../piraeus-operator/config/webhook
