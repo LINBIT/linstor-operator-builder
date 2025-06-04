@@ -46,6 +46,7 @@ patches:
     kind: ConfigMap
     name: image-config
 - path: manager_webhook_patch.yaml
+- path: gencert_rbac_patch.yaml
 
 configMapGenerator:
   - name: image-config
