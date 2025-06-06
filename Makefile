@@ -15,13 +15,17 @@ out/image.list: out/static-deployment.yaml
 	hack/get-image-list.py out/static-deployment.yaml > out/image.list
 
 .PHONY: deploy/manifests/related-images.yaml
-deploy/manifests/related-images.yaml: out/image.list
-	hack/get-related-images.sh < $^ > $@
+deploy/manifests/related-images.yaml:
+	$(KUSTOMIZE) build deploy/manifests --load-restrictor LoadRestrictionsNone \
+	  | hack/keep-and-replace-for-openshift.py \
+	  | hack/get-image-list.py /dev/stdin \
+	  | hack/get-related-images.sh > $@
 
 .PHONY: bundle
 bundle: deploy/manifests/related-images.yaml
 	rm -rf bundle
 	$(KUSTOMIZE) build deploy/manifests --load-restrictor LoadRestrictionsNone \
+	  | hack/keep-and-replace-for-openshift.py \
 	  | hack/replace-image-tags.py deploy/manifests/related-images.yaml \
 	  | $(OPERATOR_SDK) generate bundle --channels $(CHANNELS) -q --overwrite --version $(VERSION)
 	# Add related images information
