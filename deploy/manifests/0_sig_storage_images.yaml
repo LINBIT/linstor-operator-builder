@@ -1,0 +1,7 @@
+---
+# Not yet available in openshift
+base: registry.k8s.io/sig-storage
+components:
+  csi-external-health-monitor-controller:
+    tag: v0.14.0
+    image: csi-external-health-monitor-controller

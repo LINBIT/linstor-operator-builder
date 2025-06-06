@@ -20,3 +20,14 @@ replacements:
     select:
       kind: Deployment
       name: controller-manager
+
+configMapGenerator:
+  # Replace the sig-storage sidecars with RedHat builds
+  - name: linstor-operator-image-config
+    namespace: linbit-sds
+    files:
+    - 0_sig_storage_images.yaml
+    - 0_redhat_ose_images.yaml
+    behavior: merge
+    options:
+      disableNameSuffixHash: true

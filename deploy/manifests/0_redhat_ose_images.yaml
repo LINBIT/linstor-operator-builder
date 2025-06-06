@@ -1,0 +1,21 @@
+---
+base: registry.redhat.io/openshift4
+components:
+  csi-attacher:
+    tag: latest
+    image: ose-csi-external-attacher-rhel9
+  csi-livenessprobe:
+    tag: latest
+    image: ose-csi-livenessprobe-rhel9
+  csi-provisioner:
+    tag: latest
+    image: ose-csi-external-provisioner-rhel9
+  csi-snapshotter:
+    tag: latest
+    image: ose-csi-external-snapshotter-rhel9
+  csi-resizer:
+    tag: latest
+    image: ose-csi-external-resizer-rhel9
+  csi-node-driver-registrar:
+    tag: latest
+    image: ose-csi-node-driver-registrar-rhel9
