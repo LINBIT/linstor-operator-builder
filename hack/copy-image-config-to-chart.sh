@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-cat <<EOF > charts/linstor-operator/templates/config.yaml
+cat <<EOF
 # DO NOT EDIT; Automatically created by hack/copy-image-config-to-chart.sh
 apiVersion: v1
 kind: ConfigMap
@@ -13,13 +13,13 @@ data:
   0_linbit_sds_images.yaml: |
 EOF
 
-sed 's/^/    /' deploy/default/0_linbit_sds_images.yaml >> charts/linstor-operator/templates/config.yaml
-cat <<EOF >> charts/linstor-operator/templates/config.yaml
+sed 's/^/    /' deploy/operator/0_linbit_sds_images.yaml
+cat <<EOF
   0_sig_storage_images.yaml: |
 EOF
-sed 's/^/    /' piraeus-operator/config/manager/0_sig_storage_images.yaml >> charts/linstor-operator/templates/config.yaml
+sed 's/^/    /' piraeus-operator/config/manager/0_sig_storage_images.yaml
 
-cat <<EOF >> charts/linstor-operator/templates/config.yaml
+cat <<EOF
   {{- range \$idx, \$value := .Values.imageConfigOverride }}
   {{ add \$idx 1 }}_helm_override.yaml: |
     {{- \$value | toYaml | nindent 4 }}
