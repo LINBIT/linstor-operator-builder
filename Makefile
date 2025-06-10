@@ -19,7 +19,7 @@ out/image.list: out/static-deployment.yaml
 deploy/manifests/related-images.yaml:
 	$(KUSTOMIZE) build deploy/manifests --load-restrictor LoadRestrictionsNone \
 	  | hack/keep-and-replace-for-openshift.py \
-	  | hack/get-image-list.py /dev/stdin \
+	  | hack/get-image-list.py /dev/stdin --print-component \
 	  | hack/get-related-images.sh > $@
 
 .PHONY: bundle
@@ -31,9 +31,10 @@ bundle: deploy/manifests/related-images.yaml
 	  | $(OPERATOR_SDK) generate bundle --channels $(CHANNELS) -q --overwrite --version $(VERSION)
 	# Add related images information
 	yq -ie '.spec.relatedImages = load("deploy/manifests/related-images.yaml")' bundle/manifests/linstor-operator.clusterserviceversion.yaml
+	yq -ie '.spec.install.spec.deployments[0].spec.template.spec.containers[0].env += (load("deploy/manifests/related-images.yaml") | map({"name": "RELATED_IMAGE_\(.name)", "value": .image}))' bundle/manifests/linstor-operator.clusterserviceversion.yaml
 	# These should really exist automatically, but don't. https://github.com/operator-framework/operator-sdk/pull/5560
 	yq -ie '.annotations["com.redhat.openshift.versions"] = load("bundle/manifests/linstor-operator.clusterserviceversion.yaml").metadata.annotations["com.redhat.openshift.versions"]' bundle/metadata/annotations.yaml
-	yq -ie '.metadata.annotations["containerImage"] = (load("deploy/manifests/related-images.yaml") | filter(.name == "linstor-operator")[0].image)' bundle/manifests/linstor-operator.clusterserviceversion.yaml
+	yq -ie '.metadata.annotations["containerImage"] = (load("deploy/manifests/related-images.yaml") | filter(.name == "manager_linstor-operator")[0].image)' bundle/manifests/linstor-operator.clusterserviceversion.yaml
 
 .PHONY: release
 release:
