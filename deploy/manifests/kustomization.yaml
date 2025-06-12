@@ -3,6 +3,7 @@ resources:
 - ./operator
 - ../../piraeus-operator/config/samples
 - ../../piraeus-operator/config/scorecard
+- ../../config/monitoring
 
 patches:
 - target:
