@@ -1,0 +1,46 @@
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: minikube
+spec:
+  nodeAffinity:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: minikube.k8s.io/name
+        operator: Exists
+  podTemplate:
+    spec:
+      volumes:
+        - name: usr-src
+          hostPath:
+            $patch: delete
+          emptyDir: {}
+        - name: etc-lvm
+          hostPath:
+            $patch: delete
+          emptyDir: {}
+      containers:
+      initContainers:
+        - name: drbd-module-loader
+          command:
+          - /bin/sh
+          - -exc
+          - |
+            if [ ! -e /proc/drbd ]; then
+              apt-get update
+              apt-get install -y flex bison bc libssl-dev libelf-dev
+              curl -fsSL https://www.kernel.org/pub/linux/kernel/v$(uname -r | cut -d. -f1).x/linux-$(uname -r).tar.gz | tar xzC /usr/src
+              cd /usr/src/linux-$(uname -r)
+              zcat /proc/config.gz > .config
+              make olddefconfig
+              make modules_prepare
+              cd /
+            fi
+            exec env "LB_MAKEOPTS=KDIR=/usr/src/linux-$(uname -r)" LB_HOW=compile /entry.sh
+          securityContext:
+            privileged: true
+            readOnlyRootFilesystem: false
+          volumeMounts:
+          - name: usr-src
+            mountPath: /usr/src
+            readOnly: false
