@@ -22,6 +22,11 @@ deploy/manifests/related-images.yaml:
 	  | hack/get-image-list.py /dev/stdin --print-component \
 	  | hack/get-related-images.sh > $@
 
+.PHONY: snyc-chart
+sync-chart:
+	hack/copy-image-config-to-chart.sh > charts/linstor-operator/templates/config.yaml
+	hack/crd-charts-copy.sh > charts/linstor-operator/templates/crds.yaml
+
 .PHONY: bundle
 bundle: deploy/manifests/related-images.yaml
 	rm -rf bundle
@@ -39,8 +44,8 @@ bundle: deploy/manifests/related-images.yaml
 .PHONY: release
 release:
 	git -C piraeus-operator fetch && git -C piraeus-operator checkout $(UPSTREAM_REF)
-	hack/copy-image-config-to-chart.sh > charts/linstor-operator/templates/config.yaml
-	hack/crd-charts-copy.sh > charts/linstor-operator/templates/crds.yaml
+	$(MAKE) sync-chart
+	hack/images-updates.sh
 	yq -ie '.version = "$(VERSION)" | .appVersion = "v$(VERSION)"' charts/linstor-operator/Chart.yaml
 	cd deploy/default && $(KUSTOMIZE) edit set image controller=drbd.io/linstor-operator:v$(VERSION)
 	cd deploy/manifests/operator && $(KUSTOMIZE) edit set image controller=drbd.io/linstor-operator:v$(VERSION)

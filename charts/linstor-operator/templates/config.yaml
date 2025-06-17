@@ -11,13 +11,13 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.31.0
+        tag: v1.31.2
         image: linstor-controller
       linstor-satellite:
-        tag: v1.31.0
+        tag: v1.31.2
         image: linstor-satellite
       linstor-csi:
-        tag: v1.7.1
+        tag: v1.8.0
         image: linstor-csi
       drbd-reactor:
         tag: v1.8.0
@@ -29,10 +29,10 @@ data:
         tag: v1.0.0
         image: drbd-shutdown-guard
       ktls-utils:
-        tag: v0.11
+        tag: v1.1.0
         image: ktls-utils
       drbd-module-loader:
-        tag: v9.2.13
+        tag: v9.2.14
         image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux Server 7\.
@@ -44,7 +44,10 @@ data:
           - osImage: Red Hat Enterprise Linux 9\.
             image: drbd9-rhel9
             precompiled: true
-          - osImage: "Red Hat Enterprise Linux CoreOS 41[3-9]"
+          - osImage: Red Hat Enterprise Linux 10\.
+            image: drbd9-rhel10
+            precompiled: true
+          - osImage: "Red Hat Enterprise Linux CoreOS 9|(41[3-9])"
             image: drbd9-rhel9
             precompiled: true
           - osImage: Red Hat Enterprise Linux CoreOS
@@ -62,11 +65,17 @@ data:
           - osImage: AlmaLinux 9
             image: drbd9-rhel9
             precompiled: true
+          - osImage: AlmaLinux 10
+            image: drbd9-rhel10
+            precompiled: true
           - osImage: Oracle Linux Server 8\.
             image: drbd9-rhel8
             precompiled: true
           - osImage: Oracle Linux Server 9\.
             image: drbd9-rhel9
+            precompiled: true
+          - osImage: Oracle Linux Server 10\.
+            image: drbd9-rhel10
             precompiled: true
           - osImage: Rocky Linux 8
             image: drbd9-rhel8
@@ -74,10 +83,11 @@ data:
           - osImage: Rocky Linux 9
             image: drbd9-rhel9
             precompiled: true
+          - osImage: Rocky Linux 10
+            image: drbd9-rhel10
+            precompiled: true
           - osImage: Amazon Linux 2
             image: drbd9-amzn2
-          - osImage: Ubuntu 18\.04
-            image: drbd9-bionic
           - osImage: Ubuntu 20\.04
             image: drbd9-focal
           - osImage: Ubuntu 22\.04
@@ -92,13 +102,13 @@ data:
     base: registry.k8s.io/sig-storage
     components:
       csi-attacher:
-        tag: v4.8.1
+        tag: v4.9.0
         image: csi-attacher
       csi-livenessprobe:
-        tag: v2.15.0
+        tag: v2.16.0
         image: livenessprobe
       csi-provisioner:
-        tag: v5.2.0
+        tag: v5.3.0
         image: csi-provisioner
       csi-snapshotter:
         tag: v8.2.1
@@ -107,10 +117,10 @@ data:
         tag: v1.13.2
         image: csi-resizer
       csi-external-health-monitor-controller:
-        tag: v0.14.0
+        tag: v0.15.0
         image: csi-external-health-monitor-controller
       csi-node-driver-registrar:
-        tag: v2.13.0
+        tag: v2.14.0
         image: csi-node-driver-registrar
   {{- range $idx, $value := .Values.imageConfigOverride }}
   {{ add $idx 1 }}_helm_override.yaml: |

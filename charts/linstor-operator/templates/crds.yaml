@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: linstorclusters.piraeus.io
 spec:
   group: piraeus.io
@@ -274,7 +274,7 @@ spec:
                 type: string
               nodeAffinity:
                 description: |-
-                  NodeAffinity selects the nodes on which LINSTOR Satellite will be deployed.
+                  NodeAffinity selects the nodes on which LINSTOR Satellites will be deployed.
                   See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
                 properties:
                   nodeSelectorTerms:
@@ -446,6 +446,49 @@ spec:
               repository:
                 description: Repository used to pull workload images.
                 type: string
+              tolerations:
+                description: |-
+                  Tolerations selects the nodes on which LINSTOR Satellites will be deployed.
+
+                  The default tolerations for DaemonSets are automatically added.
+                items:
+                  description: |-
+                    The pod this Toleration is attached to tolerates any taint that matches
+                    the triple <key,value,effect> using the matching operator <operator>.
+                  properties:
+                    effect:
+                      description: |-
+                        Effect indicates the taint effect to match. Empty means match all taint effects.
+                        When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+                      type: string
+                    key:
+                      description: |-
+                        Key is the taint key that the toleration applies to. Empty means match all taint keys.
+                        If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+                      type: string
+                    operator:
+                      description: |-
+                        Operator represents a key's relationship to the value.
+                        Valid operators are Exists and Equal. Defaults to Equal.
+                        Exists is equivalent to wildcard for value, so that a pod can
+                        tolerate all taints of a particular category.
+                      type: string
+                    tolerationSeconds:
+                      description: |-
+                        TolerationSeconds represents the period of time the toleration (which must be
+                        of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+                        it is not set, which means tolerate the taint forever (do not evict). Zero and
+                        negative values will be treated as 0 (evict immediately) by the system.
+                      format: int64
+                      type: integer
+                    value:
+                      description: |-
+                        Value is the taint value the toleration matches to.
+                        If the operator is Exists, the value should be empty, otherwise just a regular string.
+                      type: string
+                  type: object
+                type: array
+                x-kubernetes-list-type: atomic
             type: object
           status:
             description: LinstorClusterStatus defines the observed state of LinstorCluster
@@ -521,7 +564,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: linstornodeconnections.piraeus.io
 spec:
   group: piraeus.io
@@ -723,7 +766,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: linstorsatelliteconfigurations.piraeus.io
 spec:
   group: piraeus.io
@@ -764,6 +807,26 @@ spec:
               All the LinstorSatelliteConfiguration resources with matching NodeSelector will
               be merged into a single LinstorSatelliteSpec.
             properties:
+              deletionPolicy:
+                description: |-
+                  DeletionPolicy configures the way LinstorSatellite resources are deleted.
+
+                  A LinstorSatellite may be deleted because:
+                  * It no longer matches the affinity and node selector of the LinstorCluster resource.
+                  * The node it references has been removed from Kubernetes.
+                  * It was manually deleted outside the Operator.
+
+                  A LinstorSatellite may store the last copy of a volume, in which case it is not desirable to unconditionally remove
+                  the satellite from the cluster. For this reason, the following deletion policies exist:
+
+                  * DeletionPolicyEvacuate will start evacuation of the LINSTOR Satellite and wait until it completes before removing the LinstorSatellite object, comparable to the "linstor node evacuate" command.
+                  * DeletionPolicyRetain will retain the LINSTOR Satellite, keeping it registered in LINSTOR, but removing associated Kubernetes resources.
+                  * DeletionPolicyDelete will remove the LINSTOR Satellite from the LINSTOR Cluster without prior eviction, comparable to the "linstor node lost" command.
+                enum:
+                - Evacuate
+                - Retain
+                - Delete
+                type: string
               internalTLS:
                 description: |-
                   InternalTLS configures secure communication for the LINSTOR Satellite.
@@ -1282,7 +1345,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: linstorsatellites.piraeus.io
 spec:
   group: piraeus.io
@@ -1372,6 +1435,27 @@ spec:
                       satellite.
                     type: string
                 type: object
+              deletionPolicy:
+                default: Retain
+                description: |-
+                  DeletionPolicy configures the way LinstorSatellite resources are deleted.
+
+                  A LinstorSatellite may be deleted because:
+                  * It no longer matches the affinity and node selector of the LinstorCluster resource.
+                  * The node it references has been removed from Kubernetes.
+                  * It was manually deleted outside the Operator.
+
+                  A LinstorSatellite may store the last copy of a volume, in which case it is not desirable to unconditionally remove
+                  the satellite from the cluster. For this reason, the following deletion policies exist:
+
+                  * DeletionPolicyEvacuate will start evacuation of the LINSTOR Satellite and wait until it completes before removing the LinstorSatellite object, comparable to the "linstor node evacuate" command.
+                  * DeletionPolicyRetain will retain the LINSTOR Satellite, keeping it registered in LINSTOR, but removing associated Kubernetes resources.
+                  * DeletionPolicyDelete will remove the LINSTOR Satellite from the LINSTOR Cluster without prior eviction, comparable to the "linstor node lost" command.
+                enum:
+                - Evacuate
+                - Retain
+                - Delete
+                type: string
               internalTLS:
                 description: |-
                   InternalTLS configures secure communication for the LINSTOR Satellite.
