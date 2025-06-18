@@ -1,7 +1,7 @@
 KUSTOMIZE ?= kustomize
 OPERATOR_SDK ?= operator-sdk
 
-VERSION ?= $(shell hack/semver.py)
+VERSION ?= $(shell hack/git-semver.py)
 UPSTREAM_REF ?= v$(VERSION)
 
 CHANNELS ?= dev
