@@ -7,6 +7,9 @@ addEventListener("DOMContentLoaded", (event) => {
             return resp.json();
         })
         .then((content) => {
+            return content.filter((item) => /^\d+\.\d+\.\d+$/.test(item.version))
+        })
+        .then((content) => {
             let first = content[0];
             kubectlInstructions.innerHTML = kubectlInstructions.innerHTML.replace("https://charts.linstor.io/static/latest.yaml", `https://charts.linstor.io/static/v${first.version}.yaml`);
             let release_cards = content.map((v) => {
