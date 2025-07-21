@@ -257,8 +257,10 @@ publish-config:
     - cp --no-clobber -t gh-pages *.tgz
     - cp out/static-deployment.yaml "gh-pages/static/$RELEASE_VERSION.yaml"
     - cp out/image.list "gh-pages/static/$RELEASE_VERSION.image-list.txt"
-    - ln -snf "$RELEASE_VERSION.yaml" "gh-pages/static/latest.yaml"
-    - ln -snf "$RELEASE_VERSION.image-list.txt" "gh-pages/static/latest.image-list.txt"
+    - if [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    -   ln -snf "$RELEASE_VERSION.yaml" "gh-pages/static/latest.yaml"
+    -   ln -snf "$RELEASE_VERSION.image-list.txt" "gh-pages/static/latest.image-list.txt"
+    - fi
     - hack/generate-release-info.py gh-pages/static | tee gh-pages/content/releases.json
     - bin/helm repo index --url https://charts.linstor.io gh-pages
     - git -C gh-pages add .

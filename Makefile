@@ -45,11 +45,11 @@ bundle: deploy/manifests/related-images.yaml
 release:
 	git -C piraeus-operator fetch && git -C piraeus-operator checkout $(UPSTREAM_REF)
 	$(MAKE) sync-chart
-	hack/images-updates.sh
+	hack/image-updates.sh
 	yq -ie '.version = "$(VERSION)" | .appVersion = "v$(VERSION)"' charts/linstor-operator/Chart.yaml
 	cd deploy/default && $(KUSTOMIZE) edit set image controller=drbd.io/linstor-operator:v$(VERSION)
 	cd deploy/manifests/operator && $(KUSTOMIZE) edit set image controller=drbd.io/linstor-operator:v$(VERSION)
 	git add piraeus-operator charts/linstor-operator/templates/config.yaml charts/linstor-operator/templates/crds.yaml charts/linstor-operator/Chart.yaml deploy/default/kustomization.yaml deploy/manifests/operator/kustomization.yaml
 	git diff --staged
-	@echo git commit -svm "Release $(VERSION)"
-	@echo git tag -sm "Release $(VERSION)" v$(VERSION)
+	@echo git commit -svm \"Release $(VERSION)\"
+	@echo git tag -sm \"Release $(VERSION)\" v$(VERSION)
