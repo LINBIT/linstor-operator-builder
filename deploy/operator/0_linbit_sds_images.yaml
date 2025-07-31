@@ -20,7 +20,7 @@ components:
     tag: v1.0.0
     image: drbd-shutdown-guard
   ktls-utils:
-    tag: v1.2.0
+    tag: v1.2.1
     image: ktls-utils
   linstor-affinity-controller:
     tag: v1.3.0
