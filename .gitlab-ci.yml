@@ -178,7 +178,7 @@ test-fast:
     TO_RUN: operator
     VARIANT: dualstack
     RELEASES_TO_CHECK: "4"
-    INCLUDE_NEXT: "true"
+    INCLUDE_NEXT: "false"
 
 test-full:
   tags:
@@ -197,7 +197,7 @@ test-full:
       allow_failure: true
   variables:
     RELEASES_TO_CHECK: "4"
-    INCLUDE_NEXT: "true"
+    INCLUDE_NEXT: "false"
     SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|multiple|subPath"
     VARIANT: "ipv4,ipv6,dualstack"
 

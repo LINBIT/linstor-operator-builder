@@ -17,7 +17,7 @@ data:
         tag: v1.31.3
         image: linstor-satellite
       linstor-csi:
-        tag: v1.8.1
+        tag: v1.9.0-rc.1
         image: linstor-csi
       drbd-reactor:
         tag: v1.9.0
@@ -29,13 +29,13 @@ data:
         tag: v1.0.0
         image: drbd-shutdown-guard
       ktls-utils:
-        tag: v1.2.0
+        tag: v1.2.1
         image: ktls-utils
       linstor-affinity-controller:
         tag: v1.3.0
         image: linstor-affinity-controller
       drbd-module-loader:
-        tag: v9.2.14
+        tag: v9.2.14_ptf.14.gdfb3891130b4
         image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux Server 7\.
