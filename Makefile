@@ -26,6 +26,7 @@ deploy/manifests/related-images.yaml:
 sync-chart:
 	hack/copy-image-config-to-chart.sh > charts/linstor-operator/templates/config.yaml
 	hack/crd-charts-copy.sh > charts/linstor-operator/templates/crds.yaml
+	sed -e 's/piraeus-operator/linstor-operator/' piraeus-operator/charts/piraeus/templates/rbac.yaml > charts/linstor-operator/templates/rbac.yaml
 
 .PHONY: bundle
 bundle: deploy/manifests/related-images.yaml
