@@ -1,0 +1,53 @@
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: tnf-drbd-fence
+spec:
+  podTemplate:
+    spec:
+      initContainers:
+      - name: drbd-module-loader
+        env:
+        - name: LB_FAIL_IF_USERMODE_HELPER_NOT_DISABLED
+          value: "false"
+      - name: tnf-drbd-fence
+        image: drbd.io/drbd-shutdown-guard:v1.1.0
+        args:
+        - sh
+        - -exc
+        - |
+          cp "$TNF_DRBD_FENCE_LOCATION" /run/tnf-drbd-fence/tnf-drbd-fence.py~
+          cp "$DRBDSETUP_LOCATION" /run/tnf-drbd-fence/drbdsetup~
+          mv /run/tnf-drbd-fence/tnf-drbd-fence.py~ /run/tnf-drbd-fence/tnf-drbd-fence.py
+          mv /run/tnf-drbd-fence/drbdsetup~ /run/tnf-drbd-fence/drbdsetup
+          cat <<EOF > /run/tnf-drbd-fence/tnf-drbd-fence~
+          #!/bin/sh
+          set -e
+  
+          export PATH="/run/tnf-drbd-fence:\$PATH"
+          exec 1>/dev/null 2> >(logger -t "tnf-fence-peer") /run/tnf-drbd-fence/tnf-drbd-fence.py "\$@"
+          EOF
+          
+          chmod +x /run/tnf-drbd-fence/tnf-drbd-fence~
+          mv /run/tnf-drbd-fence/tnf-drbd-fence~ /run/tnf-drbd-fence/tnf-drbd-fence
+          echo -n /run/tnf-drbd-fence/tnf-drbd-fence > /sys/module/drbd/parameters/usermode_helper
+        volumeMounts:
+        - name: run-tnf-drbd-fence
+          mountPath: /run/tnf-drbd-fence
+        securityContext:
+          readOnlyRootFilesystem: true
+          privileged: true
+      volumes:
+      - name: run-tnf-drbd-fence
+        hostPath:
+          path: /run/tnf-drbd-fence
+          type: DirectoryOrCreate
+---
+apiVersion: piraeus.io/v1
+kind: LinstorNodeConnection
+metadata:
+  name: drbd-fencing-configuration
+spec:
+  properties:
+  - name: DrbdOptions/Net/fencing
+    value: resource-and-stonith
