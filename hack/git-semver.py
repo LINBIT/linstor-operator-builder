@@ -3,7 +3,7 @@ import re
 import subprocess
 import sys
 
-out = subprocess.check_output(["git", "describe", "--tags", "--always", "--dirty", "--match", "v*"], universal_newlines=True).strip()
+out = subprocess.check_output(["git", "describe", "--tags", "--always", "--dirty", "--long", "--match", "v*"], universal_newlines=True).strip()
 
 match = re.match(r"^v([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)-g([0-9a-f]+)(-dirty)?$", out)
 if not match:
