@@ -30,18 +30,8 @@ rules:
     - ""
   resources:
     - nodes
-  verbs:
-    - get
-    - list
-    - patch
-    - update
-    - watch
-- apiGroups:
-    - ""
-  resources:
     - persistentvolumeclaims
   verbs:
-    - delete
     - get
     - list
     - patch
@@ -102,13 +92,6 @@ rules:
     - patch
     - update
     - watch
-- apiGroups:
-    - cluster.x-k8s.io
-  resources:
-    - machines
-  verbs:
-    - get
-    - update
 - apiGroups:
     - events.k8s.io
   resources:
