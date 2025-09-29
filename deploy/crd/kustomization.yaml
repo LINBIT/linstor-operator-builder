@@ -1,0 +1,13 @@
+resources:
+- ../../piraeus-operator/config/crd
+patches:
+- target:
+    kind: CustomResourceDefinition
+    name: linstorsatellites.piraeus.io
+  patch: |
+    - op: test
+      path: /spec/versions/0/additionalPrinterColumns/2/jsonPath
+      value: .metadata.annotations.piraeus\.io/applied-configurations
+    - op: replace
+      path: /spec/versions/0/additionalPrinterColumns/2/jsonPath
+      value: .metadata.annotations.linbit\.com/applied-configurations

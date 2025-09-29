@@ -1,7 +1,6 @@
 #!/bin/sh -e
 
 YQ="${YQ:-yq}"
-KUSTOMIZE="${KUSTOMIZE:-kustomize}"
 CRANE="${CRANE:-crane}"
 
 NEED_CHART_UPDATE=n

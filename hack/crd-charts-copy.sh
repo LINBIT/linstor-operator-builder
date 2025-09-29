@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
-echo ' {{ if .Values.installCRDs }}'
-find ./piraeus-operator/config/crd/bases -type f | sort | xargs --no-run-if-empty cat
+KUSTOMIZE="${KUSTOMIZE:-kustomize}"
+
+echo '# DO NOT EDIT; Automatically created by hack/crd-charts-copy.sh'
+echo '{{ if .Values.installCRDs }}'
+echo '---'
+$KUSTOMIZE build ./deploy/crd
 echo '{{ end }}'

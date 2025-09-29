@@ -35,7 +35,7 @@ generatorOptions:
   disableNameSuffixHash: true
 
 resources:
-- ../../piraeus-operator/config/crd
+- ../crd
 - ../../piraeus-operator/config/rbac
 - ../../piraeus-operator/config/manager
 - ../../piraeus-operator/config/webhook
