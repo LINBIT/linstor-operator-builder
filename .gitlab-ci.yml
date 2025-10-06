@@ -78,6 +78,7 @@ build_static_deployment:
   script:
     - make out/static-deployment.yaml out/image.list KUSTOMIZE=bin/kustomize
   cache:
+    key: cache-python
     paths:
       - .cache/pip
   artifacts:
@@ -201,6 +202,33 @@ test-full:
     SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|multiple|subPath"
     VARIANT: "ipv4,ipv6,dualstack"
 
+publish-debug:
+  stage: deploy
+  image:
+    name: python:3
+    entrypoint: [ "" ]
+  rules:
+  - if: $CI_COMMIT_BRANCH == 'v2'
+  - if: $CI_MERGE_REQUEST_ID
+    when: manual
+  before_script:
+  - mkdir -p .cache/pip
+  - pip install --cache-dir .cache/pip pyyaml
+  script:
+  - set -ex
+  - export PATH=$CI_PROJECT_DIR/bin:$PATH
+  - ( cd deploy/debug ; kustomize edit set image drbd.io/linstor-operator=$OPERATOR_IMAGE )
+  - mkdir -p out
+  - kustomize build deploy/debug > out/static-deployment.yaml
+  - hack/get-image-list.py out/static-deployment.yaml > out/image.list
+  - curl -isSf -u $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/static-deployment.yaml $LINBIT_REGISTRY_URL/repository/pages/linstor-operator/$CI_COMMIT_BRANCH.yaml
+  - curl -isSf -u $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/image.list $LINBIT_REGISTRY_URL/repository/pages/linstor-operator/$CI_COMMIT_BRANCH.image.txt
+  cache:
+    key: cache-python
+    paths:
+    - .cache/pip
+
+
 publish-image:
   stage: deploy
   image: ${LINBIT_DOCKER_REGISTRY}/container-tools:latest
@@ -270,6 +298,7 @@ publish-config:
     -   git -C gh-pages push "$UPSTREAM" gh-pages:gh-pages
     - fi
   cache:
+    key: cache-python
     paths:
       - .cache/pip
   artifacts:
