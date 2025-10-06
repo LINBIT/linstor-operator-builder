@@ -11,10 +11,10 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.32.1
+        tag: v1.32.2
         image: linstor-controller
       linstor-satellite:
-        tag: v1.32.1
+        tag: v1.32.2
         image: linstor-satellite
       linstor-csi:
         tag: v1.9.0
