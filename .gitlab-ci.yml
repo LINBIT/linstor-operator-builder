@@ -308,10 +308,14 @@ publish-config:
 
 build_bundle:
   image: ${LINBIT_DOCKER_REGISTRY}/container-tools:latest
+  variables:
+    CHANNELS: dev
   rules:
   - if: $CI_COMMIT_TAG
     needs:
       - job: publish-image
+    variables:
+      CHANNELS: stable,dev
   - if: $CI_MERGE_REQUEST_ID
     when: manual
     allow_failure: true
@@ -320,7 +324,7 @@ build_bundle:
     allow_failure: true
   stage: deploy
   script:
-  - make bundle
+  - make bundle CHANNELS=$CHANNELS
   artifacts:
     paths:
     - bundle
