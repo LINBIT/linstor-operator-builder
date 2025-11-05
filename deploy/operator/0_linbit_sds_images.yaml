@@ -8,19 +8,19 @@ components:
     tag: v1.32.3
     image: linstor-satellite
   linstor-csi:
-    tag: v1.10.0
+    tag: v1.10.1
     image: linstor-csi
   nfs-server:
-    tag: v1.10.0
+    tag: v1.10.1
     image: nfs-server
   drbd-reactor:
     tag: v1.10.0
     image: drbd-reactor
   ha-controller:
-    tag: v1.3.0
+    tag: v1.3.1
     image: linstor-k8s-ha-controller
   drbd-shutdown-guard:
-    tag: v1.1.0
+    tag: v1.1.1
     image: drbd-shutdown-guard
   ktls-utils:
     tag: v1.2.1

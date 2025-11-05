@@ -1,6 +1,6 @@
 # LinstorCluster and LinstorSattelitConfig
 
-Deploy the LinstorCluster and LinstorSattelitConfig via helm chart
+Deploy the LinstorCluster and LinstorSatteliteConfig via helm chart
 
 ## Usage
 

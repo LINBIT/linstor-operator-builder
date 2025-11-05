@@ -1,3 +1,4 @@
+---
 replicaCount: 1
 installCRDs: true
 
@@ -59,6 +60,7 @@ rbac:
   create: true
 
 podAnnotations: { }
+podLabels: {}
 
 podSecurityContext:
   runAsNonRoot: true
