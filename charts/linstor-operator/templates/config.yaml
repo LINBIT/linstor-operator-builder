@@ -17,10 +17,10 @@ data:
         tag: v1.32.3
         image: linstor-satellite
       linstor-csi:
-        tag: v1.10.1
+        tag: v1.10.2
         image: linstor-csi
       nfs-server:
-        tag: v1.10.1
+        tag: v1.10.2
         image: nfs-server
       drbd-reactor:
         tag: v1.10.0
