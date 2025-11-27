@@ -2848,7 +2848,7 @@ spec:
           value: 1m
         - name: CLUSTER_API_KUBECONFIG
           value: ""
-        image: drbd.io/linstor-operator:v2.10.2-rc.0
+        image: drbd.io/linstor-operator:v2.10.2
         livenessProbe:
           httpGet:
             path: /healthz
@@ -2943,7 +2943,7 @@ spec:
           value: webhook-server-cert
         - name: ZAP_DEVEL
           value: "false"
-        image: drbd.io/linstor-operator:v2.10.2-rc.0
+        image: drbd.io/linstor-operator:v2.10.2
         livenessProbe:
           httpGet:
             path: /healthz
