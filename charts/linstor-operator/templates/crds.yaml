@@ -1005,10 +1005,10 @@ spec:
                       AttachedVolumeReattachTimeout configures how long evacuation waits for attached volumes to reattach on
                       different nodes. Setting this to 0 disable this evacuation step.
                     type: string
-                  unattachedVolumeReattachTimeout:
+                  unattachedVolumeAttachTimeout:
                     default: 5m
                     description: |-
-                      UnattachedVolumeReattachTimeout configures how long evacuation waits for unattached volumes to attach on
+                      UnattachedVolumeAttachTimeout configures how long evacuation waits for unattached volumes to attach on
                       different nodes. Setting this to 0 disable this evacuation step.
                     type: string
                 type: object
@@ -1712,10 +1712,10 @@ spec:
                       AttachedVolumeReattachTimeout configures how long evacuation waits for attached volumes to reattach on
                       different nodes. Setting this to 0 disable this evacuation step.
                     type: string
-                  unattachedVolumeReattachTimeout:
+                  unattachedVolumeAttachTimeout:
                     default: 5m
                     description: |-
-                      UnattachedVolumeReattachTimeout configures how long evacuation waits for unattached volumes to attach on
+                      UnattachedVolumeAttachTimeout configures how long evacuation waits for unattached volumes to attach on
                       different nodes. Setting this to 0 disable this evacuation step.
                     type: string
                 type: object

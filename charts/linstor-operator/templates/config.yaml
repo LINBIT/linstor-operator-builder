@@ -17,10 +17,10 @@ data:
         tag: v1.32.3
         image: linstor-satellite
       linstor-csi:
-        tag: v1.10.2
+        tag: v1.10.3
         image: linstor-csi
       nfs-server:
-        tag: v1.10.2
+        tag: v1.10.3
         image: nfs-server
       drbd-reactor:
         tag: v1.10.0
@@ -38,7 +38,7 @@ data:
         tag: v1.3.0
         image: linstor-affinity-controller
       drbd-module-loader:
-        tag: v9.2.15
+        tag: v9.2.16
         image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux Server 7\.
@@ -114,7 +114,7 @@ data:
         tag: v2.17.0
         image: livenessprobe
       csi-provisioner:
-        tag: v6.0.0
+        tag: v6.1.0
         image: csi-provisioner
       csi-snapshotter:
         tag: v8.4.0
