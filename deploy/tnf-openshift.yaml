@@ -11,7 +11,7 @@ spec:
         - name: LB_FAIL_IF_USERMODE_HELPER_NOT_DISABLED
           value: "false"
       - name: tnf-drbd-fence
-        image: drbd.io/drbd-shutdown-guard:v1.1.0
+        image: drbd.io/drbd-shutdown-guard:v1.1.2-2
         args:
         - sh
         - -exc
@@ -25,7 +25,7 @@ spec:
           set -e
   
           export PATH="/run/tnf-drbd-fence:\$PATH"
-          exec 1>/dev/null 2> >(logger -t "tnf-fence-peer") /run/tnf-drbd-fence/tnf-drbd-fence.py "\$@"
+          exec systemd-cat --priority=4 --stderr-priority=3 /run/tnf-drbd-fence/tnf-drbd-fence.py "\$@"
           EOF
           
           chmod +x /run/tnf-drbd-fence/tnf-drbd-fence~
