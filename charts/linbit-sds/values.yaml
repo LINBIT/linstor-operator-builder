@@ -263,10 +263,15 @@ monitoring:
 # Enable Log Rotation for LINSTOR Controller and LINSTOR Satellite
 logRotation:
   enabled: false
+  # On what schedule error reports should be archived
   schedule: "@daily"
+  # How big a single log file can get before rotation
   maxLogFileSize: "100MB"
+  # How many rotated log files to keep
   maxLogFileRotation: 20
+  # How long to keep old error report files before bundling them into archives
   archiveErrorReportsAfterMinutes: 1440 # 1 day
+  # How many error report archives to keep
   archiveErrorReportsToKeep: 7
 
 # List of storageClasses. You can create different SC with different params
