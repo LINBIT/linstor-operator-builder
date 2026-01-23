@@ -101,7 +101,7 @@ spec:
           restartPolicy: OnFailure
           serviceAccountName: {{ include "linstor-cluster.fullname" . }}-logrotate
           imagePullSecrets:
-          - {{ .Values.logRotation.pullSecret }}
+          - name: {{ .Values.logRotation.pullSecret }}
           containers:
           - name: logrotate
             image: {{ .Values.logRotation.image }}
@@ -127,6 +127,13 @@ spec:
               for CONTROLLER in $(kubectl get pods -l app.kubernetes.io/component=linstor-controller -oname); do
                 kubectl exec $CONTROLLER -- sh -exc 'ls -t /var/log/linstor-controller/log-archive-*.tar.gz | tail -n+{{ add 1 .Values.logRotation.archiveErrorReportsToKeep }} | xargs --no-run-if-empty -- rm -f'
               done
+            env:
+            - name: LS_CONTROLLERS
+{{- if or .Values.createApiTLS (dig "apiTLS" "" .Values.linstorCluster) }}
+              value: "https://linstor-controller.{{ .Release.Namespace }}.svc:3371"
+{{- else }}
+              value: "http://linstor-controller.{{ .Release.Namespace }}.svc:3370"
+{{- end }}
             volumeMounts:
             - name: etc-linstor
               mountPath: /etc/linstor
