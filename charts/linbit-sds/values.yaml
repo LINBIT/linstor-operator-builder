@@ -265,6 +265,10 @@ logRotation:
   enabled: false
   # On what schedule error reports should be archived
   schedule: "@daily"
+  # Image to use for the archive job
+  image: drbd.io/linstor-controller:latest
+  # Pull secret to use to pull the image
+  pullSecret: linstor-operator-pull-secret
   # How big a single log file can get before rotation
   maxLogFileSize: "100MB"
   # How many rotated log files to keep

@@ -150,6 +150,12 @@
         "schedule": {
           "type": "string"
         },
+        "image": {
+          "type": "string"
+        },
+        "pullSecret": {
+          "type": "string"
+        },
         "maxLogFileSize": {
           "type": "string"
         },

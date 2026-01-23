@@ -100,9 +100,11 @@ spec:
         spec:
           restartPolicy: OnFailure
           serviceAccountName: {{ include "linstor-cluster.fullname" . }}-logrotate
+          imagePullSecrets:
+          - {{ .Values.logRotation.pullSecret }}
           containers:
           - name: logrotate
-            image: drbd.io/linstor-controller:latest
+            image: {{ .Values.logRotation.image }}
             command:
             - sh
             - -exc
