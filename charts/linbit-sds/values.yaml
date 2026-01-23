@@ -260,6 +260,15 @@ monitoring:
     # Enable deployment of the Grafana dashboard
     enabled: true
 
+# Enable Log Rotation for LINSTOR Controller and LINSTOR Satellite
+logRotation:
+  enabled: false
+  schedule: "@daily"
+  maxLogFileSize: "100MB"
+  maxLogFileRotation: 20
+  archiveErrorReportsAfterMinutes: 1440 # 1 day
+  archiveErrorReportsToKeep: 7
+
 # List of storageClasses. You can create different SC with different params
 storageClasses: []
 #  - name: linstor-r01

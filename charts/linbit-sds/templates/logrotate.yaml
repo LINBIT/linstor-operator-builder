@@ -1,0 +1,192 @@
+{{- if .Values.logRotation.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "linstor-cluster.labels" $ | nindent 4 }}
+data:
+  logback.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration scan="false" scanPeriod="60 seconds">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger/%X{logid} %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <appender name="FILE"
+            class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${log.directory}/linstor-${log.module}.log</file>
+            <append>true</append>
+            <encoder
+                class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d{yyyy_MM_dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</Pattern>
+            </encoder>
+
+            <rollingPolicy
+                class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+                <FileNamePattern>${log.directory}/linstor-${log.module}.%i.log.zip</FileNamePattern>
+                <MinIndex>1</MinIndex>
+                <MaxIndex>{{ .Values.logRotation.maxLogFileRotation }}</MaxIndex>
+            </rollingPolicy>
+
+            <triggeringPolicy
+                class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <MaxFileSize>{{ .Values.logRotation.maxLogFileSize }}</MaxFileSize>
+            </triggeringPolicy>
+        </appender>
+
+        <logger name="okhttp3" class="okhttp3.logging" level="OFF" />
+        <logger name="org.apache.http" level="INFO" />
+
+        <logger name="cron" class="com.cronutils" level="INFO" />
+
+        <logger name="LINSTOR/Controller" level="INFO" additivity="false">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </logger>
+
+        <logger name="LINSTOR/Satellite" level="INFO" additivity="false">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </logger>
+
+        <logger name="LINSTOR/TESTS" level="OFF" additivity="false">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </logger>
+
+        <root level="INFO">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE" />
+        </root>
+    </configuration>
+---
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  labels:
+    {{- include "linstor-cluster.labels" $ | nindent 4 }}
+spec:
+  podTemplate:
+    spec:
+      containers:
+      - name: linstor-satellite
+        volumeMounts:
+        - name: logback
+          mountPath: /usr/share/linstor-server/lib/conf/
+          readOnly: true
+      volumes:
+      - name: logback
+        configMap:
+          name: {{ include "linstor-cluster.fullname" . }}-logrotate
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "linstor-cluster.labels" $ | nindent 4 }}
+spec:
+  schedule: "{{ .Values.logRotation.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ include "linstor-cluster.fullname" . }}-logrotate
+          containers:
+          - name: logrotate
+            image: drbd.io/linstor-controller:latest
+            command:
+            - sh
+            - -exc
+            - |
+              # 1.: Compress all error reports older than {{ .Values.logRotation.archiveErrorReportsAfterMinutes }} minutes ago
+              for SATELLITE in $(kubectl get pods -l app.kubernetes.io/component=linstor-satellite -oname); do
+                kubectl exec $SATELLITE -- sh -exc 'find /var/log/linstor-satellite -name "ErrorReport*" -cmin +{{ .Values.logRotation.archiveErrorReportsAfterMinutes }} -print0 | xargs -0 --no-run-if-empty -- tar --remove-files -czf "/var/log/linstor-satellite/log-archive-$(date -Iseconds).tar.gz"'
+              done
+              for CONTROLLER in $(kubectl get pods -l app.kubernetes.io/component=linstor-controller -oname); do
+                kubectl exec $CONTROLLER -- sh -exc 'find /var/log/linstor-controller -name "ErrorReport*" -cmin +{{ .Values.logRotation.archiveErrorReportsAfterMinutes }} -print0 | xargs -0 --no-run-if-empty -- tar --remove-files -czf "/var/log/linstor-controller/log-archive-$(date -Iseconds).tar.gz"'
+              done
+
+              # 2.: Remove error reports from LINSTOR internal database
+              linstor error-reports delete --to "$(date +'%Y-%m-%d %H:%M:%S' -d '{{ .Values.logRotation.archiveErrorReportsAfterMinutes }} minutes ago')"
+
+              # 3: Remove old error report archives
+              for SATELLITE in $(kubectl get pods -l app.kubernetes.io/component=linstor-satellite -oname); do
+                kubectl exec $SATELLITE -- sh -exc 'ls -t /var/log/linstor-satellite/log-archive-*.tar.gz | tail -n+{{ add 1 .Values.logRotation.archiveErrorReportsToKeep }} | xargs --no-run-if-empty -- rm -f'
+              done
+              for CONTROLLER in $(kubectl get pods -l app.kubernetes.io/component=linstor-controller -oname); do
+                kubectl exec $CONTROLLER -- sh -exc 'ls -t /var/log/linstor-controller/log-archive-*.tar.gz | tail -n+{{ add 1 .Values.logRotation.archiveErrorReportsToKeep }} | xargs --no-run-if-empty -- rm -f'
+              done
+            volumeMounts:
+            - name: etc-linstor
+              mountPath: /etc/linstor
+              readOnly: true
+{{- if or .Values.createApiTLS (dig "apiTLS" "" .Values.linstorCluster) }}
+            - name: client-tls
+              mountPath: /etc/linstor/client
+              readOnly: true
+{{- end }}
+          volumes:
+          - name: etc-linstor
+            configMap:
+              name: linstor-controller-config
+{{- if or .Values.createApiTLS (dig "apiTLS" "" .Values.linstorCluster) }}
+          - name: client-tls
+            secret:
+              secretName: {{ dig "apiTLS" "clientSecretName" "linstor-client-tls" .Values.linstorCluster }}
+{{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "linstor-cluster.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "linstor-cluster.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "linstor-cluster.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+subjects:
+- kind: ServiceAccount
+  name: {{ include "linstor-cluster.fullname" . }}-logrotate
+  namespace: {{ .Release.Namespace }}
+{{- end }}

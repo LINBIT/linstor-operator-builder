@@ -3,7 +3,7 @@ name: linbit-sds
 description: |-
   Deploy LINBIT® SDS via LINSTOR® Operator
 type: application
-version: 1.2.0
+version: 1.3.0
 appVersion: "v2.10.0"
 kubeVersion: ">= 1.20.0"
 maintainers:

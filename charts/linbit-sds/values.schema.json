@@ -6,6 +6,7 @@
     "linstorSatelliteConfigurations",
     "linstorNodeConnections",
     "monitoring",
+    "logRotation",
     "storageClasses",
     "volumeSnapshotClasses",
     "volumeGroupSnapshotClasses"
@@ -138,6 +139,32 @@
       "required": [
         "enabled",
         "dashboard"
+      ]
+    },
+    "logRotation": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "maxLogFileSize": {
+          "type": "string"
+        },
+        "maxLogFileRotation": {
+          "type": "integer"
+        },
+        "archiveErrorReportsAfterMinutes": {
+          "type": "integer"
+        },
+        "archiveErrorReportsToKeep": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "enabled"
       ]
     },
     "storageClasses": {

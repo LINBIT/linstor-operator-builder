@@ -20,5 +20,25 @@ metadata:
 {{- else if eq .Values.createInternalTLS "helm" }}
 {{- $_ := set $spec "internalTLS" (default dict .Values.linstorCluster.internalTLS)}}
 {{- end }}
+{{- if .Values.logRotation.enabled }}
+{{- $_ := set $spec "patches" (append (default list .Values.linstorCluster.patches) (dict "target" (dict "name" "linstor-controller" "kind" "Deployment") "patch" (tpl `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linstor-controller
+spec:
+  template:
+    spec:
+      containers:
+      - name: linstor-controller
+        volumeMounts:
+        - name: logback
+          mountPath: /usr/share/linstor-server/lib/conf/
+          readOnly: true
+      volumes:
+      - name: logback
+        configMap:
+          name: {{ include "linstor-cluster.fullname" . }}-logrotate
+` .))) }}
+{{- end }}
 spec:
   {{- toYaml $spec | nindent 2 }}
