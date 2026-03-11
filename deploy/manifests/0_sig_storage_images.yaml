@@ -3,5 +3,5 @@
 base: registry.k8s.io/sig-storage
 components:
   csi-external-health-monitor-controller:
-    tag: v0.16.0
+    tag: v0.17.0
     image: csi-external-health-monitor-controller

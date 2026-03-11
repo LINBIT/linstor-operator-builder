@@ -11,19 +11,19 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.32.3
+        tag: v1.33.1
         image: linstor-controller
       linstor-satellite:
-        tag: v1.32.3
+        tag: v1.33.1
         image: linstor-satellite
       linstor-csi:
-        tag: v1.10.5
+        tag: v1.10.6
         image: linstor-csi
       nfs-server:
-        tag: v1.10.5
+        tag: v1.10.6
         image: nfs-server
       drbd-reactor:
-        tag: v1.10.0
+        tag: v1.11.0
         image: drbd-reactor
       ha-controller:
         tag: v1.3.2
@@ -38,7 +38,7 @@ data:
         tag: v1.3.0
         image: linstor-affinity-controller
       drbd-module-loader:
-        tag: v9.2.16
+        tag: v9.2.17
         image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux Server 7\.
@@ -108,25 +108,25 @@ data:
     base: registry.k8s.io/sig-storage
     components:
       csi-attacher:
-        tag: v4.10.0
+        tag: v4.11.0
         image: csi-attacher
       csi-livenessprobe:
-        tag: v2.17.0
+        tag: v2.18.0
         image: livenessprobe
       csi-provisioner:
-        tag: v6.1.0
+        tag: v6.2.0
         image: csi-provisioner
       csi-snapshotter:
-        tag: v8.4.0
+        tag: v8.5.0
         image: csi-snapshotter
       csi-resizer:
-        tag: v2.0.0
+        tag: v2.1.0
         image: csi-resizer
       csi-external-health-monitor-controller:
-        tag: v0.16.0
+        tag: v0.17.0
         image: csi-external-health-monitor-controller
       csi-node-driver-registrar:
-        tag: v2.15.0
+        tag: v2.16.0
         image: csi-node-driver-registrar
   {{- range $idx, $value := .Values.imageConfigOverride }}
   {{ add $idx 1 }}_helm_override.yaml: |
