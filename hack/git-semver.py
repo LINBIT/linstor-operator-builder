@@ -10,7 +10,7 @@ if not match:
     sys.exit(1)
 
 major, minor, patch, extra, commit, dirty = match.groups()
-if extra == b'0' and not dirty:
+if extra == '0' and not dirty:
     print(f"{major}.{minor}.{patch}")
 elif not dirty:
     print(f"{major}.{minor}.{int(patch)+1}-{extra}.g{commit}")
