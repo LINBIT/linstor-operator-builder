@@ -11,16 +11,16 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.33.1
+        tag: v1.33.2
         image: linstor-controller
       linstor-satellite:
-        tag: v1.33.1
+        tag: v1.33.2
         image: linstor-satellite
       linstor-csi:
-        tag: v1.10.6
+        tag: v1.11.0
         image: linstor-csi
       nfs-server:
-        tag: v1.10.6
+        tag: v1.11.0
         image: nfs-server
       drbd-reactor:
         tag: v1.11.0
@@ -35,11 +35,11 @@ data:
         tag: v1.2.1
         image: ktls-utils
       linstor-affinity-controller:
-        tag: v1.3.0
+        tag: v1.4.0
         image: linstor-affinity-controller
       drbd-module-loader:
-        tag: v9.2.17
-        image: drbd9-noble # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
+        tag: v9.2.18
+        image: drbd9-resolute # Fallback image: chose a recent kernel, which can hopefully compile whatever config is actually in use
         match:
           - osImage: Red Hat Enterprise Linux Server 7\.
             image: drbd9-rhel7
@@ -100,6 +100,8 @@ data:
             image: drbd9-jammy
           - osImage: Ubuntu 24\.04
             image: drbd9-noble
+          - osImage: Ubuntu 26\.04
+            image: drbd9-resolute
           - osImage: Harvester
             image: drbd9-sles15
             precompiled: true

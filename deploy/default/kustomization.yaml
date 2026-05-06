@@ -26,7 +26,7 @@ patches:
 images:
 - name: controller
   newName: drbd.io/linstor-operator
-  newTag: v2.10.5
+  newTag: v2.10.6
 
 resources:
 - ../operator
