@@ -11,16 +11,16 @@ data:
     base: drbd.io
     components:
       linstor-controller:
-        tag: v1.33.2
+        tag: v1.33.3
         image: linstor-controller
       linstor-satellite:
-        tag: v1.33.2
+        tag: v1.33.3
         image: linstor-satellite
       linstor-csi:
-        tag: v1.11.0
+        tag: v1.11.2
         image: linstor-csi
       nfs-server:
-        tag: v1.11.0
+        tag: v1.11.2
         image: nfs-server
       drbd-reactor:
         tag: v1.11.0
@@ -35,7 +35,7 @@ data:
         tag: v1.2.1
         image: ktls-utils
       linstor-affinity-controller:
-        tag: v1.4.0
+        tag: v1.4.1
         image: linstor-affinity-controller
       drbd-module-loader:
         tag: v9.2.18
