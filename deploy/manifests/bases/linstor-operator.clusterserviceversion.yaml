@@ -93,13 +93,95 @@ spec:
         x-descriptors:
         - 'urn:alm:descriptor:io.kubernetes.conditions'
   description: |
-    The LINSTOR Operator manages [LINSTOR](https://github.com/LINBIT/linstor-server) clusters in Kubernetes.
+    ## Overview
 
-    All components of the LINSTOR software stack can be managed by the operator:
-    * DRBD
-    * LINSTOR
-    * LINSTOR CSI driver
-    * LINSTOR HA Controller
+    The LINSTOR Operator deploys and manages [LINBIT SDS](https://linbit.com/linbit-sds/), a resilient software-defined
+    storage solution for OpenShift and Kubernetes built on [LINSTOR](https://github.com/LINBIT/linstor-server) and
+    [DRBD](https://github.com/LINBIT/drbd).
+
+    LINBIT SDS provides persistent storage volumes with synchronous replication across nodes, enabling high availability
+    for stateful workloads. The operator handles the full lifecycle of all storage stack components — from initial
+    deployment through upgrades and configuration changes.
+
+    ## Components managed by the operator
+
+    * **DRBD** — kernel-level block device replication
+    * **LINSTOR Controller** — cluster-wide storage management plane
+    * **LINSTOR Satellites** — per-node storage agents
+    * **LINSTOR CSI Driver** — Kubernetes CSI integration for dynamic provisioning
+    * **LINSTOR HA Controller** — automatic failover for stateful workloads
+
+    ## Prerequisites
+
+    A valid [LINBIT SDS Subscription](https://my.linbit.com) is required to pull the container images. The subscription
+    credentials must be provided as an image pull secret named `drbdio-pull-secret` in the operator namespace
+    (`linbit-sds` by default).
+
+    ## Getting Started
+
+    After installing the operator from OperatorHub, create the pull secret with your LINBIT credentials:
+
+    ```
+    oc create secret docker-registry drbdio-pull-secret \
+      --namespace=linbit-sds \
+      --docker-server=drbd.io \
+      --docker-username=MY_LINBIT_USER \
+      --docker-password=MY_LINBIT_PASSWORD
+    ```
+
+    Then deploy the full LINBIT SDS stack by creating a `LinstorCluster` resource:
+
+    ```yaml
+    apiVersion: piraeus.io/v1
+    kind: LinstorCluster
+    metadata:
+      name: linstorcluster
+    spec: {}
+    ```
+
+    The operator will deploy all components and configure the CSI driver. Storage backends and storage classes
+    must be configured separately based on the available storage on your nodes.
+
+    ## Configuring Storage
+
+    Storage pools are configured via `LinstorSatelliteConfiguration`. The following example sets up an LVM thin pool
+    on a dedicated disk on every node:
+
+    ```yaml
+    apiVersion: piraeus.io/v1
+    kind: LinstorSatelliteConfiguration
+    metadata:
+      name: storage-pool
+    spec:
+      storagePools:
+        - name: pool1
+          lvmThinPool: {}
+          source:
+            hostDevices:
+              - /dev/sdb
+    ```
+
+    Once the pool is configured, create a `StorageClass` referencing it. The example below provisions replicated
+    volumes with 2 replicas:
+
+    ```yaml
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: linbit-sds
+    provisioner: linstor.csi.linbit.com
+    allowVolumeExpansion: true
+    volumeBindingMode: WaitForFirstConsumer
+    parameters:
+      linstor.csi.linbit.com/storagePool: pool1
+      linstor.csi.linbit.com/placementCount: "2"
+    ```
+
+    ## Documentation
+
+    * [User Guide](https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-deploy-linstor-operator-v2)
+    * [API Reference](https://linbit.github.io/linstor-operator-builder/)
+    * [Source Code](https://github.com/LINBIT/linstor-operator-builder)
   displayName: LINSTOR Operator
   icon:
   - base64data: |
