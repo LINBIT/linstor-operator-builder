@@ -1,0 +1,272 @@
+# Orchestrates find-unrotated-uuids across every node in the cluster.
+#
+# Architecture:
+#   find-unrotated-uuids-ctrl (Job)
+#     ├── spawns one find-unrotated-uuids-node-<node> Job per cluster node
+#     ├── waits for all per-node jobs to finish
+#     ├── collects their logs (each line is a DRBD resource name)
+#     ├── looks up the PV whose .spec.csi.volumeHandle matches the resource name
+#     ├── labels matching PVs with linstor.csi.linbit.com/unrotated-uuid=true
+#     └── deletes the per-node jobs
+#
+# Apply:
+#   kubectl apply -n linbit-sds -f https://charts.linstor.io/advisories/drbd-unrotated-uuid/find-unrotated-uuids.yaml
+
+---
+# --- Per-node job: ServiceAccount & privileged SCC binding ---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: find-unrotated-uuids
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: find-unrotated-uuids
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:openshift:scc:privileged
+subjects:
+  - kind: ServiceAccount
+    name: find-unrotated-uuids
+
+---
+# --- Control job: ServiceAccount, cluster-scoped RBAC, namespace-scoped RBAC ---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: find-unrotated-uuids-ctrl
+---
+# Access to cluster-scoped resources (nodes, PVs).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: find-unrotated-uuids-ctrl
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: find-unrotated-uuids-ctrl
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: find-unrotated-uuids-ctrl
+subjects:
+  - kind: ServiceAccount
+    name: find-unrotated-uuids-ctrl
+    namespace: linbit-sds
+---
+# Access to namespace-scoped resources (jobs, pods/log).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: find-unrotated-uuids-ctrl
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: find-unrotated-uuids-ctrl
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: find-unrotated-uuids-ctrl
+subjects:
+  - kind: ServiceAccount
+    name: find-unrotated-uuids-ctrl
+
+---
+# --- Per-node job template (mounted into the control job) ---
+#
+# __JOB_NAME__ and __NODE_NAME__ are substituted by the control job at runtime.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: find-unrotated-uuids-node-job
+data:
+  template.yaml: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: __JOB_NAME__
+      labels:
+        app: find-unrotated-uuids
+        find-unrotated-uuids-ctrl: "true"
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          nodeName: __NODE_NAME__
+          serviceAccountName: find-unrotated-uuids
+          restartPolicy: Never
+          containers:
+          - name: find-unrotated-uuids
+            image: quay.io/piraeusdatastore/piraeus-server:v1.33.3
+            command:
+            - bash
+            - -ec
+            - |
+              if [ ! -e /proc/drbd ]; then
+                exit 0
+              fi
+
+              drbdsetup show --json | jq -r '
+                .[] |
+                . as $res |
+                ._this_host.volumes[] |
+                select(."backing-disk" != null) |
+                [
+                  $res.resource,
+                  (.volume_nr | tostring),
+                  (.device_minor | tostring),
+                  ."backing-disk",
+                  (if ."meta-disk" == "internal" then ."backing-disk" else ."meta-disk" end),
+                  (if ."meta-disk" == "internal" then "internal" else "0" end)
+                ] | @tsv
+              ' |
+              while read r v m d md idx; do
+                drbdmeta - v09 $md $idx dump-superblock --output json 2>/dev/null |
+                  jq -r \
+                    --arg resource "$r" \
+                    'select(
+                      (."#meta".valid | IN("VALID_MD_FOUND", "VALID_MD_FOUND_AT_LAST_KNOWN_LOCATION")) and
+                      (."current_uuid" | IN(
+                        "0x0000000000000000",
+                        "0x0000000000000004",
+                        "0x0000000000000005") | not) and
+                      ([.peers[].bitmap_uuid == "0x0000000000000000"] | all) and
+                      ([.history_uuids[] == "0x0000000000000000"] | all) and
+                      (.flags[-2:-1]|ascii_downcase|((explode[]-48)%39%2!=0)))
+                      | "\( $resource )"'
+              done
+            env:
+            - name: NODENAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            securityContext:
+              privileged: true
+            volumeMounts:
+            - mountPath: /dev
+              name: dev
+              readOnly: true
+          volumes:
+          - name: dev
+            hostPath:
+              path: /dev
+              type: Directory
+
+---
+# --- Control job ---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: find-unrotated-uuids-ctrl
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      serviceAccountName: find-unrotated-uuids-ctrl
+      restartPolicy: Never
+      containers:
+      - name: ctrl
+        # alpine/k8s includes kubectl, bash, sed, and awk.
+        image: alpine/k8s:1.31.0
+        command:
+        - bash
+        - -ec
+        - |
+          NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+          JOB_PREFIX="find-unrotated-uuids-node"
+          LABEL_KEY="linstor.csi.linbit.com/unrotated-uuid"
+          TEMPLATE=/templates/template.yaml
+
+          # Build node -> job-name mapping.
+          # Node names may contain dots/colons; sanitise to [a-z0-9-], max 37
+          # chars so the full job name stays within the 63-char k8s limit.
+          declare -A NODE_JOB
+          while IFS= read -r NODE; do
+            [[ -z "$NODE" ]] && continue
+            SAFE=$(echo "$NODE" \
+              | tr '[:upper:]' '[:lower:]' \
+              | sed 's/[^a-z0-9]/-/g; s/-\+/-/g; s/^-//; s/-$//' \
+              | cut -c1-37 \
+              | sed 's/-$//')
+            NODE_JOB[$NODE]="${JOB_PREFIX}-${SAFE}"
+          done < <(kubectl get nodes \
+            -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+
+          echo "==> Spawning per-node jobs on ${#NODE_JOB[@]} node(s)"
+          for NODE in "${!NODE_JOB[@]}"; do
+            JOB="${NODE_JOB[$NODE]}"
+            echo "    $JOB  (node: $NODE)"
+            sed \
+              -e "s/__JOB_NAME__/${JOB}/g" \
+              -e "s/__NODE_NAME__/${NODE}/g" \
+              "$TEMPLATE" \
+              | kubectl apply -n "$NAMESPACE" -f -
+          done
+
+          echo "==> Waiting for per-node jobs (timeout: 600s each)"
+          for NODE in "${!NODE_JOB[@]}"; do
+            JOB="${NODE_JOB[$NODE]}"
+            kubectl wait --for=condition=complete \
+              --timeout=600s job/"$JOB" -n "$NAMESPACE" \
+              || echo "WARNING: $JOB did not complete cleanly"
+          done
+
+          echo "==> Collecting logs and labeling PVs"
+          for NODE in "${!NODE_JOB[@]}"; do
+            JOB="${NODE_JOB[$NODE]}"
+            POD=$(kubectl get pods -n "$NAMESPACE" \
+              -l "job-name=${JOB}" \
+              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+            if [[ -z "$POD" ]]; then
+              echo "    No pod found for $JOB, skipping"
+              continue
+            fi
+
+            while IFS= read -r RESOURCE; do
+              [[ -z "$RESOURCE" ]] && continue
+              # Match PV by .spec.csi.volumeHandle == DRBD resource name.
+              PV=$(kubectl get pv \
+                -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.csi.volumeHandle}{"\n"}{end}' \
+                | awk -v r="$RESOURCE" '$2 == r { print $1; exit }')
+              if [[ -n "$PV" ]]; then
+                echo "    Labeling PV $PV (resource: $RESOURCE)"
+                kubectl label pv "$PV" "${LABEL_KEY}=true" --overwrite
+              else
+                echo "    WARNING: no PV found for DRBD resource '$RESOURCE'"
+              fi
+            done < <(kubectl logs -n "$NAMESPACE" "$POD" 2>/dev/null || true)
+          done
+
+          echo "==> Cleaning up per-node jobs"
+          kubectl delete jobs -n "$NAMESPACE" \
+            -l "find-unrotated-uuids-ctrl=true" \
+            --ignore-not-found
+
+          echo "==> Done"
+        volumeMounts:
+        - mountPath: /templates
+          name: job-template
+      volumes:
+      - name: job-template
+        configMap:
+          name: find-unrotated-uuids-node-job

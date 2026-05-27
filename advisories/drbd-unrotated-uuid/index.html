@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Advisory: DRBD Unrotated UUID</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/content/mvp.css"/>
+    <link rel="icon" href="/content/symbol.svg"/>
+</head>
+<body>
+<header>
+    <nav>
+        <img alt="Logo" src="/content/linbit_sds.svg" height="70"/>
+        <ul>
+            <li><a href="/">Operator v2</a></li>
+            <li><a href="/migration/">Migration ▾</a>
+                <ul>
+                    <li><a href="/migration/1-migrate-db.html">1. Migrate Database</a></li>
+                    <li><a href="/migration/2-collect-information.html">2. Collect Information</a></li>
+                    <li><a href="/migration/3-remove-operator-v1.html">3. Remove Operator v1</a></li>
+                    <li><a href="/migration/4-install-operator-v2.html">4. Install Operator v2</a></li>
+                </ul>
+            </li>
+            <li><a href="/helm.html">Operator v1</a></li>
+        </ul>
+    </nav>
+
+    <h1>Advisory: DRBD Unrotated UUID</h1>
+</header>
+<main>
+    <article>
+        <h2>Overview</h2>
+
+        <p>
+            A bug in older versions of DRBD and LINSTOR can cause a storage node to incorrectly treat a
+            freshly-provisioned replica as already up to date, skipping the data synchronization that should
+            occur when a node is added or replaced. If this happens, your application could silently read
+            corrupted or stale data without any error being reported.
+        </p>
+
+        <p>
+            The root cause is that DRBD tracks which replica holds the most recent data using internal version
+            identifiers. Volumes created with older software may never have had those identifiers updated after
+            the initial write, leaving them unable to tell a new empty replica apart from an existing one.
+            The bug is fixed in DRBD&nbsp;9.2.18&nbsp;/&nbsp;9.3.2 and LINSTOR&nbsp;1.33.2 (or&nbsp;1.34+):
+            upgrading prevents any new volumes from being affected.
+        </p>
+
+        <p>
+            <strong>Upgrading alone is not enough.</strong> Volumes that are already in the affected state
+            need a one-time corrective action to permanently resolve the issue. The steps below walk you through
+            identifying which volumes are affected and how to fix them.
+        </p>
+
+        <p>The remediation procedure consists of four steps:</p>
+        <ol>
+            <li><a href="#step-1">Identify affected resources</a> using a provided Kubernetes job.</li>
+            <li><a href="#step-2">Review the labeled PersistentVolumes.</a></li>
+            <li><a href="#step-3">Trigger a UUID bump</a> for each affected volume.</li>
+            <li><a href="#step-4">Verify and clean up.</a></li>
+        </ol>
+
+        <h2 id="step-1">Step 1: Identify Affected Resources</h2>
+
+        <p>
+            Apply the detection job below. It spawns a privileged pod on every cluster node, scans all DRBD volumes
+            for the day-0 UUID condition, and labels any matching PersistentVolume with
+            <code>linstor.csi.linbit.com/unrotated-uuid=true</code>.
+        </p>
+
+        <pre><code>kubectl apply -n linbit-sds -f https://charts.linstor.io/advisories/drbd-unrotated-uuid/find-unrotated-uuids.yaml</code></pre>
+
+        <p>Wait for the control job to finish (it cleans up the per-node jobs automatically):</p>
+
+        <pre><code>kubectl wait --for=condition=complete --timeout=600s \
+    job/find-unrotated-uuids-ctrl -n linbit-sds</code></pre>
+
+        <p>Inspect the job log to see which resources were found and which PVs were labeled:</p>
+
+        <pre><code>kubectl logs -n linbit-sds job/find-unrotated-uuids-ctrl</code></pre>
+
+        <h2 id="step-2">Step 2: Review Affected PersistentVolumes</h2>
+
+        <p>List every PV that was labeled by the detection job:</p>
+
+        <pre><code>kubectl get pv -l linstor.csi.linbit.com/unrotated-uuid=true</code></pre>
+
+        <p>If no PVs are listed, your cluster is not affected and no further action is required.</p>
+
+        <h2 id="step-3">Step 3: Trigger a UUID Bump</h2>
+
+        <p>
+            Perform the following procedure for each affected PV. The right approach depends on how many diskful
+            replicas the underlying LINSTOR resource has.
+        </p>
+
+        <h3>Volumes with two or more diskful replicas (most common)</h3>
+
+        <p>
+            Gracefully disconnect a secondary replica, wait for one write to reach the primary, then reconnect.
+            The write causes DRBD to rotate the UUID. No application downtime is required.
+        </p>
+
+        <ol>
+            <li>
+                <p>Get the DRBD resource name from the PV:</p>
+                <pre><code>RESOURCE=$(kubectl get pv &lt;pv-name&gt; -o jsonpath='{.spec.csi.volumeHandle}')
+echo $RESOURCE</code></pre>
+            </li>
+            <li>
+                <p>List the replicas and identify a <strong>secondary (non-primary) diskful</strong> node:</p>
+                <pre><code>kubectl exec -n linbit-sds deploy/linstor-controller -- \
+    linstor resource list -r $RESOURCE</code></pre>
+            </li>
+            <li>
+                <p>Disconnect the resource on that node via the LINSTOR satellite pod:</p>
+                <pre><code>kubectl exec -n linbit-sds ds/linstor-satellite.&lt;NODE&gt; -- drbdadm disconnect $RESOURCE</code></pre>
+            </li>
+            <li>
+                <p>
+                    Ensure at least one write reaches the primary. If the PVC is actively used by a running workload,
+                    any application write is sufficient. Otherwise, exec into a pod that mounts the PVC and write a
+                    small amount of data, for example:
+                </p>
+                <pre><code>kubectl exec &lt;pod&gt; -- sh -c 'dd if=/dev/urandom bs=4k count=1 of=&lt;mountpath&gt;/.uuid-bump &amp;&amp; sync &amp;&amp; rm &lt;mountpath&gt;/.uuid-bump'</code></pre>
+            </li>
+            <li>
+                <p>Reconnect the replica:</p>
+                <pre><code>kubectl exec -n linbit-sds ds/linstor-satellite.&lt;NODE&gt; -- drbdadm connect $RESOURCE</code></pre>
+            </li>
+            <li>
+                <p>
+                    Wait for the resync to complete. All replicas must return to <code>UpToDate</code> before
+                    proceeding to the next volume:
+                </p>
+                <pre><code>kubectl exec -n linbit-sds deploy/linstor-controller -- \
+    linstor resource list -r $RESOURCE</code></pre>
+            </li>
+        </ol>
+
+        <h3>Volumes with a single diskful replica</h3>
+
+        <p>
+            When there is only one diskful replica, toggling to diskless would remove the only copy of the data.
+            Instead, use <code>drbdadm new-current-uuid</code> directly on the hosting node.
+            This requires briefly quiescing I/O on the resource.
+        </p>
+
+        <ol>
+            <li>
+                <p>Scale down all workloads (Deployments, StatefulSets, etc.) that use the PVC.</p>
+            </li>
+            <li>
+                <p>
+                    Identify the node hosting the diskful replica (from
+                    <code>linstor resource list -r $RESOURCE</code>) and run the following commands on that node
+                    as root:
+                </p>
+                <pre><code>kubectl exec -n linbit-sds ds/linstor-satellite.&lt;NODE&gt; -- drbdadm disconnect $RESOURCE
+kubectl exec -n linbit-sds ds/linstor-satellite.&lt;NODE&gt; -- drbdadm new-current-uuid $RESOURCE/0
+kubectl exec -n linbit-sds ds/linstor-satellite.&lt;NODE&gt; -- drbdadm connect $RESOURCE</code></pre>
+            </li>
+            <li>
+                <p>Scale the workloads back up. LINSTOR will reconnect the resource automatically.</p>
+            </li>
+        </ol>
+
+        <h2 id="step-4">Step 4: Verify and Clean Up</h2>
+
+        <p>After remediating all affected volumes, follow these steps to confirm the cluster is clean.</p>
+
+        <ol>
+            <li>
+                <p>Remove the advisory labels so the detection job starts with a clean slate:</p>
+                <pre><code>kubectl label pv -l linstor.csi.linbit.com/unrotated-uuid=true \
+    linstor.csi.linbit.com/unrotated-uuid-</code></pre>
+            </li>
+            <li>
+                <p>Delete and re-apply the detection job:</p>
+                <pre><code>kubectl delete -n linbit-sds -f https://charts.linstor.io/advisories/drbd-unrotated-uuid/find-unrotated-uuids.yaml
+kubectl apply -n linbit-sds -f https://charts.linstor.io/advisories/drbd-unrotated-uuid/find-unrotated-uuids.yaml
+kubectl wait --for=condition=complete --timeout=600s \
+    job/find-unrotated-uuids-ctrl -n linbit-sds</code></pre>
+            </li>
+            <li>
+                <p>Confirm no PVs were labeled. If any appear, repeat Step 3 for the remaining volumes.</p>
+                <pre><code>kubectl get pv -l linstor.csi.linbit.com/unrotated-uuid=true</code></pre>
+            </li>
+            <li>
+                <p>Remove the detection job and its RBAC resources:</p>
+                <pre><code>kubectl delete -n linbit-sds -f https://charts.linstor.io/advisories/drbd-unrotated-uuid/find-unrotated-uuids.yaml</code></pre>
+            </li>
+        </ol>
+
+        <h2>Suspected Past Corruption</h2>
+
+        <p>
+            The detection job identifies volumes that are currently in the vulnerable state. It cannot determine
+            whether corruption already occurred on a volume whose UUID has since been rotated by normal operation
+            (for example, after a node was replaced). If you have reason to believe that a node was re-provisioned
+            while running an affected DRBD and LINSTOR version, please
+            <a href="https://my.linbit.com">contact LINBIT support</a> for guidance.
+        </p>
+    </article>
+</main>
+</body>
+</html>
