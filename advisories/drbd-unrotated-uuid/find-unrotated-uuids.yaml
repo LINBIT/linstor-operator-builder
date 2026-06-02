@@ -141,7 +141,7 @@ data:
                 ] | @tsv
               ' |
               while read r v m d md idx; do
-                drbdmeta - v09 $md $idx dump-superblock --output json 2>/dev/null |
+                drbdmeta - v09 /host$md $idx dump-superblock --output json 2>/dev/null |
                   jq -r \
                     --arg resource "$r" \
                     'select(
@@ -163,7 +163,7 @@ data:
             securityContext:
               privileged: true
             volumeMounts:
-            - mountPath: /dev
+            - mountPath: /host/dev
               name: dev
               readOnly: true
           volumes:
