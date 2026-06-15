@@ -6,10 +6,10 @@ stages:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  VIRTER_VERSION: v1.0.0
+  VIRTER_VERSION: v1.1.0
   VMSHED_VERSION: v0.28.0
   KUSTOMIZE_VERSION: v5.8.1
-  K8S_TEST_VERSION: v2.10.1
+  K8S_TEST_VERSION: v2.10.2
   HELM_VERSION: v4.2.0
 
 prepare-bins:
@@ -214,7 +214,8 @@ publish-debug:
     allow_failure: true
   before_script:
   - mkdir -p .cache/pip
-  - pip install --cache-dir .cache/pip pyyaml
+  - pip install --cache-dir .cache/pip pyyaml pulp-cli
+  - mkdir -p ~/.config/pulp && ln -snf "$LINBIT_PULP_CONFIG_FILE" ~/.config/pulp/cli.toml
   script:
   - set -ex
   - export PATH=$CI_PROJECT_DIR/bin:$PATH
@@ -222,8 +223,8 @@ publish-debug:
   - mkdir -p out
   - kustomize build deploy/debug > out/static-deployment.yaml
   - hack/get-image-list.py out/static-deployment.yaml > out/image.list
-  - curl -isSf -u $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/static-deployment.yaml $LINBIT_REGISTRY_URL/repository/pages/linstor-operator/$CI_COMMIT_BRANCH.yaml
-  - curl -isSf -u $LINBIT_REGISTRY_USER:$LINBIT_REGISTRY_PASSWORD --upload-file out/image.list $LINBIT_REGISTRY_URL/repository/pages/linstor-operator/$CI_COMMIT_BRANCH.image.txt
+  - pulp file content upload --repository pages --file out/static-deployment.yaml --relative-path linstor-operator/$CI_COMMIT_REF_SLUG.yaml
+  - pulp file content upload --repository pages --file out/image.list --relative-path linstor-operator/$CI_COMMIT_REF_SLUG.image.txt
   cache:
     key: cache-python
     paths:
