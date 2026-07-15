@@ -22,6 +22,12 @@
                 </ul>
             </li>
             <li><a href="/helm.html">Operator v1</a></li>
+            <li><a href="/advisories/drbd-unrotated-uuid/">Advisories ▾</a>
+                <ul>
+                    <li><a href="/advisories/drbd-unrotated-uuid/">DRBD Unrotated UUID</a></li>
+                    <li><a href="/advisories/drbd-verify/">drbd-verify.py Tool</a></li>
+                </ul>
+            </li>
         </ul>
     </nav>
 
@@ -197,8 +203,10 @@ kubectl wait --for=condition=complete --timeout=600s \
         <p>
             The detection job identifies volumes that are currently in the vulnerable state. It cannot determine
             whether corruption already occurred on a volume whose UUID has since been rotated by normal operation
-            (for example, after a node was replaced). If you have reason to believe that a node was re-provisioned
-            while running an affected DRBD and LINSTOR version, please
+            (for example, after a node was replaced). To check whether the replicas of a volume actually hold
+            identical data, you can use the <a href="/advisories/drbd-verify/"><code>drbd-verify.py</code></a>
+            tool, which compares every pair of nodes and reports any differences. If you have reason to believe
+            that a node was re-provisioned while running an affected DRBD and LINSTOR version, please
             <a href="https://my.linbit.com">contact LINBIT support</a> for guidance.
         </p>
     </article>

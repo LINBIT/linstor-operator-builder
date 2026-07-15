@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Tool: drbd-verify.py</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/content/mvp.css"/>
+    <link rel="icon" href="/content/symbol.svg"/>
+</head>
+<body>
+<header>
+    <nav>
+        <img alt="Logo" src="/content/linbit_sds.svg" height="70"/>
+        <ul>
+            <li><a href="/">Operator v2</a></li>
+            <li><a href="/migration/">Migration ▾</a>
+                <ul>
+                    <li><a href="/migration/1-migrate-db.html">1. Migrate Database</a></li>
+                    <li><a href="/migration/2-collect-information.html">2. Collect Information</a></li>
+                    <li><a href="/migration/3-remove-operator-v1.html">3. Remove Operator v1</a></li>
+                    <li><a href="/migration/4-install-operator-v2.html">4. Install Operator v2</a></li>
+                </ul>
+            </li>
+            <li><a href="/helm.html">Operator v1</a></li>
+            <li><a href="/advisories/drbd-unrotated-uuid/">Advisories ▾</a>
+                <ul>
+                    <li><a href="/advisories/drbd-unrotated-uuid/">DRBD Unrotated UUID</a></li>
+                    <li><a href="/advisories/drbd-verify/">drbd-verify.py Tool</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <h1>Tool: drbd-verify.py</h1>
+</header>
+<main>
+    <article>
+        <h2>Overview</h2>
+
+        <p>
+            <code>drbd-verify.py</code> runs DRBD online verifies across the resources of a cluster and
+            investigates any differences it finds. Unlike a plain <code>drbdadm verify</code>, which only
+            compares the local node against its peers, this tool performs every verify needed to compare
+            <em>each pair</em> of nodes (1 verify for 2 nodes, 3 for 3 nodes, 6 for 4 nodes, and so on).
+        </p>
+
+        <p>
+            For every pair of nodes that turns out to have out-of-sync (OOS) blocks, it then tries to
+            explain the difference and recommend how to fix it. It reports the affected files where it can,
+            uses heuristics such as the Shannon entropy of the differing blocks and filesystem checks
+            (<code>fsck</code>) to judge which side holds the real data, and prints the exact
+            <code>drbdadm</code> commands needed to resync. With <code>--do-it</code> it can run those
+            commands for you.
+        </p>
+
+        <p>
+            This is useful whenever you need to confirm that two or more replicas of a volume actually hold
+            identical data — for example when investigating suspected data divergence, such as the
+            <a href="/advisories/drbd-unrotated-uuid/">DRBD Unrotated UUID</a> condition.
+        </p>
+
+        <h2>Requirements</h2>
+
+        <ul>
+            <li>Python&nbsp;3</li>
+            <li>A working <code>kubectl</code> and running LINSTOR satellite pods. Nodes are reached with
+                <code>kubectl exec</code> into the satellite pod, so the DRBD tools do not need to be
+                installed on the hosts themselves.</li>
+        </ul>
+
+        <p>
+            The tool is intended for interactive use: it refreshes its progress display every few seconds.
+            A full verify reads every replica end to end and can take a long time. Resources with an ongoing
+            resync or verify are skipped automatically.
+        </p>
+
+        <h2>Get the Tool</h2>
+
+        <pre><code>curl -O https://charts.linstor.io/drbd-verify.py</code></pre>
+
+        <h2>Usage</h2>
+
+        <p>
+            Run the script from a machine that has <code>kubectl</code> access to the cluster. Pick any node
+            whose <code>drbdsetup status</code> is used to discover the resources and their peers:
+        </p>
+
+        <pre><code># All resources visible from &lt;node&gt;
+python3 drbd-verify.py --kubectl --node &lt;node&gt;
+
+# A single resource (use the PV / volumeHandle name)
+python3 drbd-verify.py --kubectl --node &lt;node&gt; --resource &lt;resource&gt;</code></pre>
+
+        <p>
+            The satellite namespace defaults to <code>linbit-sds</code>; override it with
+            <code>--namespace</code> if you deployed elsewhere. The exec target defaults to
+            <code>ds/linstor-satellite.{node}</code> and can be changed with <code>--pod-pattern</code>.
+        </p>
+
+        <h3>Useful options</h3>
+
+        <ul>
+            <li><code>-r</code>, <code>--resource</code> — operate only on the named resource(s).</li>
+            <li><code>--skip-verify</code> — skip the (slow) <code>drbdsetup verify</code> and instead analyze
+                the blocks DRBD already reports as out-of-sync.</li>
+            <li><code>--do-it</code> — execute the suggested resync commands instead of only printing them.</li>
+            <li><code>-j</code>, <code>--json</code> — emit only JSON, suppressing the progress output.</li>
+        </ul>
+
+        <h2>Interpreting the Results</h2>
+
+        <p>
+            For each pair of nodes the tool reports the amount of out-of-sync data in KiB. A value of
+            <code>0</code> means the two replicas are identical. For any pair that differs, it decides which
+            node to treat as the source of truth by comparing the Shannon entropy of the differing blocks:
+            the side with higher-entropy data (real, compressed or encrypted content, as opposed to zeroes)
+            is chosen as the resync source, and the other side is overwritten. Filesystem-check error and
+            warning counts, plus the list of affected files, are reported for context.
+        </p>
+
+        <p>
+            The recommended resync commands are collected under <code>resync_suggestions</code> in the output,
+            and a full copy of the results is written to
+            <code>drbd-verify-result_YYYY-MM-DD_HHMM.json</code> in the current directory.
+        </p>
+
+        <p>
+            <strong>A resync overwrites the target node's copy of the divergent blocks.</strong> Review the
+            recommendation before running with <code>--do-it</code>. If you are unsure which replica is
+            correct, or need help interpreting the output,
+            <a href="https://my.linbit.com">contact LINBIT support</a>.
+        </p>
+    </article>
+</main>
+</body>
+</html>
