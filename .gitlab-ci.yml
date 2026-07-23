@@ -9,8 +9,10 @@ variables:
   VIRTER_VERSION: v1.1.0
   VMSHED_VERSION: v0.28.0
   KUSTOMIZE_VERSION: v5.8.1
-  K8S_TEST_VERSION: v2.10.2
+  K8S_TEST_VERSION: v2.10.5
   HELM_VERSION: v4.2.0
+  FIXED_VERSIONS: "v1.20"
+  BASE_IMAGE: alma-9
 
 prepare-bins:
   rules:
@@ -25,7 +27,7 @@ prepare-bins:
     - ci_prepare_tools
     - ci_fetch_binary virter virter-$VIRTER_VERSION https://github.com/LINBIT/virter/releases/download/$VIRTER_VERSION/virter-linux-amd64
     - ci_fetch_binary vmshed vmshed-$VMSHED_VERSION https://github.com/LINBIT/vmshed/releases/download/$VMSHED_VERSION/vmshed-linux-amd64
-    - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION $LINBIT_REGISTRY_URL/repository/tools/create-k8s-test-configs:$K8S_TEST_VERSION
+    - ci_fetch_binary create-k8s-test-configs create-k8s-test-configs-$K8S_TEST_VERSION ${LINBIT_PULP_BASE_URL}/pulp/content/file/tools/create-k8s-test-configs:$K8S_TEST_VERSION
     - ci_fetch_tar kustomize-$KUSTOMIZE_VERSION "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -z
     - ci_fetch_tar helm-$HELM_VERSION "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -z
   cache:
@@ -132,7 +134,7 @@ container_scanning:
   script:
     - set -ex
     - export PATH=$CI_PROJECT_DIR/bin:$PATH
-    - create-k8s-test-configs -stable-releases-to-check=$RELEASES_TO_CHECK -include-next=$INCLUDE_NEXT -base-image=alma-9 -output-dir=.
+    - create-k8s-test-configs -stable-releases-to-check=$RELEASES_TO_CHECK -include-next=$INCLUDE_NEXT -fixed-versions=$FIXED_VERSIONS -base-image=$BASE_IMAGE -output-dir=.
     - ( cd deploy/debug ; kustomize edit set image drbd.io/linstor-operator=$OPERATOR_IMAGE )
     - >
       vmshed
