@@ -44,7 +44,12 @@ stringData:
   tls.crt: {{ $controllerCert.Cert | quote }}
   tls.key: {{ $controllerCert.Key | quote }}
   ca.crt: {{ $ca.Cert | quote }}
-{{ $clientCerts := list (dig "apiTLS" "clientSecretName" "linstor-client-tls" .Values.linstorCluster) (dig "apiTLS" "csiControllerSecretName" "linstor-csi-controller-tls" .Values.linstorCluster) (dig "apiTLS" "csiNodeSecretName" "linstor-csi-node-tls" .Values.linstorCluster)}}
+{{ $clientCerts := list
+    (dig "apiTLS" "clientSecretName" "linstor-client-tls" .Values.linstorCluster)
+    (dig "apiTLS" "csiControllerSecretName" "linstor-csi-controller-tls" .Values.linstorCluster)
+    (dig "apiTLS" "csiNodeSecretName" "linstor-csi-node-tls" .Values.linstorCluster)
+    (dig "apiTLS" "affinityControllerSecretName" "linstor-affinity-controller-tls" .Values.linstorCluster)
+    (dig "apiTLS" "nfsServerSecretName" "linstor-csi-nfs-server-tls" .Values.linstorCluster)}}
 {{- range without (uniq $clientCerts) $controllerSecretName }}
 {{ $cert := genSignedCert . (list) (list) 3650 $ca }}
 ---

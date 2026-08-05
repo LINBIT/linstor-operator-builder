@@ -42,6 +42,8 @@ linstorCluster: {}
 #    clientSecretName: linstor-client-tls
 #    csiControllerSecretName: linstor-csi-controller-tls
 #    csiNodeSecretName: linstor-csi-node-tls
+#    affinityControllerSecretName: linstor-affinity-controller-tls
+#    nfsServerSecretName: linstor-csi-nfs-server-tls
 #
 ## Configure TLS between LINSTOR Controller and Satellites. Set "createInternalTLS" to create the certificates with this chart.
 #  internalTLS:
