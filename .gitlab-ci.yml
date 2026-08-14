@@ -11,7 +11,7 @@ variables:
   KUSTOMIZE_VERSION: v5.8.1
   K8S_TEST_VERSION: v2.10.6
   HELM_VERSION: v4.2.0
-  FIXED_VERSIONS: "v1.20"
+  FIXED_VERSIONS: "v1.30"
   BASE_IMAGE: alma-9
 
 prepare-bins:
