@@ -22,11 +22,12 @@ deploy/manifests/related-images.yaml:
 	  | hack/get-image-list.py /dev/stdin --print-component \
 	  | hack/get-related-images.sh > $@
 
-.PHONY: snyc-chart
+.PHONY: sync-chart
 sync-chart:
 	KUSTOMIZE=$(KUSTOMIZE) hack/copy-image-config-to-chart.sh > charts/linstor-operator/templates/config.yaml
 	hack/crd-charts-copy.sh > charts/linstor-operator/templates/crds.yaml
 	sed -e 's/piraeus-operator/linstor-operator/' piraeus-operator/charts/piraeus/templates/rbac.yaml > charts/linstor-operator/templates/rbac.yaml
+	sed -e 's/piraeus-operator/linstor-operator/' piraeus-operator/charts/piraeus/templates/rolebindings.yaml > charts/linstor-operator/templates/rolebindings.yaml
 
 .PHONY: bundle
 bundle: deploy/manifests/related-images.yaml
@@ -50,7 +51,7 @@ release:
 	yq -ie '.version = "$(VERSION)" | .appVersion = "v$(VERSION)"' charts/linstor-operator/Chart.yaml
 	cd deploy/default && $(KUSTOMIZE) edit set image controller=drbd.io/linstor-operator:v$(VERSION)
 	cd deploy/manifests/operator && $(KUSTOMIZE) edit set image controller=drbd.io/linstor-operator:v$(VERSION)
-	git add piraeus-operator charts/linstor-operator/templates/config.yaml charts/linstor-operator/templates/crds.yaml charts/linstor-operator/Chart.yaml deploy/default/kustomization.yaml deploy/manifests/operator/kustomization.yaml
+	git add piraeus-operator charts/linstor-operator/templates/config.yaml charts/linstor-operator/templates/crds.yaml charts/linstor-operator/templates/rbac.yaml charts/linstor-operator/templates/rolebindings.yaml charts/linstor-operator/Chart.yaml deploy/default/kustomization.yaml deploy/manifests/operator/kustomization.yaml
 	git diff --staged
 	@echo git commit -svm \"Release $(VERSION)\"
 	@echo git tag -sm \"Release $(VERSION)\" v$(VERSION)

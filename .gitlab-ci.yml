@@ -6,7 +6,7 @@ stages:
 
 include:
   - project: kubernetes/linstor-kubernetes-tests
-    ref: v2.11.1
+    ref: v2.11.3
     file: k8s-test.gitlab-ci.yml
 
 variables:
@@ -164,8 +164,6 @@ container_scanning:
     K8S_TEST_VMSHED_EXTRA_ARGS: --error-details=false
 
 test-fast:
-  tags:
-  - libvirt-xs
   extends: .test
   rules:
     - if: $CI_MERGE_REQUEST_ID
