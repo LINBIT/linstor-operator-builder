@@ -6,7 +6,7 @@ stages:
 
 include:
   - project: kubernetes/linstor-kubernetes-tests
-    ref: v2.11.3
+    ref: v2.12.0
     file: k8s-test.gitlab-ci.yml
 
 variables:
@@ -55,6 +55,22 @@ create-k8s-test-configs:
     - if: $CI_COMMIT_BRANCH == 'v2'
   variables:
     K8S_TEST_FIXED_VERSIONS: "v1.30"
+    K8S_TEST_INCLUDE_NEXT: "false"
+    K8S_TEST_RANDOMIZE_CNI: "false"
+    K8S_TEST_RANDOMIZE_CRI: "false"
+
+# A single deterministic platform for the opt-in kubevirt and shared storage
+# tests: latest stable Kubernetes with containerd and flannel. Those tests cover
+# LINSTOR behavior on KubeVirt and shared storage, not the Kubernetes matrix.
+create-k8s-test-configs-opt-in:
+  extends: .k8s-test-configs
+  stage: prepare
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == 'v2'
+  variables:
+    K8S_TEST_RELEASES_TO_CHECK: "1"
     K8S_TEST_INCLUDE_NEXT: "false"
     K8S_TEST_RANDOMIZE_CNI: "false"
     K8S_TEST_RANDOMIZE_CRI: "false"
@@ -163,6 +179,18 @@ container_scanning:
     K8S_TEST_DEPLOYMENT_SOURCE: /virter/workspace/deploy/debug
     K8S_TEST_VMSHED_EXTRA_ARGS: --error-details=false
 
+# The opt-in tests, on the single platform of create-k8s-test-configs-opt-in.
+.test-opt-in:
+  extends: .test
+  needs:
+    - prepare-bins
+    - prepare-k8s-test-bins
+    - create-k8s-test-configs-opt-in
+    - build_operator
+  variables:
+    # Have virter-gc free 100 GiB (in bytes) for larger nested VMs.
+    VIRTER_GC_MIN_FREE: "107374182400"
+
 test-fast:
   extends: .test
   rules:
@@ -190,7 +218,48 @@ test-full:
       allow_failure: true
   variables:
     K8S_TEST_SKIP: "Slow|LinuxOnly|xfs|ext3|ext4|immediate-binding|retain policy|readOnly|read-only|exec|subPath"
+    # The network variants only: an empty variant would also run the opt-in
+    # kubevirt and shared variants, which have their own jobs below.
     K8S_TEST_VARIANT: "ipv4,ipv6,dualstack"
+
+# Runs the upstream KubeVirt e2e suite against LINSTOR, with live migration
+# exercising DRBD dual-primary through RWX block volumes.
+test-kubevirt:
+  extends: .test-opt-in
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == 'v2'
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+      when: manual
+      allow_failure: true
+  timeout: 7h
+  variables:
+    K8S_TEST_VARIANT: kubevirt
+    K8S_TEST_TORUN: kubevirt
+
+# Runs the storage e2e and KubeVirt suites against a storage pool on a disk
+# shared between all VMs, locked by LINSTOR and by lvmlockd, without DRBD.
+test-shared:
+  extends: .test-opt-in
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == 'v2'
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+      when: manual
+      allow_failure: true
+  # The two kubevirt tests run side by side, the e2e tests fill the rest of the
+  # runner around them.
+  timeout: 8h
+  variables:
+    K8S_TEST_VARIANT: shared
 
 publish-debug:
   stage: deploy
